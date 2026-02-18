@@ -61,7 +61,8 @@ export const projectType = defineType({
       hidden: ({ parent }) => parent?.textTheme !== 'custom',
       validation: (Rule) =>
         Rule.custom((value, ctx) => {
-          if (ctx?.parent?.textTheme !== 'custom') return true
+          const parent = ctx?.parent as { textTheme?: string } | undefined
+          if (parent?.textTheme !== 'custom') return true
           if (!value) return 'Required when using Custom.'
           return /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(value) ? true : 'Enter a valid hex (e.g. #fff or #333).'
         }),

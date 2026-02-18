@@ -55,6 +55,7 @@ async function getProjects() {
       _id: p._id,
       title: p.title,
       slug: p.slug,
+      description: null,
       themeColor: '#fff',
       slides: p.slides.map((s) => ({
         layout: s.layout,
