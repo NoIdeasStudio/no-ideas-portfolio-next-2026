@@ -20,13 +20,18 @@ async function getIndexData(): Promise<{
   categories: IndexCategory[]
   projects: IndexProject[]
 }> {
-  const [categories, projects] = await Promise.all([
-    sanityClient.fetch<IndexCategory[]>(allCategoriesQuery),
-    sanityClient.fetch<IndexProject[]>(indexProjectsQuery),
-  ])
-  return {
-    categories: categories ?? [],
-    projects: projects ?? [],
+  try {
+    const [categories, projects] = await Promise.all([
+      sanityClient.fetch<IndexCategory[]>(allCategoriesQuery),
+      sanityClient.fetch<IndexProject[]>(indexProjectsQuery),
+    ])
+    return {
+      categories: categories ?? [],
+      projects: projects ?? [],
+    }
+  } catch (err) {
+    console.error('[Index] Failed to fetch from Sanity:', err)
+    return { categories: [], projects: [] }
   }
 }
 

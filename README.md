@@ -43,6 +43,31 @@ npx sanity@latest dev
 
 > The Sanity config and schemas live in `sanity.config.ts` and `sanity/schemas/*`. You can either embed the Studio in this repo or keep it as a separate Studio project.
 
+## Content workflow: local Studio vs. web editors (how they stay in sync)
+
+**Where content lives:** All content is stored in **Sanity’s cloud** (your project + dataset). There is no separate “sync” step—Studio and the Next.js site both use this same backend.
+
+**You, locally:**
+
+1. **Next.js site:** `npm run dev` → open `http://localhost:3000`. The site fetches content from Sanity using `NEXT_PUBLIC_SANITY_PROJECT_ID` and `NEXT_PUBLIC_SANITY_DATASET` in `.env.local`.
+2. **Sanity Studio (two options):**
+   - **Inside the app:** With `npm run dev` running, open `http://localhost:3000/studio`. This is the same Studio that will be at `yoursite.com/studio` when deployed. It reads/writes the same Sanity project.
+   - **Standalone:** `npm run sanity` runs Studio on a different port (e.g. 3333). Same project/dataset, just a separate dev server.
+
+**Other users (editors) on the web:**
+
+1. **Deploy the app** (e.g. to Vercel) so the site and Studio are both on the internet.
+2. **Studio URL:** Editors go to **`https://your-vercel-url.vercel.app/studio`** (or your custom domain + `/studio`).
+3. **Log in:** They sign in with Google/GitHub/etc. You must **invite them** to your Sanity project: [manage.sanity.io](https://manage.sanity.io) → your project → **Members** → Invite. Until they’re members, they can’t open Studio.
+4. **Edits:** They create/edit content in Studio. Changes are saved directly to Sanity’s cloud (same project/dataset your site uses).
+
+**How the site and Studio stay in sync:**
+
+- **Studio** (local or at `/studio` on Vercel) and the **Next.js site** (local or Vercel) both talk to the **same Sanity project and dataset**. No export/import or manual sync.
+- The site uses **ISR** with `revalidate = 60` (see `src/app/page.tsx`). So at most every 60 seconds the homepage (and other pages that use `revalidate`) refetch from Sanity. Edits made in Studio by you or others show up on the live site within that window (or on the next request after the revalidate window).
+
+**Summary:** Build and run locally with `npm run dev`; use `http://localhost:3000/studio` to edit content. Deploy to Vercel so others can use `https://yoursite.com/studio`. Everyone edits the same Sanity project; the site stays in sync by refetching from Sanity (revalidate).
+
 ## CMS structure
 
 - `project` — one entry per project on the index:
