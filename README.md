@@ -67,7 +67,12 @@ git push -u origin main
 
 2. In Vercel:
    - Import the GitHub repo.
-   - Add the env vars from `.env.local` to the project settings.
+   - **Add environment variables** (required for the build): Project → **Settings** → **Environment Variables**. Add the same vars as in `.env.local`:
+     - `NEXT_PUBLIC_SANITY_PROJECT_ID` (your Sanity project ID)
+     - `NEXT_PUBLIC_SANITY_DATASET` (e.g. `production`)
+     - `SANITY_PROJECT_ID` (same as above)
+     - `SANITY_DATASET` (e.g. `production`)
+     - Enable them for **Production** (and Preview if you use preview deployments).
    - Deploy.
 
 You will then have a portable, CMS-backed version of the No Ideas site that can grow over time (project detail pages, shop, etc.).
