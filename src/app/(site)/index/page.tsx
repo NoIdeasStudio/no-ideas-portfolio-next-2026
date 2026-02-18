@@ -1,13 +1,13 @@
-import { sanityClient } from '../../lib/sanity.client'
+import { sanityClient } from '../../../lib/sanity.client'
 import {
   allCategoriesQuery,
   indexProjectsQuery,
-} from '../../lib/sanity.queries'
+} from '../../../lib/sanity.queries'
 import {
   IndexPageClient,
   type IndexCategory,
   type IndexProject,
-} from '../../components/IndexPageClient'
+} from '../../../components/IndexPageClient'
 
 export const revalidate = 60
 
