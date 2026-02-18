@@ -1,13 +1,13 @@
-import { sanityClient } from '../../../lib/sanity.client'
+import { sanityClient } from '../../lib/sanity.client'
 import {
   allCategoriesQuery,
   indexProjectsQuery,
-} from '../../../lib/sanity.queries'
+} from '../../lib/sanity.queries'
 import {
   IndexPageClient,
   type IndexCategory,
   type IndexProject,
-} from '../../../components/IndexPageClient'
+} from '../../components/IndexPageClient'
 
 export const revalidate = 60
 
@@ -30,12 +30,12 @@ async function getIndexData(): Promise<{
       projects: projects ?? [],
     }
   } catch (err) {
-    console.error('[Index] Failed to fetch from Sanity:', err)
+    console.error('[Projects] Failed to fetch from Sanity:', err)
     return { categories: [], projects: [] }
   }
 }
 
-export default async function IndexPage() {
+export default async function ProjectsPage() {
   const { categories, projects } = await getIndexData()
 
   return <IndexPageClient categories={categories} projects={projects} />

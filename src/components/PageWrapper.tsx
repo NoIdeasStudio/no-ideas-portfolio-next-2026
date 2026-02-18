@@ -9,7 +9,7 @@ export function PageWrapper({ children }: { children: React.ReactNode }) {
       ? 'homepage'
       : pathname === '/info'
         ? 'info'
-        : pathname === '/index'
+        : pathname === '/projects'
           ? 'index'
           : undefined
   return (

@@ -27,7 +27,7 @@ export function Header() {
           Info
         </Link>
         <span className="comma">,</span>{' '}
-        <Link href="/index" className={pathname === '/index' ? 'selected' : ''}>
+        <Link href="/projects" className={pathname === '/projects' ? 'selected' : ''}>
           Index
         </Link>
         <span className="comma">,</span>{' '}
