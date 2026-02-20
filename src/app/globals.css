@@ -90,6 +90,41 @@ a {
   text-decoration: none;
 }
 
+/* Splash overlay — homepage initial load (match noideas.website) */
+.splash-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2%;
+  transition: opacity 0.5s ease-out;
+}
+
+.splash-overlay--fading {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.splash-overlay-text {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 24vw;
+  line-height: .8;
+  letter-spacing: -1.2vw;
+  color: #fff;
+  display: inline-block;
+  transform: rotateX(180deg);
+  transition: none;
+  white-space: nowrap;
+}
+
+.splash-overlay-text:hover {
+  transform: rotateX(0deg);
+}
+
 /* Header typography — match noideas.website exactly (type-size-1) */
 .type-size-1 {
   font-family: var(--font-body);

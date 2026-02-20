@@ -5,12 +5,6 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 const PROJECTS_VIEW_STORAGE_KEY = 'projects-view-mode'
 
-function getStoredViewMode(): 'list' | 'grid' {
-  if (typeof window === 'undefined') return 'list'
-  const saved = window.localStorage.getItem(PROJECTS_VIEW_STORAGE_KEY)
-  return saved === 'grid' || saved === 'list' ? saved : 'list'
-}
-
 function IndexGridCell({
   item,
   onShowTooltip,
@@ -174,13 +168,18 @@ export function IndexPageClient({
   gridItems = [],
 }: IndexPageClientProps) {
   const [filter, setFilter] = useState<string>('all')
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>(getStoredViewMode)
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const [tooltip, setTooltip] = useState<{
     show: boolean
     x: number
     y: number
     text: string
   }>({ show: false, x: 0, y: 0, text: '' })
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem(PROJECTS_VIEW_STORAGE_KEY)
+    if (saved === 'grid' || saved === 'list') setViewMode(saved)
+  }, [])
 
   useEffect(() => {
     window.localStorage.setItem(PROJECTS_VIEW_STORAGE_KEY, viewMode)
@@ -194,6 +193,11 @@ export function IndexPageClient({
         p.categories.some((c) => c && c._id === filter)
     )
   }, [projects, filter])
+
+  const filteredGridItems = useMemo(() => {
+    const slugs = new Set(filtered.map((p) => p.slug))
+    return gridItems.filter((item) => slugs.has(item.projectSlug))
+  }, [gridItems, filtered])
 
   const showTooltip = (e: React.MouseEvent, text: string) => {
     setTooltip({ show: true, x: e.clientX, y: e.clientY, text })
@@ -283,7 +287,7 @@ export function IndexPageClient({
       )}
       {viewMode === 'grid' && (
         <div className="index-grid">
-          {gridItems.map((item, i) => (
+          {filteredGridItems.map((item, i) => (
             <IndexGridCell
               key={`${item.projectSlug}-${i}`}
               item={item}

@@ -3,10 +3,12 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useProjectTheme } from '../contexts/ProjectThemeContext'
+import { useAutoScroll } from '../contexts/AutoScrollContext'
 
 export function Header() {
   const pathname = usePathname()
   const projectTheme = useProjectTheme()
+  const autoScroll = useAutoScroll()
   const isHomepage = pathname === '/'
   const showProjectTitle =
     isHomepage &&
@@ -24,6 +26,8 @@ export function Header() {
         ? null
         : projectTheme.activeProjectSlug
     )
+    // Soft-scroll project to top and pause auto-scroll (same as carousel interaction)
+    autoScroll?.onCarouselInteraction(projectTheme.activeProjectSlug)
   }
 
   return (

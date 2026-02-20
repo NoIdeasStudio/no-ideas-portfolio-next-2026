@@ -1,7 +1,8 @@
 import type { PortableTextBlock } from '@portabletext/types'
-import { HomepageThemeObserver } from '../components/HomepageThemeObserver'
+import { HomepageInfiniteLoop } from '../components/HomepageInfiniteLoop'
 import { ProjectCarousel, type TwoUpItem } from '../components/ProjectCarousel'
 import { ScrollToHash } from '../components/ScrollToHash'
+import { SplashOverlay } from '../components/SplashOverlay'
 import { sanityClient } from '../lib/sanity.client'
 import { allProjectsWithSlidesQuery, siteLayoutQuery } from '../lib/sanity.queries'
 import { urlFor } from '../sanity/lib/image'
@@ -158,18 +159,12 @@ export default async function HomePage() {
 
   return (
     <div id="homepage">
+      <SplashOverlay />
       <ScrollToHash />
-      <HomepageThemeObserver projects={themeObserverProjects} />
-      {projects.map((project) => (
-        <ProjectCarousel
-          key={project._id}
-          projectTitle={project.title}
-          projectDescription={(project.description ?? null) as PortableTextBlock[] | string | null}
-          projectSlug={project.slug}
-          themeColor={project.themeColor ?? '#fff'}
-          slides={project.slides ?? []}
-        />
-      ))}
+      <HomepageInfiniteLoop
+        projects={projects}
+        themeObserverProjects={themeObserverProjects}
+      />
     </div>
   )
 }

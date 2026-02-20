@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { PortableText } from 'next-sanity'
 import type { PortableTextBlock } from '@portabletext/types'
 import { useProjectTheme } from '../contexts/ProjectThemeContext'
+import { useAutoScroll } from '../contexts/AutoScrollContext'
 import { Slide } from './Slide'
 
 export type TwoUpItem = {
@@ -38,6 +39,8 @@ type ProjectCarouselProps = {
   projectSlug?: string
   themeColor?: string
   slides: CarouselSlide[]
+  /** When true, section has no id (used for duplicate in infinite loop). */
+  isLoopCopy?: boolean
 }
 
 export function ProjectCarousel({
@@ -46,6 +49,7 @@ export function ProjectCarousel({
   projectSlug,
   themeColor: projectThemeColor = '#fff',
   slides,
+  isLoopCopy = false,
 }: ProjectCarouselProps) {
   const [index, setIndex] = useState(0)
   const {
@@ -59,6 +63,7 @@ export function ProjectCarousel({
     setActiveProjectTitle: () => {},
     descriptionOpenSlug: null,
   }
+  const autoScroll = useAutoScroll()
   const descriptionOpen = descriptionOpenSlug === projectSlug
   const count = slides.length
   const hasMultiple = count > 1
@@ -80,17 +85,21 @@ export function ProjectCarousel({
 
   const goPrev = useCallback(() => {
     setIndex((i) => (i <= 0 ? count - 1 : i - 1))
-  }, [count])
+    projectSlug &&
+      autoScroll?.onCarouselInteraction(projectSlug, { isLoopCopy: isLoopCopy ?? false })
+  }, [count, projectSlug, autoScroll, isLoopCopy])
 
   const goNext = useCallback(() => {
     setIndex((i) => (i >= count - 1 ? 0 : i + 1))
-  }, [count])
+    projectSlug &&
+      autoScroll?.onCarouselInteraction(projectSlug, { isLoopCopy: isLoopCopy ?? false })
+  }, [count, projectSlug, autoScroll, isLoopCopy])
 
   if (!count) return null
 
   return (
     <section
-      id={projectSlug ?? undefined}
+      id={isLoopCopy ? undefined : (projectSlug ?? undefined)}
       className="hero-slider relative h-screen w-full overflow-hidden bg-black"
       aria-label={`Project: ${projectTitle}`}
     >
@@ -99,7 +108,7 @@ export function ProjectCarousel({
         {slides.map((slide, i) => (
           <div
             key={i}
-            className="absolute inset-0 h-full w-full transition-opacity duration-300 ease-linear"
+            className="absolute inset-0 h-full w-full"
             style={{
               opacity: i === index ? 1 : 0,
               pointerEvents: i === index ? 'auto' : 'none',
