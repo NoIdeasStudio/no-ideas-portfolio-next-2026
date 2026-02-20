@@ -23,7 +23,8 @@ export const siteLayoutType = defineType({
           to: [{ type: 'project' }],
           options: {
             filter: ({ document }) => {
-              const refs = (document?.projectOrder ?? [])
+              const order = document?.projectOrder
+              const refs = (Array.isArray(order) ? order : [])
                 .map((item: { _ref?: string }) => item?._ref)
                 .filter(Boolean) as string[]
               return {
@@ -48,7 +49,8 @@ export const siteLayoutType = defineType({
           to: [{ type: 'category' }],
           options: {
             filter: ({ document }) => {
-              const refs = (document?.categoryOrder ?? [])
+              const order = document?.categoryOrder
+              const refs = (Array.isArray(order) ? order : [])
                 .map((item: { _ref?: string }) => item?._ref)
                 .filter(Boolean) as string[]
               return {
