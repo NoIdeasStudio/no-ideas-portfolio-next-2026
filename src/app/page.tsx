@@ -1,10 +1,33 @@
+import type { PortableTextBlock } from '@portabletext/types'
 import { HomepageThemeObserver } from '../components/HomepageThemeObserver'
 import { ProjectCarousel, type TwoUpItem } from '../components/ProjectCarousel'
 import { ScrollToHash } from '../components/ScrollToHash'
 import { sanityClient } from '../lib/sanity.client'
-import { allProjectsWithSlidesQuery } from '../lib/sanity.queries'
+import { allProjectsWithSlidesQuery, siteLayoutQuery } from '../lib/sanity.queries'
 import { urlFor } from '../sanity/lib/image'
 import { seedProjects } from '../data/seed-projects'
+
+type SiteLayout = {
+  projectOrderIds?: string[] | null
+  categoryOrderIds?: string[] | null
+}
+
+function sortByOrderIds<T extends { _id: string }>(
+  items: T[],
+  orderIds: string[] | undefined | null
+): T[] {
+  if (!orderIds?.length) return items
+  const byId = new Map(items.map((i) => [i._id, i]))
+  const ordered: T[] = []
+  for (const id of orderIds) {
+    const item = byId.get(id)
+    if (item) ordered.push(item)
+  }
+  for (const item of items) {
+    if (!orderIds.includes(item._id)) ordered.push(item)
+  }
+  return ordered
+}
 
 // Revalidate so Sanity changes (e.g. background color) show up without a full rebuild
 export const revalidate = 60
@@ -40,17 +63,22 @@ type SlideItem = {
 }
 
 async function getProjects() {
-  const data = await sanityClient.fetch<Array<{
-    _id: string
-    title: string
-    slug: string
-    description?: string | null
-    textTheme?: string | null
-    textThemeCustomColor?: string | null
-    slides?: SlideItem[]
-  }>>(allProjectsWithSlidesQuery)
+  const [layout, data] = await Promise.all([
+    sanityClient.fetch<SiteLayout | null>(siteLayoutQuery),
+    sanityClient.fetch<Array<{
+      _id: string
+      title: string
+      slug: string
+      description?: unknown
+      textTheme?: string | null
+      textThemeCustomColor?: string | null
+      slides?: SlideItem[]
+    }>>(allProjectsWithSlidesQuery),
+  ])
 
-  if (!data || data.length === 0) {
+  const raw = data && data.length > 0 ? sortByOrderIds(data, layout?.projectOrderIds) : []
+
+  if (raw.length === 0) {
     return seedProjects.map((p) => ({
       _id: p._id,
       title: p.title,
@@ -68,7 +96,7 @@ async function getProjects() {
     }))
   }
 
-  return data.map((project) => ({
+  return raw.map((project) => ({
     ...project,
     themeColor: resolveThemeColor(project.textTheme, project.textThemeCustomColor),
     slides: (project.slides ?? []).map((slide) => {
@@ -136,7 +164,7 @@ export default async function HomePage() {
         <ProjectCarousel
           key={project._id}
           projectTitle={project.title}
-          projectDescription={project.description ?? null}
+          projectDescription={(project.description ?? null) as PortableTextBlock[] | string | null}
           projectSlug={project.slug}
           themeColor={project.themeColor ?? '#fff'}
           slides={project.slides ?? []}

@@ -34,7 +34,10 @@ export const infoPageType = defineType({
               of: [
                 defineArrayMember({
                   type: 'block',
+                  styles: [{ title: 'Normal', value: 'normal' }],
+                  lists: [],
                   marks: {
+                    decorators: [],
                     annotations: [
                       {
                         name: 'link',

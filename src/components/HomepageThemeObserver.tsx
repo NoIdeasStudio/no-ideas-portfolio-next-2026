@@ -5,38 +5,47 @@ import { useProjectTheme } from '../contexts/ProjectThemeContext'
 
 type ProjectThemeItem = { slug: string }
 
+function pickActiveSlug(projects: ProjectThemeItem[]): string | null {
+  const atOrPastTop: { slug: string; top: number }[] = []
+  const belowTop: { slug: string; top: number }[] = []
+  for (const p of projects) {
+    const slug = p.slug
+    if (!slug) continue
+    const el = document.getElementById(slug)
+    if (!el) continue
+    const top = el.getBoundingClientRect().top
+    if (top <= 0) atOrPastTop.push({ slug, top })
+    else belowTop.push({ slug, top })
+  }
+  if (atOrPastTop.length > 0) {
+    const inView = atOrPastTop.reduce((a, b) => (a.top > b.top ? a : b))
+    return inView.slug
+  }
+  if (belowTop.length > 0) {
+    const next = belowTop.reduce((a, b) => (a.top < b.top ? a : b))
+    return next.slug
+  }
+  return null
+}
+
 export function HomepageThemeObserver({ projects }: { projects: ProjectThemeItem[] }) {
-  const { setActiveProjectSlug, setThemeColor } = useProjectTheme() ?? {
+  const { setActiveProjectSlug, setThemeColor, setActiveProjectTitle } = useProjectTheme() ?? {
     setActiveProjectSlug: () => {},
     setThemeColor: () => {},
+    setActiveProjectTitle: () => {},
   }
-  const ratiosRef = useRef<Record<string, number>>({})
 
   useEffect(() => {
     if (projects.length === 0) return
 
+    const update = () => {
+      const bestSlug = pickActiveSlug(projects)
+      setActiveProjectSlug(bestSlug)
+      if (bestSlug == null) setActiveProjectTitle(null)
+    }
+
     const observer = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          const slug = e.target.id
-          if (slug) ratiosRef.current[slug] = e.intersectionRatio
-        }
-        // Prefer the topmost visible project (closest to top of viewport) so header color changes when project is near the top, not center
-        let bestSlug: string | null = null
-        let bestTop = Infinity
-        for (const p of projects) {
-          const slug = p.slug
-          if (!slug || (ratiosRef.current[slug] ?? 0) <= 0) continue
-          const el = document.getElementById(slug)
-          if (!el) continue
-          const top = el.getBoundingClientRect().top
-          if (top < bestTop) {
-            bestTop = top
-            bestSlug = slug
-          }
-        }
-        setActiveProjectSlug(bestSlug)
-      },
+      () => update(),
       { threshold: [0, 0.25, 0.5, 0.75, 1] }
     )
 
@@ -50,15 +59,17 @@ export function HomepageThemeObserver({ projects }: { projects: ProjectThemeItem
       }
     }
 
-    setActiveProjectSlug(projects[0]?.slug ?? null)
+    update()
+    window.addEventListener('scroll', update, { passive: true })
 
     return () => {
+      window.removeEventListener('scroll', update)
       for (const el of elements) observer.unobserve(el)
-      ratiosRef.current = {}
       setActiveProjectSlug(null)
+      setActiveProjectTitle(null)
       setThemeColor(null)
     }
-  }, [projects, setActiveProjectSlug, setThemeColor])
+  }, [projects, setActiveProjectSlug, setActiveProjectTitle, setThemeColor])
 
   return null
 }

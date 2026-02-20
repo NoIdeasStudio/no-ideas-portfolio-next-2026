@@ -57,6 +57,22 @@ body {
   text-shadow: 0 4px 4px rgba(0, 0, 0, 0.45);
 }
 
+/* Header project title (homepage): one line, left-aligned; truncate with ellipsis if too long */
+.header-project-title {
+  flex: 1 1 0;
+  min-width: 0;
+  margin-left: 4%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  transition: text-shadow 0.2s ease-out;
+}
+.header-project-title:hover,
+.header-project-title-open {
+  text-shadow: 0 4px 4px rgba(0, 0, 0, 0.45);
+}
+
 /* Webflow-style image scaling: cover = fill viewport, contain = fit with letterbox */
 .img-cover,
 .video-cover {
@@ -95,6 +111,19 @@ header {
   align-items: center;
   z-index: 20;
   padding: 1.3% 2%;
+}
+
+/* Left side: fills space between left edge and .header-links; "No Ideas" + project title on one line, baseline- and left-aligned */
+header .header-left {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  text-align: left;
+}
+header .header-left > a {
+  white-space: nowrap;
 }
 
 header .header-links {
@@ -291,8 +320,71 @@ header a.selected {
 .index-filters {
   padding: 0 2% 4%;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 1rem;
+}
+
+/* Scrollable filter list: takes remaining space, overflow scrolls horizontally */
+.index-filters-left {
+  position: relative;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.index-filters-left::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 3rem;
+  background: linear-gradient(to right, transparent, #000);
+  pointer-events: none;
+}
+
+.index-filters-scroll {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  gap: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-right: 0.5rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.index-filters-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.index-view-toggle {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+/* List/Grid toggle: no flip, underline for active */
+.index-view-toggle .index-filter {
+  transform: none;
+}
+.index-view-toggle .index-filter:hover {
+  transform: none;
+}
+.index-view-toggle .index-filter.selected {
+  transform: none;
+  text-decoration: underline;
+}
+
+/* Keep each category button + comma on one line (prevents commas wrapping below) */
+.index-filter-chunk {
+  flex-shrink: 0;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: baseline;
   gap: 0;
 }
 
@@ -308,6 +400,7 @@ header a.selected {
   padding: 0;
   cursor: pointer;
   display: inline-block;
+  white-space: nowrap;
 }
 
 .index-filter:hover,
@@ -315,11 +408,21 @@ header a.selected {
   transform: rotateX(180deg);
 }
 
+@keyframes index-list-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .index-list {
   list-style: none;
   margin: 0 2%;
   padding: 0;
   border-top: 2px solid #000;
+  animation: index-list-fade-in 0.4s ease-out forwards;
 }
 
 #index .index-list {
@@ -410,14 +513,66 @@ header a.selected {
   flex: 0 0 auto;
 }
 
+/* Grid view: 3 columns, media full column width, variable height */
+.index-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin: 0 2%;
+  padding: 0 0 4%;
+}
+
+.index-grid-item {
+  display: block;
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
+}
+
+.index-grid-item.loaded {
+  opacity: 1;
+}
+
+.index-grid-media {
+  width: 100%;
+  height: auto;
+  display: block;
+  vertical-align: middle;
+}
+
+/* Tooltip above cursor on grid item hover */
+.index-grid-tooltip {
+  position: fixed;
+  transform: translate(-50%, -100%);
+  margin-top: -8px;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  font: inherit;
+  font-size: 0.9em;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 30;
+}
+
+#index .index-grid-tooltip {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
 @media (max-width: 800px) {
   .index {
     padding-top: 17%;
   }
   .index-filters,
-  .index-list {
+  .index-list,
+  .index-grid {
     padding-left: 4%;
     padding-right: 4%;
+  }
+  .index-grid {
+    grid-template-columns: repeat(2, 1fr);
+    margin-left: 0;
+    margin-right: 0;
   }
 }
 

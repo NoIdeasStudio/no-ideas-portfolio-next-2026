@@ -1,12 +1,18 @@
 import { groq } from "next-sanity";
 
-export const allCategoriesQuery = groq`*[_type == "category"] | order(sortOrder asc, title asc){
+/** Singleton: ordered project and category ids for homepage and projects page. */
+export const siteLayoutQuery = groq`*[_type == "siteLayout" && _id == "site-layout"][0]{
+  "projectOrderIds": projectOrder[]->._id,
+  "categoryOrderIds": categoryOrder[]->._id
+}`;
+
+export const allCategoriesQuery = groq`*[_type == "category"]{
   _id,
   title,
   "slug": slug.current
 }`;
 
-export const indexProjectsQuery = groq`*[_type == "project"] | order(year desc, title asc){
+export const indexProjectsQuery = groq`*[_type == "project"]{
   _id,
   title,
   "slug": slug.current,
@@ -14,7 +20,7 @@ export const indexProjectsQuery = groq`*[_type == "project"] | order(year desc, 
   year
 }`;
 
-export const allProjectsWithSlidesQuery = groq`*[_type == "project"] | order(_createdAt asc){
+export const allProjectsWithSlidesQuery = groq`*[_type == "project"]{
   _id,
   title,
   "slug": slug.current,

@@ -34,10 +34,35 @@ export const projectType = defineType({
     }),
     defineField({
       name: 'description',
-      type: 'text',
+      type: 'array',
       title: 'Description',
-      description: 'Shown when the project name is clicked on the slideshow (bottom left).',
-      rows: 4,
+      description: 'Shown when the project name is clicked on the slideshow (bottom left). Plain text and URL links only.',
+      of: [
+        defineArrayMember({
+          type: 'block',
+          styles: [{ title: 'Normal', value: 'normal' }],
+          lists: [],
+          marks: {
+            decorators: [],
+            annotations: [
+              {
+                name: 'link',
+                type: 'object',
+                title: 'URL',
+                fields: [
+                  { name: 'href', type: 'url', title: 'URL' },
+                  {
+                    name: 'blank',
+                    type: 'boolean',
+                    title: 'Open in new tab',
+                    initialValue: true,
+                  },
+                ],
+              },
+            ],
+          },
+        }),
+      ],
     }),
     defineField({
       name: 'textTheme',

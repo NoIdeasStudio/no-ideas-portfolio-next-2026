@@ -15,9 +15,18 @@ export const structure: StructureResolver = (S) =>
         (item) =>
           item.getId() !== 'category' &&
           item.getId() !== 'project' &&
-          item.getId() !== 'infoPage',
+          item.getId() !== 'infoPage' &&
+          item.getId() !== 'siteLayout',
       ),
       S.listItem()
         .title('Categories')
         .child(S.documentTypeList('category').title('Categories')),
+      S.listItem()
+        .title('Site Layout')
+        .child(
+          S.document()
+            .schemaType('siteLayout')
+            .documentId('site-layout')
+            .title('Site Layout')
+        ),
     ])

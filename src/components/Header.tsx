@@ -7,20 +7,46 @@ import { useProjectTheme } from '../contexts/ProjectThemeContext'
 export function Header() {
   const pathname = usePathname()
   const projectTheme = useProjectTheme()
+  const isHomepage = pathname === '/'
+  const showProjectTitle =
+    isHomepage &&
+    projectTheme?.activeProjectSlug != null &&
+    projectTheme?.activeProjectTitle != null
   const headerColor =
-    pathname === '/' && projectTheme?.themeColor != null
+    isHomepage && projectTheme?.themeColor != null
       ? projectTheme.themeColor
       : undefined
+
+  const handleTitleClick = () => {
+    if (!projectTheme?.activeProjectSlug) return
+    projectTheme.setDescriptionOpenSlug(
+      projectTheme.descriptionOpenSlug === projectTheme.activeProjectSlug
+        ? null
+        : projectTheme.activeProjectSlug
+    )
+  }
 
   return (
     <header
       className={`type-size-1${headerColor ? ' header-theme-override' : ''}`}
       style={headerColor ? { color: headerColor } : undefined}
     >
-      <div>
+      <div className="header-left">
         <Link href="/" className={pathname === '/' ? 'selected' : ''}>
           No Ideas
         </Link>
+        {showProjectTitle && (
+          <>
+            {' '}
+            <button
+              type="button"
+              onClick={handleTitleClick}
+              className={`header-project-title font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2 ${projectTheme?.descriptionOpenSlug === projectTheme?.activeProjectSlug ? 'header-project-title-open' : ''}`.trim()}
+            >
+              {projectTheme?.activeProjectTitle}
+            </button>
+          </>
+        )}
       </div>
       <div className="header-links">
         <Link href="/info" className={pathname === '/info' ? 'selected' : ''}>

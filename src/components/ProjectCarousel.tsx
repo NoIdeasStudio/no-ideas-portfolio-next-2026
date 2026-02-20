@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { PortableText } from 'next-sanity'
+import type { PortableTextBlock } from '@portabletext/types'
 import { useProjectTheme } from '../contexts/ProjectThemeContext'
 import { Slide } from './Slide'
 
@@ -32,7 +34,7 @@ export type CarouselSlide =
 
 type ProjectCarouselProps = {
   projectTitle: string
-  projectDescription?: string | null
+  projectDescription?: PortableTextBlock[] | string | null
   projectSlug?: string
   themeColor?: string
   slides: CarouselSlide[]
@@ -46,11 +48,18 @@ export function ProjectCarousel({
   slides,
 }: ProjectCarouselProps) {
   const [index, setIndex] = useState(0)
-  const [descriptionOpen, setDescriptionOpen] = useState(false)
-  const { activeProjectSlug, setThemeColor } = useProjectTheme() ?? {
+  const {
+    activeProjectSlug,
+    setThemeColor,
+    setActiveProjectTitle,
+    descriptionOpenSlug,
+  } = useProjectTheme() ?? {
     activeProjectSlug: null,
     setThemeColor: () => {},
+    setActiveProjectTitle: () => {},
+    descriptionOpenSlug: null,
   }
+  const descriptionOpen = descriptionOpenSlug === projectSlug
   const count = slides.length
   const hasMultiple = count > 1
   const current = slides[index]
@@ -65,8 +74,9 @@ export function ProjectCarousel({
   useEffect(() => {
     if (projectSlug && activeProjectSlug === projectSlug) {
       setThemeColor(effectiveTheme)
+      setActiveProjectTitle(projectTitle)
     }
-  }, [projectSlug, activeProjectSlug, effectiveTheme, setThemeColor])
+  }, [projectSlug, activeProjectSlug, effectiveTheme, setThemeColor, projectTitle, setActiveProjectTitle])
 
   const goPrev = useCallback(() => {
     setIndex((i) => (i <= 0 ? count - 1 : i - 1))
@@ -107,7 +117,7 @@ export function ProjectCarousel({
         <button
           type="button"
           onClick={goPrev}
-          className="slider-arrow-left absolute left-0 top-0 z-10 h-full w-[40%] cursor-w-resize focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white/50"
+          className="slider-arrow-left absolute left-0 top-0 z-10 h-full w-[40%] cursor-w-resize focus:outline-none"
           aria-label="Previous slide"
         />
       )}
@@ -117,31 +127,46 @@ export function ProjectCarousel({
         <button
           type="button"
           onClick={goNext}
-          className="slider-arrow-right absolute right-0 top-0 z-10 h-full w-[40%] cursor-e-resize focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white/50"
+          className="slider-arrow-right absolute right-0 top-0 z-10 h-full w-[40%] cursor-e-resize focus:outline-none"
           aria-label="Next slide"
         />
       )}
 
-      {/* Project name and description (bottom left) — type-size-1, same padding as header */}
+      {/* Description only (bottom left), opened via header title click — type-size-1, same padding as header */}
       <div className="absolute bottom-0 left-0 z-10 max-w-[80%] py-[1.3%] px-[2%]">
         <div className="type-size-1" style={themeStyle}>
-          <button
-            type="button"
-            onClick={() => setDescriptionOpen((o) => !o)}
-            className={`project-name-btn text-left font-medium focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black ${descriptionOpen ? 'is-open' : ''}`.trim()}
-          >
-            {projectTitle}
-          </button>
           {descriptionOpen && projectDescription && (
-            <p
-              className="mt-2 whitespace-pre-wrap"
+            <div
+              className="mt-2 project-description-content"
               style={{
                 ...themeStyleMuted,
                 textShadow: '0 4px 4px rgba(0, 0, 0, 0.45)',
               }}
             >
-              {projectDescription}
-            </p>
+              {Array.isArray(projectDescription) && projectDescription.length > 0 ? (
+                <PortableText
+                  value={projectDescription}
+                  components={{
+                    block: {
+                      normal: ({ children }) => <p className="whitespace-pre-wrap">{children}</p>,
+                    },
+                    marks: {
+                      link: ({ value, children }) => (
+                        <a
+                          href={value?.href}
+                          target={value?.blank ? '_blank' : undefined}
+                          rel={value?.blank ? 'noopener noreferrer' : undefined}
+                        >
+                          {children}
+                        </a>
+                      ),
+                    },
+                  }}
+                />
+              ) : typeof projectDescription === 'string' ? (
+                <p className="whitespace-pre-wrap">{projectDescription}</p>
+              ) : null}
+            </div>
           )}
         </div>
       </div>
