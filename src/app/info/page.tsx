@@ -48,6 +48,7 @@ export default async function InfoPage() {
   const columnsSection = sections.find((s) => s?.sectionType === 'columns')
 
   const firstRowListSections = listSections.slice(0, 2) // Services, Press
+  const thirdRowListSections = listSections.slice(2) // Press (if not in first row) + Lectures & Talks
   const contactInFirstRow = contactSection
   const clientsSection = columnsSection
 
@@ -176,6 +177,36 @@ export default async function InfoPage() {
           </div>
         )}
       </div>
+
+      {/* Additional list row(s): e.g. Press + Lectures & Talks */}
+      {thirdRowListSections.length > 0 && (
+        <div className="info-section-row">
+          {thirdRowListSections.map((section, i) => (
+            <div key={i} className="text-4-12">
+              <span className="heading">{section?.title}</span>
+              {section?.listItems?.length ? (
+                <ul className="info-list">
+                  {section.listItems.map((item, j) => (
+                    <li key={j}>
+                      {item?.url ? (
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {item.text}
+                        </a>
+                      ) : (
+                        <span>{item?.text}</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Select Clients: sub-section header + three columns */}
       {clientsSection && (
