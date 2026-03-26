@@ -5,7 +5,7 @@ import {
   siteLayoutQuery,
   allProjectsWithSlidesQuery,
 } from '../../lib/sanity.queries'
-import { urlFor } from '../../sanity/lib/image'
+import { sanityImageGridUrl, type SanityImageWithAssetUrl } from '../../sanity/lib/image'
 import {
   IndexPageClient,
   type IndexCategory,
@@ -45,12 +45,12 @@ function sortByOrderIds<T extends { _id: string }>(
 type RawSlide = {
   layout?: string
   mediaType?: string
-  image?: { asset?: { _ref?: string } }
+  image?: SanityImageWithAssetUrl
   imageUrl?: string | null
   videoUrl?: string | null
   items?: Array<{
     mediaType?: string
-    image?: { asset?: { _ref?: string } }
+    image?: SanityImageWithAssetUrl
     imageUrl?: string | null
     videoUrl?: string | null
     fit?: string | null
@@ -70,7 +70,6 @@ function buildGridItems(
 ): IndexGridItem[] {
   const ordered = sortByOrderIds(projects, orderIds)
   const items: IndexGridItem[] = []
-  const w = 800 // column width for grid thumb URLs
   for (const project of ordered) {
     const slug = project.slug ?? ''
     const title = project.title ?? ''
@@ -78,12 +77,11 @@ function buildGridItems(
       if (slide.layout === 'twoUp' && slide.items?.length === 2) {
         for (const item of slide.items) {
           const isContain = (item.fit as string) === 'contain'
-          const imageUrl =
-            item.imageUrl ||
-            (item.image &&
-              (isContain
-                ? urlFor(item.image).width(w).fit('max').url()
-                : urlFor(item.image).width(w).height(w).fit('max').url()))
+          const imageUrl = sanityImageGridUrl(
+            item.image ?? null,
+            item.imageUrl ?? null,
+            isContain ? 'contain' : 'coverSquare'
+          )
           items.push({
             projectSlug: slug,
             projectTitle: title,
@@ -95,12 +93,11 @@ function buildGridItems(
         }
       } else {
         const isContain = (slide.layout as string) === 'contain'
-        const imageUrl =
-          slide.imageUrl ||
-          (slide.image &&
-            (isContain
-              ? urlFor(slide.image).width(w).fit('max').url()
-              : urlFor(slide.image).width(w).height(w).fit('max').url()))
+        const imageUrl = sanityImageGridUrl(
+          slide.image ?? null,
+          slide.imageUrl ?? null,
+          isContain ? 'contain' : 'coverSquare'
+        )
         items.push({
           projectSlug: slug,
           projectTitle: title,

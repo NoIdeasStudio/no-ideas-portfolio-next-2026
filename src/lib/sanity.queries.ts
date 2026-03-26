@@ -30,7 +30,12 @@ export const allProjectsWithSlidesQuery = groq`*[_type == "project"]{
   slides[]{
     layout,
     mediaType,
-    image,
+    image {
+      asset,
+      crop,
+      hotspot,
+      "assetUrl": asset->url
+    },
     imageUrl,
     videoUrl,
     caption,
@@ -40,7 +45,12 @@ export const allProjectsWithSlidesQuery = groq`*[_type == "project"]{
     textThemeCustomColor,
     "items": items[]{
       mediaType,
-      image,
+      image {
+        asset,
+        crop,
+        hotspot,
+        "assetUrl": asset->url
+      },
       imageUrl,
       videoUrl,
       fit,

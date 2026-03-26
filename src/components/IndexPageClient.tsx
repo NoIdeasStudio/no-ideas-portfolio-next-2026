@@ -35,6 +35,7 @@ function IndexGridCell({
           playsInline
           muted
           loop
+          autoPlay
           onLoadedData={() => setLoaded(true)}
         />
       ) : isImage && item.imageUrl ? (

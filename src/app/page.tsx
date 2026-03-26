@@ -5,7 +5,7 @@ import { ScrollToHash } from '../components/ScrollToHash'
 import { SplashOverlay } from '../components/SplashOverlay'
 import { sanityClient } from '../lib/sanity.client'
 import { allProjectsWithSlidesQuery, siteLayoutQuery } from '../lib/sanity.queries'
-import { urlFor } from '../sanity/lib/image'
+import { sanityImageServeUrl, type SanityImageWithAssetUrl } from '../sanity/lib/image'
 import { seedProjects } from '../data/seed-projects'
 
 type SiteLayout = {
@@ -45,7 +45,7 @@ function resolveThemeColor(
 type SlideItem = {
   layout: string
   mediaType: string
-  image?: { asset?: { _ref?: string } }
+  image?: SanityImageWithAssetUrl
   imageUrl?: string
   videoUrl?: string
   caption?: string
@@ -55,7 +55,7 @@ type SlideItem = {
   textThemeCustomColor?: string | null
   items?: Array<{
     mediaType: string
-    image?: { asset?: { _ref?: string } }
+    image?: SanityImageWithAssetUrl
     imageUrl?: string
     videoUrl?: string
     fit?: string | null
@@ -104,13 +104,7 @@ async function getProjects() {
       const bg = slide.backgroundColor ?? '#000000'
       if (slide.layout === 'twoUp' && slide.items?.length === 2) {
         const items = slide.items.map((item) => {
-          const isContain = (item.fit as string) === 'contain'
-          const imageUrl =
-            item.imageUrl ||
-            (item.image &&
-              (isContain
-                ? urlFor(item.image).width(960).fit('max').url()
-                : urlFor(item.image).width(960).height(1080).url()))
+          const imageUrl = sanityImageServeUrl(item.image ?? null, item.imageUrl ?? null)
           return {
             mediaType: item.mediaType as 'image' | 'video',
             imageUrl: imageUrl ?? null,
@@ -129,12 +123,7 @@ async function getProjects() {
               : undefined,
         }
       }
-      const imageUrl =
-        slide.imageUrl ||
-        (slide.image &&
-          (slide.layout === 'contain'
-            ? urlFor(slide.image).width(1920).fit('max').url()
-            : urlFor(slide.image).width(1920).height(1080).url()))
+      const imageUrl = sanityImageServeUrl(slide.image ?? null, slide.imageUrl ?? null)
       return {
         layout: slide.layout as 'fullBleed' | 'contain',
         mediaType: slide.mediaType as 'image' | 'video',
