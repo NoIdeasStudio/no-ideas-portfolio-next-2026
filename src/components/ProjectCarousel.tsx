@@ -57,11 +57,13 @@ export function ProjectCarousel({
     setThemeColor,
     setActiveProjectTitle,
     descriptionOpenSlug,
+    setDescriptionOpenSlug,
   } = useProjectTheme() ?? {
     activeProjectSlug: null,
     setThemeColor: () => {},
     setActiveProjectTitle: () => {},
     descriptionOpenSlug: null,
+    setDescriptionOpenSlug: () => {},
   }
   const autoScroll = useAutoScroll()
   const descriptionOpen = descriptionOpenSlug === projectSlug
@@ -94,6 +96,24 @@ export function ProjectCarousel({
     projectSlug &&
       autoScroll?.onCarouselInteraction(projectSlug, { isLoopCopy: isLoopCopy ?? false })
   }, [count, projectSlug, autoScroll, isLoopCopy])
+
+  const hasDescription =
+    !!projectSlug &&
+    (Array.isArray(projectDescription)
+      ? projectDescription.length > 0
+      : typeof projectDescription === 'string' && projectDescription.trim().length > 0)
+
+  const handleInfoClick = useCallback(() => {
+    if (!projectSlug) return
+    setDescriptionOpenSlug(descriptionOpenSlug === projectSlug ? null : projectSlug)
+    autoScroll?.onCarouselInteraction(projectSlug, { isLoopCopy: isLoopCopy ?? false })
+  }, [
+    projectSlug,
+    descriptionOpenSlug,
+    setDescriptionOpenSlug,
+    autoScroll,
+    isLoopCopy,
+  ])
 
   if (!count) return null
 
@@ -141,11 +161,23 @@ export function ProjectCarousel({
         />
       )}
 
-      {/* Description only (bottom left), opened via header title click — type-size-1, same padding as header */}
-      <div className="absolute bottom-0 left-0 z-10 max-w-[80%] py-[1.3%] px-[2%]">
-        <div className="type-size-1" style={themeStyle}>
+      {/* Info trigger + description (bottom left); above slide arrows */}
+      <div className="absolute bottom-0 left-0 z-20 max-w-[80%] py-[1.3%] px-[2%] pointer-events-none">
+        <div className="type-size-1 pointer-events-auto" style={themeStyle}>
+          {hasDescription && (
+            <button
+              type="button"
+              onClick={handleInfoClick}
+              className={`project-info-trigger block text-left font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2 ${descriptionOpen ? 'project-info-trigger-open' : ''}`.trim()}
+              aria-expanded={descriptionOpen}
+              aria-controls={projectSlug ? `project-description-${projectSlug}` : undefined}
+            >
+              Info
+            </button>
+          )}
           {descriptionOpen && projectDescription && (
             <div
+              id={projectSlug ? `project-description-${projectSlug}` : undefined}
               className="mt-2 project-description-content"
               style={{
                 ...themeStyleMuted,

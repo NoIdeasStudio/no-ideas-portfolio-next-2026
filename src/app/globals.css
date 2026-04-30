@@ -66,10 +66,11 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: left;
-  transition: text-shadow 0.2s ease-out;
 }
-.header-project-title:hover,
-.header-project-title-open {
+
+/* Homepage project: Info control toggles description (shadow affordance on Info only) */
+.project-info-trigger:hover,
+.project-info-trigger-open {
   text-shadow: 0 4px 4px rgba(0, 0, 0, 0.45);
 }
 
@@ -203,6 +204,11 @@ header a.selected {
 
 #homepage a {
   color: #fff;
+}
+
+/* PortableText links in project description: match theme text (not global homepage link white) */
+#homepage .project-description-content a {
+  color: inherit;
 }
 
 #homepage footer {

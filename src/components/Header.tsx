@@ -3,12 +3,10 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useProjectTheme } from '../contexts/ProjectThemeContext'
-import { useAutoScroll } from '../contexts/AutoScrollContext'
 
 export function Header() {
   const pathname = usePathname()
   const projectTheme = useProjectTheme()
-  const autoScroll = useAutoScroll()
   const isHomepage = pathname === '/'
   const showProjectTitle =
     isHomepage &&
@@ -18,17 +16,6 @@ export function Header() {
     isHomepage && projectTheme?.themeColor != null
       ? projectTheme.themeColor
       : undefined
-
-  const handleTitleClick = () => {
-    if (!projectTheme?.activeProjectSlug) return
-    projectTheme.setDescriptionOpenSlug(
-      projectTheme.descriptionOpenSlug === projectTheme.activeProjectSlug
-        ? null
-        : projectTheme.activeProjectSlug
-    )
-    // Soft-scroll project to top and pause auto-scroll (same as carousel interaction)
-    autoScroll?.onCarouselInteraction(projectTheme.activeProjectSlug)
-  }
 
   return (
     <header
@@ -42,13 +29,9 @@ export function Header() {
         {showProjectTitle && (
           <>
             {' '}
-            <button
-              type="button"
-              onClick={handleTitleClick}
-              className={`header-project-title font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2 ${projectTheme?.descriptionOpenSlug === projectTheme?.activeProjectSlug ? 'header-project-title-open' : ''}`.trim()}
-            >
+            <span className="header-project-title font-medium">
               {projectTheme?.activeProjectTitle}
-            </button>
+            </span>
           </>
         )}
       </div>
