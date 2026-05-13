@@ -11,7 +11,7 @@ export const metadata = {
   description: 'No Ideas is a graphic design studio in Brooklyn, New York.',
 }
 
-type IntroParagraph = { content?: PortableTextBlock[] | null }
+type IntroParagraph = { _key?: string; content?: PortableTextBlock[] | null }
 type ListItem = { text?: string | null; url?: string | null }
 type ContactLink = { header?: string | null; text?: string | null; url?: string | null }
 type Column = { heading?: string | null; items?: (string | null)[] | null }
@@ -43,6 +43,8 @@ export default async function InfoPage() {
   const introParagraphs = page?.introParagraphs ?? []
   const sections = page?.sections ?? []
 
+  const introWithContent = introParagraphs.filter((p) => (p?.content?.length ?? 0) > 0)
+
   // Split sections into: intro row, then Services/Press/Contact row, then "Select Clients" + columns row
   const listSections = sections.filter((s) => s?.sectionType === 'list')
   const contactSection = sections.find((s) => s?.sectionType === 'contact')
@@ -58,16 +60,15 @@ export default async function InfoPage() {
       {/* Intro: full width, rich text with links; indent every paragraph except the first */}
       <div className="info-section-row">
         <div className="text-12-12">
-          {introParagraphs.map((p, i) => {
+          {introWithContent.map((p, i) => {
             const content = p?.content
-            if (!content?.length) return null
             return (
               <div
-                key={i}
+                key={p._key ?? `intro-${i}`}
                 className={`info-intro-para ${i > 0 ? 'info-intro-para-indent' : ''}`}
               >
                 <PortableText
-                  value={content}
+                  value={content!}
                   components={{
                     block: {
                       normal: ({ children }) => <p>{children}</p>,
@@ -235,7 +236,7 @@ export default async function InfoPage() {
         aria-label="Copyright and newsletter"
       >
         <p className="info-page-footer-copyright text-4-12">
-          © {new Date().getFullYear()} No Ideas
+          © <span suppressHydrationWarning>{new Date().getFullYear()}</span> No Ideas
         </p>
         {process.env.NEXT_PUBLIC_MAILCHIMP_FORM_ACTION ? (
           <div className="text-4-12 info-mailchimp-form-col">

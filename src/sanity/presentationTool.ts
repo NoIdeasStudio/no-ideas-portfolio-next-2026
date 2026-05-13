@@ -1,5 +1,7 @@
 import { defineLocations, presentationTool } from 'sanity/presentation'
 
+import { getSitePreviewOrigin } from './env'
+
 const previewAllowOrigins = (process.env.NEXT_PUBLIC_SANITY_PREVIEW_ALLOW_ORIGINS ?? '')
   .split(',')
   .map((o) => o.trim())
@@ -49,6 +51,7 @@ const categoryLocations = defineLocations({
 
 export const presentation = presentationTool({
   previewUrl: {
+    initial: getSitePreviewOrigin(),
     previewMode: {
       enable: '/api/draft-mode/enable',
     },

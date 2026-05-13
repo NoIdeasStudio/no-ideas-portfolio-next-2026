@@ -63,6 +63,7 @@ export const siteSettingsQuery = groq`*[_type == "siteSettings"][0]`;
 
 export const infoPageQuery = groq`*[_type == "infoPage" && _id == "info-page"][0]{
   introParagraphs[]{
+    _key,
     content
   },
   sections[]{
