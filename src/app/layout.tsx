@@ -1,5 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { draftMode } from "next/headers";
+import { VisualEditing } from "next-sanity/visual-editing";
 import { ReactNode } from "react";
 import { AutoScrollProvider } from "../contexts/AutoScrollContext";
 import { ProjectThemeProvider } from "../contexts/ProjectThemeContext";
@@ -11,7 +13,9 @@ export const metadata: Metadata = {
   description: "Design and art direction studio."
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const isDraftMode = (await draftMode()).isEnabled;
+
   return (
     <html lang="en">
       <body>
@@ -26,6 +30,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </PageWrapper>
           </AutoScrollProvider>
         </ProjectThemeProvider>
+        {isDraftMode ? <VisualEditing /> : null}
       </body>
     </html>
   );
