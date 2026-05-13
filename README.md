@@ -75,7 +75,7 @@ npx sanity@latest dev
 - `siteSettings` — global copy:
   - `title`, `description`, `intro`
 
-The homepage is currently wired to a **static seed list** in `src/app/page.tsx` that mirrors the current Webflow content. Once you have Sanity populated, you can swap this to fetch from Sanity using the client and GROQ queries in `src/lib/sanity.client.ts` and `src/lib/sanity.queries.ts`.
+The homepage is currently wired to a **static seed list** in `src/app/page.tsx` that mirrors the current Webflow content. Once you have Sanity populated, you can swap this to fetch from Sanity using the client and GROQ queries in `src/sanity/lib/getSanityClient.ts` and `src/lib/sanity.queries.ts`.
 
 ## GitHub + Vercel
 

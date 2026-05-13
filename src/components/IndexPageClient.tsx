@@ -5,17 +5,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 const PROJECTS_VIEW_STORAGE_KEY = 'projects-view-mode'
 
-function IndexGridCell({
-  item,
-  onShowTooltip,
-  onUpdateTooltip,
-  onHideTooltip,
-}: {
-  item: IndexGridItem
-  onShowTooltip: (e: React.MouseEvent, text: string) => void
-  onUpdateTooltip: (e: React.MouseEvent) => void
-  onHideTooltip: () => void
-}) {
+function IndexGridCell({ item }: { item: IndexGridItem }) {
   const [loaded, setLoaded] = useState(false)
   const isVideo = item.mediaType === 'video' && item.videoUrl
   const isImage = item.mediaType === 'image' || !isVideo
@@ -24,9 +14,6 @@ function IndexGridCell({
     <Link
       href={`/#${item.projectSlug}`}
       className={`index-grid-item ${loaded ? 'loaded' : ''}`}
-      onMouseEnter={(e) => onShowTooltip(e, item.projectTitle)}
-      onMouseMove={onUpdateTooltip}
-      onMouseLeave={onHideTooltip}
     >
       {isVideo && item.videoUrl ? (
         <video
@@ -150,7 +137,6 @@ export type IndexProject = {
 /** One image or video slot for the grid view (flattened from all projects' slides). */
 export type IndexGridItem = {
   projectSlug: string
-  projectTitle: string
   mediaType: 'image' | 'video'
   imageUrl: string | null
   videoUrl: string | null
@@ -170,12 +156,6 @@ export function IndexPageClient({
 }: IndexPageClientProps) {
   const [filter, setFilter] = useState<string>('all')
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
-  const [tooltip, setTooltip] = useState<{
-    show: boolean
-    x: number
-    y: number
-    text: string
-  }>({ show: false, x: 0, y: 0, text: '' })
 
   useEffect(() => {
     const saved = window.localStorage.getItem(PROJECTS_VIEW_STORAGE_KEY)
@@ -199,16 +179,6 @@ export function IndexPageClient({
     const slugs = new Set(filtered.map((p) => p.slug))
     return gridItems.filter((item) => slugs.has(item.projectSlug))
   }, [gridItems, filtered])
-
-  const showTooltip = (e: React.MouseEvent, text: string) => {
-    setTooltip({ show: true, x: e.clientX, y: e.clientY, text })
-  }
-  const updateTooltip = (e: React.MouseEvent) => {
-    setTooltip((t) => (t.show ? { ...t, x: e.clientX, y: e.clientY } : t))
-  }
-  const hideTooltip = () => {
-    setTooltip((t) => ({ ...t, show: false }))
-  }
 
   return (
     <div className="index type-size-1">
@@ -289,26 +259,8 @@ export function IndexPageClient({
       {viewMode === 'grid' && (
         <div className="index-grid">
           {filteredGridItems.map((item, i) => (
-            <IndexGridCell
-              key={`${item.projectSlug}-${i}`}
-              item={item}
-              onShowTooltip={showTooltip}
-              onUpdateTooltip={updateTooltip}
-              onHideTooltip={hideTooltip}
-            />
+            <IndexGridCell key={`${item.projectSlug}-${i}`} item={item} />
           ))}
-        </div>
-      )}
-      {tooltip.show && (
-        <div
-          className="index-grid-tooltip"
-          style={{
-            left: tooltip.x,
-            top: tooltip.y,
-          }}
-          aria-hidden
-        >
-          {tooltip.text}
         </div>
       )}
     </div>

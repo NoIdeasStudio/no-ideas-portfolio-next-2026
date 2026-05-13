@@ -234,7 +234,8 @@ header a.selected {
   position: fixed;
 }
 
-#info footer {
+/* Only the global layout footer (direct child of #info), not .info-page-footer inside main */
+#info > footer {
   display: none;
 }
 
@@ -327,6 +328,124 @@ header a.selected {
   }
   .info .sub-section-header {
     padding-bottom: 4%;
+  }
+}
+
+/* Info page footer: same grid as .text-4-12 rows — col1 copyright, col2 form (left-aligned, not full column width) */
+.info-page-footer.info-section-row {
+  align-items: baseline;
+}
+
+.info-page-footer-copyright {
+  margin: 0;
+  line-height: inherit;
+  white-space: nowrap;
+}
+
+.info-mailchimp-form-col {
+  min-width: 0;
+}
+
+.info-mailchimp-form {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.5em 1em;
+  margin: 0;
+  padding: 0;
+  width: fit-content;
+  max-width: 28em;
+  min-width: 0;
+}
+
+.info-mailchimp-hp {
+  position: absolute;
+  left: -5000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.info-mailchimp-form-fields {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  flex: 1 1 auto;
+  gap: 0.5em 1em;
+  min-width: 0;
+  line-height: inherit;
+}
+
+.info-mailchimp-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-bottom: 2px solid #000;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  height: auto;
+  min-height: 0;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.info-mailchimp-input::placeholder {
+  color: inherit;
+  opacity: 1;
+}
+
+.info-mailchimp-input:focus {
+  outline: none;
+}
+
+.info-mailchimp-submit {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  height: auto;
+  min-height: 0;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.info-mailchimp-submit:hover {
+  transform: none;
+}
+
+@media (max-width: 800px) {
+  .info-page-footer.info-section-row .info-mailchimp-form-col {
+    order: -1;
+  }
+
+  .info-page-footer.info-section-row .info-page-footer-copyright {
+    order: 1;
+  }
+
+  .info-page-footer-copyright {
+    white-space: normal;
+  }
+
+  .info-mailchimp-form {
+    width: 100%;
+    max-width: none;
   }
 }
 
@@ -579,26 +698,6 @@ header a.selected {
   height: auto;
   display: block;
   vertical-align: middle;
-}
-
-/* Tooltip above cursor on grid item hover */
-.index-grid-tooltip {
-  position: fixed;
-  transform: translate(-50%, -100%);
-  margin-top: -8px;
-  padding: 4px 8px;
-  background: rgba(0, 0, 0, 0.85);
-  color: #fff;
-  font: inherit;
-  font-size: 0.9em;
-  white-space: nowrap;
-  pointer-events: none;
-  z-index: 30;
-}
-
-#index .index-grid-tooltip {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
 }
 
 @media (max-width: 800px) {

@@ -1,4 +1,4 @@
-import { sanityClient } from '../../lib/sanity.client'
+import { getSanityClient } from '../../sanity/lib/getSanityClient'
 import {
   allCategoriesQuery,
   indexProjectsQuery,
@@ -72,7 +72,6 @@ function buildGridItems(
   const items: IndexGridItem[] = []
   for (const project of ordered) {
     const slug = project.slug ?? ''
-    const title = project.title ?? ''
     for (const slide of project.slides ?? []) {
       if (slide.layout === 'twoUp' && slide.items?.length === 2) {
         for (const item of slide.items) {
@@ -84,7 +83,6 @@ function buildGridItems(
           )
           items.push({
             projectSlug: slug,
-            projectTitle: title,
             mediaType: (item.mediaType as 'image' | 'video') ?? 'image',
             imageUrl: imageUrl ?? null,
             videoUrl: item.videoUrl ?? null,
@@ -100,7 +98,6 @@ function buildGridItems(
         )
         items.push({
           projectSlug: slug,
-          projectTitle: title,
           mediaType: (slide.mediaType as 'image' | 'video') ?? 'image',
           imageUrl: imageUrl ?? null,
           videoUrl: slide.videoUrl ?? null,
@@ -118,11 +115,12 @@ async function getIndexData(): Promise<{
   gridItems: IndexGridItem[]
 }> {
   try {
+    const sanity = await getSanityClient()
     const [layout, categories, projects, projectsWithSlides] = await Promise.all([
-      sanityClient.fetch<SiteLayout | null>(siteLayoutQuery),
-      sanityClient.fetch<IndexCategory[]>(allCategoriesQuery),
-      sanityClient.fetch<IndexProject[]>(indexProjectsQuery),
-      sanityClient.fetch<RawProjectWithSlides[]>(allProjectsWithSlidesQuery),
+      sanity.fetch<SiteLayout | null>(siteLayoutQuery),
+      sanity.fetch<IndexCategory[]>(allCategoriesQuery),
+      sanity.fetch<IndexProject[]>(indexProjectsQuery),
+      sanity.fetch<RawProjectWithSlides[]>(allProjectsWithSlidesQuery),
     ])
     const cats = categories ?? []
     const projs = projects ?? []
