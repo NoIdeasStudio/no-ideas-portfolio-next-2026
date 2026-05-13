@@ -18,6 +18,17 @@ const nextConfig = {
           },
         ],
       },
+      // Presentation loads /, /info, etc. inside an iframe from /studio (same origin).
+      // Some hosts default to X-Frame-Options: DENY, which breaks preview entirely.
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN',
+          },
+        ],
+      },
     ]
   },
 };
