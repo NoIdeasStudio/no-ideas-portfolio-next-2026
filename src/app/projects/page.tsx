@@ -1,4 +1,4 @@
-import { getSanityClient } from '../../sanity/lib/getSanityClient'
+import { sanityClient } from '../../lib/sanity.client'
 import {
   allCategoriesQuery,
   indexProjectsQuery,
@@ -115,12 +115,11 @@ async function getIndexData(): Promise<{
   gridItems: IndexGridItem[]
 }> {
   try {
-    const sanity = await getSanityClient()
     const [layout, categories, projects, projectsWithSlides] = await Promise.all([
-      sanity.fetch<SiteLayout | null>(siteLayoutQuery),
-      sanity.fetch<IndexCategory[]>(allCategoriesQuery),
-      sanity.fetch<IndexProject[]>(indexProjectsQuery),
-      sanity.fetch<RawProjectWithSlides[]>(allProjectsWithSlidesQuery),
+      sanityClient.fetch<SiteLayout | null>(siteLayoutQuery),
+      sanityClient.fetch<IndexCategory[]>(allCategoriesQuery),
+      sanityClient.fetch<IndexProject[]>(indexProjectsQuery),
+      sanityClient.fetch<RawProjectWithSlides[]>(allProjectsWithSlidesQuery),
     ])
     const cats = categories ?? []
     const projs = projects ?? []

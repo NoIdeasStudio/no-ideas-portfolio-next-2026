@@ -1,6 +1,6 @@
 import { PortableText } from 'next-sanity'
 import type { PortableTextBlock } from '@portabletext/types'
-import { getSanityClient } from '../../sanity/lib/getSanityClient'
+import { sanityClient } from '../../lib/sanity.client'
 import { infoPageQuery } from '../../lib/sanity.queries'
 import { seedInfoPage } from '../../data/seed-info-page'
 
@@ -11,7 +11,7 @@ export const metadata = {
   description: 'No Ideas is a graphic design studio in Brooklyn, New York.',
 }
 
-type IntroParagraph = { _key?: string; content?: PortableTextBlock[] | null }
+type IntroParagraph = { content?: PortableTextBlock[] | null }
 type ListItem = { text?: string | null; url?: string | null }
 type ContactLink = { header?: string | null; text?: string | null; url?: string | null }
 type Column = { heading?: string | null; items?: (string | null)[] | null }
@@ -30,8 +30,7 @@ type InfoPageData = {
 } | null
 
 async function getInfoPage(): Promise<InfoPageData> {
-  const sanity = await getSanityClient()
-  const data = await sanity.fetch<InfoPageData>(infoPageQuery)
+  const data = await sanityClient.fetch<InfoPageData>(infoPageQuery)
   if (data?.introParagraphs?.length || data?.sections?.length) {
     return data
   }
@@ -42,8 +41,6 @@ export default async function InfoPage() {
   const page = await getInfoPage()
   const introParagraphs = page?.introParagraphs ?? []
   const sections = page?.sections ?? []
-
-  const introWithContent = introParagraphs.filter((p) => (p?.content?.length ?? 0) > 0)
 
   // Split sections into: intro row, then Services/Press/Contact row, then "Select Clients" + columns row
   const listSections = sections.filter((s) => s?.sectionType === 'list')
@@ -60,15 +57,16 @@ export default async function InfoPage() {
       {/* Intro: full width, rich text with links; indent every paragraph except the first */}
       <div className="info-section-row">
         <div className="text-12-12">
-          {introWithContent.map((p, i) => {
+          {introParagraphs.map((p, i) => {
             const content = p?.content
+            if (!content?.length) return null
             return (
               <div
-                key={p._key ?? `intro-${i}`}
+                key={i}
                 className={`info-intro-para ${i > 0 ? 'info-intro-para-indent' : ''}`}
               >
                 <PortableText
-                  value={content!}
+                  value={content}
                   components={{
                     block: {
                       normal: ({ children }) => <p>{children}</p>,
@@ -236,7 +234,7 @@ export default async function InfoPage() {
         aria-label="Copyright and newsletter"
       >
         <p className="info-page-footer-copyright text-4-12">
-          © <span suppressHydrationWarning>{new Date().getFullYear()}</span> No Ideas
+          © {new Date().getFullYear()} No Ideas
         </p>
         {process.env.NEXT_PUBLIC_MAILCHIMP_FORM_ACTION ? (
           <div className="text-4-12 info-mailchimp-form-col">

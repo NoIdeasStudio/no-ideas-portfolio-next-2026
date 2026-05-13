@@ -3,7 +3,7 @@ import { HomepageInfiniteLoop } from '../components/HomepageInfiniteLoop'
 import { ProjectCarousel, type TwoUpItem } from '../components/ProjectCarousel'
 import { ScrollToHash } from '../components/ScrollToHash'
 import { SplashOverlay } from '../components/SplashOverlay'
-import { getSanityClient } from '../sanity/lib/getSanityClient'
+import { sanityClient } from '../lib/sanity.client'
 import { allProjectsWithSlidesQuery, siteLayoutQuery } from '../lib/sanity.queries'
 import { sanityImageServeUrl, type SanityImageWithAssetUrl } from '../sanity/lib/image'
 import { seedProjects } from '../data/seed-projects'
@@ -64,10 +64,9 @@ type SlideItem = {
 }
 
 async function getProjects() {
-  const sanity = await getSanityClient()
   const [layout, data] = await Promise.all([
-    sanity.fetch<SiteLayout | null>(siteLayoutQuery),
-    sanity.fetch<Array<{
+    sanityClient.fetch<SiteLayout | null>(siteLayoutQuery),
+    sanityClient.fetch<Array<{
       _id: string
       title: string
       slug: string

@@ -1,7 +1,5 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { cookies, draftMode } from "next/headers";
-import { VisualEditing } from "next-sanity/visual-editing";
 import { ReactNode } from "react";
 import { AutoScrollProvider } from "../contexts/AutoScrollContext";
 import { ProjectThemeProvider } from "../contexts/ProjectThemeContext";
@@ -13,12 +11,7 @@ export const metadata: Metadata = {
   description: "Design and art direction studio."
 };
 
-export default async function RootLayout({ children }: { children: ReactNode }) {
-  // Ensures Draft Mode is read at request time so Presentation’s iframe gets `<VisualEditing />`
-  // (a fully static layout shell can omit it when `draftMode()` was false at prerender).
-  await cookies();
-  const isDraftMode = (await draftMode()).isEnabled;
-
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
@@ -33,7 +26,6 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             </PageWrapper>
           </AutoScrollProvider>
         </ProjectThemeProvider>
-        {isDraftMode ? <VisualEditing /> : null}
       </body>
     </html>
   );
