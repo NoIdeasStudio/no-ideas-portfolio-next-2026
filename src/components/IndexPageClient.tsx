@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { InfoPageFooter } from './InfoPageFooter'
 
 const PROJECTS_VIEW_STORAGE_KEY = 'projects-view-mode'
 
@@ -263,6 +264,7 @@ export function IndexPageClient({
           ))}
         </div>
       )}
+      <InfoPageFooter />
     </div>
   )
 }

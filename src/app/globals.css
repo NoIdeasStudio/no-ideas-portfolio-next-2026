@@ -319,7 +319,8 @@ header a.selected {
   .info-section-row .contact-col {
     order: -1;
   }
-  .info .text-4-12 {
+  .info .text-4-12,
+  .info-page-footer .text-4-12 {
     width: 100%;
     padding: 4%;
   }
@@ -331,9 +332,25 @@ header a.selected {
   }
 }
 
-/* Info page footer: same grid as .text-4-12 rows — col1 copyright, col2 form (left-aligned, not full column width) */
+/* Info / projects page footer: same grid as .text-4-12 rows — col1 copyright, col2 form */
+.info-page-footer .text-4-12 {
+  width: 33.33333%;
+  padding: 0 2%;
+  display: inline-block;
+  vertical-align: top;
+}
+
 .info-page-footer.info-section-row {
   align-items: baseline;
+  padding-bottom: 2%;
+}
+
+#index .info-page-footer.info-section-row {
+  padding-top: 4%;
+}
+
+#index .info-mailchimp-input {
+  border-bottom-color: currentColor;
 }
 
 .info-page-footer-copyright {
@@ -468,7 +485,8 @@ header a.selected {
   position: fixed;
 }
 
-#index footer {
+/* Only the global layout footer (direct child of #index), not .info-page-footer inside main */
+#index > footer {
   display: none;
 }
 
