@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import type { CarouselSlide, TwoUpItem } from './ProjectCarousel'
+import { LottiePlayer } from './LottiePlayer'
 
 const isSanityImage = (url: string) => url.includes('cdn.sanity.io')
 
@@ -10,13 +11,15 @@ function SingleMedia({
   mediaType,
   imageUrl,
   videoUrl,
+  lottieUrl,
   caption,
   containPadding = '0',
 }: {
   layout: 'fullBleed' | 'contain'
-  mediaType: 'image' | 'video'
+  mediaType: 'image' | 'video' | 'lottie'
   imageUrl?: string | null
   videoUrl?: string | null
+  lottieUrl?: string | null
   caption?: string | null
   containPadding?: string | null
 }) {
@@ -24,6 +27,23 @@ function SingleMedia({
   const paddingPercent = `${containPadding}%`
   const containerClass = `slide-content relative h-full w-full flex items-center justify-center overflow-hidden`
   const containerStyle = isContain ? { padding: paddingPercent } : undefined
+
+  if (mediaType === 'lottie' && lottieUrl) {
+    return (
+      <div className={containerClass} style={containerStyle}>
+        <LottiePlayer
+          src={lottieUrl}
+          fit={isContain ? 'contain' : 'cover'}
+          className={isContain ? 'relative h-full w-full' : 'absolute inset-0 h-full w-full'}
+        />
+        {caption && (
+          <p className="absolute bottom-4 left-4 right-4 text-xs text-white/80 text-center z-10">
+            {caption}
+          </p>
+        )}
+      </div>
+    )
+  }
 
   if (mediaType === 'video' && videoUrl) {
     return (
@@ -87,7 +107,7 @@ function SingleMedia({
 }
 
 function TwoUpCell({ item }: { item: TwoUpItem }) {
-  const { mediaType, imageUrl, videoUrl, fit, containPadding } = item
+  const { mediaType, imageUrl, videoUrl, lottieUrl, backgroundVideoUrl, fit, containPadding } = item
   const isContain = fit === 'contain'
   const paddingPercent = isContain ? `${containPadding ?? '0'}%` : '0'
   const cellClass =
@@ -95,9 +115,41 @@ function TwoUpCell({ item }: { item: TwoUpItem }) {
 
   const cellStyle = isContain ? { padding: paddingPercent } : undefined
 
+  if (mediaType === 'lottie' && lottieUrl) {
+    return (
+      <div className={cellClass} style={cellStyle}>
+        {backgroundVideoUrl && (
+          <video
+            src={backgroundVideoUrl}
+            className="absolute inset-0 h-full w-full object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+          />
+        )}
+        <LottiePlayer
+          src={lottieUrl}
+          fit={isContain ? 'contain' : 'cover'}
+          className={isContain ? 'relative h-full w-full' : 'absolute inset-0 h-full w-full'}
+        />
+      </div>
+    )
+  }
+
   if (mediaType === 'video' && videoUrl) {
     return (
       <div className={cellClass} style={cellStyle}>
+        {backgroundVideoUrl && (
+          <video
+            src={backgroundVideoUrl}
+            className="absolute inset-0 h-full w-full object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+          />
+        )}
         <video
           src={videoUrl}
           className={
@@ -118,6 +170,16 @@ function TwoUpCell({ item }: { item: TwoUpItem }) {
     const useNextImage = isSanityImage(imageUrl) && !isContain
     return (
       <div className={cellClass} style={cellStyle}>
+        {backgroundVideoUrl && (
+          <video
+            src={backgroundVideoUrl}
+            className="absolute inset-0 h-full w-full object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+          />
+        )}
         {useNextImage ? (
           <Image
             src={imageUrl}
@@ -142,7 +204,20 @@ function TwoUpCell({ item }: { item: TwoUpItem }) {
     )
   }
 
-  return <div className={cellClass} />
+  return (
+    <div className={cellClass}>
+      {backgroundVideoUrl && (
+        <video
+          src={backgroundVideoUrl}
+          className="absolute inset-0 h-full w-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+        />
+      )}
+    </div>
+  )
 }
 
 export function Slide({ slide }: { slide: CarouselSlide }) {
@@ -161,6 +236,7 @@ export function Slide({ slide }: { slide: CarouselSlide }) {
       mediaType={slide.mediaType}
       imageUrl={slide.imageUrl}
       videoUrl={slide.videoUrl}
+      lottieUrl={slide.lottieUrl}
       caption={slide.caption}
       containPadding={slide.containPadding}
     />

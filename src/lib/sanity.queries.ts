@@ -38,9 +38,11 @@ export const allProjectsWithSlidesQuery = groq`*[_type == "project"]{
     },
     imageUrl,
     videoUrl,
+    "lottieUrl": lottieFile.asset->url,
     caption,
     containPadding,
     backgroundColor,
+    backgroundVideoUrl,
     textTheme,
     textThemeCustomColor,
     "items": items[]{
@@ -53,6 +55,8 @@ export const allProjectsWithSlidesQuery = groq`*[_type == "project"]{
       },
       imageUrl,
       videoUrl,
+      "lottieUrl": lottieFile.asset->url,
+      backgroundVideoUrl,
       fit,
       containPadding
     }

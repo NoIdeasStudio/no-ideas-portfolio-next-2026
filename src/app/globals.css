@@ -450,10 +450,16 @@ header a.selected {
 @media (max-width: 800px) {
   .info-page-footer.info-section-row .info-mailchimp-form-col {
     order: -1;
+    padding-bottom: 0;
   }
 
   .info-page-footer.info-section-row .info-page-footer-copyright {
     order: 1;
+  }
+
+  .info-page-footer .text-4-12 {
+    width: 100%;
+    padding: 4%;
   }
 
   .info-page-footer-copyright {
@@ -463,6 +469,16 @@ header a.selected {
   .info-mailchimp-form {
     width: 100%;
     max-width: none;
+  }
+
+  .info-mailchimp-form-fields {
+    flex-direction: column;
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .info-mailchimp-submit {
+    align-self: flex-start;
   }
 }
 
@@ -711,6 +727,14 @@ header a.selected {
   opacity: 1;
 }
 
+.index-grid-item:hover {
+  transform: none;
+}
+
+.index-grid-item:hover .index-grid-media {
+  transform: rotateX(180deg);
+}
+
 .index-grid-media {
   width: 100%;
   height: auto;
@@ -733,5 +757,18 @@ header a.selected {
     margin-left: 0;
     margin-right: 0;
   }
+  .index-project-categories {
+    display: none;
+  }
+}
+
+.lottie-player {
+  overflow: hidden;
+}
+
+.lottie-player svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 

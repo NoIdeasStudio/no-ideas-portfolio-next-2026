@@ -48,9 +48,11 @@ type SlideItem = {
   image?: SanityImageWithAssetUrl
   imageUrl?: string
   videoUrl?: string
+  lottieUrl?: string | null
   caption?: string
   containPadding?: string | null
   backgroundColor?: string | null
+  backgroundVideoUrl?: string | null
   textTheme?: string | null
   textThemeCustomColor?: string | null
   items?: Array<{
@@ -58,6 +60,8 @@ type SlideItem = {
     image?: SanityImageWithAssetUrl
     imageUrl?: string
     videoUrl?: string
+    lottieUrl?: string | null
+    backgroundVideoUrl?: string | null
     fit?: string | null
     containPadding?: string | null
   }>
@@ -106,9 +110,11 @@ async function getProjects() {
         const items = slide.items.map((item) => {
           const imageUrl = sanityImageServeUrl(item.image ?? null, item.imageUrl ?? null)
           return {
-            mediaType: item.mediaType as 'image' | 'video',
+            mediaType: item.mediaType as 'image' | 'video' | 'lottie',
             imageUrl: imageUrl ?? null,
             videoUrl: item.videoUrl ?? null,
+            lottieUrl: item.lottieUrl ?? null,
+            backgroundVideoUrl: item.backgroundVideoUrl ?? null,
             fit: (item.fit as 'cover' | 'contain') ?? 'cover',
             containPadding: item.containPadding ?? '0',
           }
@@ -117,6 +123,7 @@ async function getProjects() {
           layout: 'twoUp' as const,
           items,
           backgroundColor: bg,
+          backgroundVideoUrl: slide.backgroundVideoUrl ?? null,
           themeColor:
             slide.textTheme != null
               ? resolveThemeColor(slide.textTheme, slide.textThemeCustomColor)
@@ -126,12 +133,14 @@ async function getProjects() {
       const imageUrl = sanityImageServeUrl(slide.image ?? null, slide.imageUrl ?? null)
       return {
         layout: slide.layout as 'fullBleed' | 'contain',
-        mediaType: slide.mediaType as 'image' | 'video',
+        mediaType: slide.mediaType as 'image' | 'video' | 'lottie',
         imageUrl: imageUrl ?? null,
         videoUrl: slide.videoUrl ?? null,
+        lottieUrl: slide.lottieUrl ?? null,
         caption: slide.caption ?? null,
         containPadding: slide.containPadding ?? '0',
         backgroundColor: bg,
+        backgroundVideoUrl: slide.backgroundVideoUrl ?? null,
         themeColor:
           slide.textTheme != null
             ? resolveThemeColor(slide.textTheme, slide.textThemeCustomColor)

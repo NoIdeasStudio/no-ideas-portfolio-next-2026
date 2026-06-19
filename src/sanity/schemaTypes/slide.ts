@@ -55,6 +55,7 @@ export const slideObject = defineType({
         list: [
           { title: 'Image', value: 'image' },
           { title: 'Video (URL)', value: 'video' },
+          { title: 'Lottie animation (URL)', value: 'lottie' },
         ],
         layout: 'radio',
       },
@@ -84,6 +85,14 @@ export const slideObject = defineType({
       hidden: ({ parent }) => parent?.layout === 'twoUp' || parent?.mediaType !== 'video',
     }),
     defineField({
+      name: 'lottieFile',
+      type: 'file',
+      title: 'Lottie animation file',
+      description: 'Upload a Lottie JSON file (.json).',
+      options: { accept: '.json,application/json' },
+      hidden: ({ parent }) => parent?.layout === 'twoUp' || parent?.mediaType !== 'lottie',
+    }),
+    defineField({
       name: 'caption',
       type: 'string',
       title: 'Caption',
@@ -102,6 +111,12 @@ export const slideObject = defineType({
             ? true
             : 'Enter a valid hex color (e.g. #000000 or #fff)'
         }),
+    }),
+    defineField({
+      name: 'backgroundVideoUrl',
+      type: 'url',
+      title: 'Background video URL',
+      description: 'Video played as a full-cover background behind the slide content.',
     }),
     defineField({
       name: 'textTheme',

@@ -14,6 +14,7 @@ export const twoUpItemObject = defineType({
         list: [
           { title: 'Image', value: 'image' },
           { title: 'Video (URL)', value: 'video' },
+          { title: 'Lottie animation (URL)', value: 'lottie' },
         ],
         layout: 'radio',
       },
@@ -39,6 +40,20 @@ export const twoUpItemObject = defineType({
       type: 'url',
       title: 'Video URL',
       hidden: ({ parent }) => parent?.mediaType !== 'video',
+    }),
+    defineField({
+      name: 'lottieFile',
+      type: 'file',
+      title: 'Lottie animation file',
+      description: 'Upload a Lottie JSON file (.json).',
+      options: { accept: '.json,application/json' },
+      hidden: ({ parent }) => parent?.mediaType !== 'lottie',
+    }),
+    defineField({
+      name: 'backgroundVideoUrl',
+      type: 'url',
+      title: 'Background video URL',
+      description: 'Video played as a full-cover background behind the cell content.',
     }),
     defineField({
       name: 'fit',

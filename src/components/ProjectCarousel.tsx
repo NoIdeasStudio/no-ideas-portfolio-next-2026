@@ -8,9 +8,11 @@ import { useAutoScroll } from '../contexts/AutoScrollContext'
 import { Slide } from './Slide'
 
 export type TwoUpItem = {
-  mediaType: 'image' | 'video'
+  mediaType: 'image' | 'video' | 'lottie'
   imageUrl?: string | null
   videoUrl?: string | null
+  lottieUrl?: string | null
+  backgroundVideoUrl?: string | null
   fit?: 'cover' | 'contain'
   containPadding?: string | null
 }
@@ -18,18 +20,21 @@ export type TwoUpItem = {
 export type CarouselSlide =
   | {
       layout: 'fullBleed' | 'contain'
-      mediaType: 'image' | 'video'
+      mediaType: 'image' | 'video' | 'lottie'
       imageUrl?: string | null
       videoUrl?: string | null
+      lottieUrl?: string | null
       caption?: string | null
       containPadding?: string | null
       backgroundColor?: string | null
+      backgroundVideoUrl?: string | null
       themeColor?: string
     }
   | {
       layout: 'twoUp'
       items: [TwoUpItem, TwoUpItem]
       backgroundColor?: string | null
+      backgroundVideoUrl?: string | null
       themeColor?: string
     }
 
@@ -136,6 +141,16 @@ export function ProjectCarousel({
             }}
             aria-hidden={i !== index}
           >
+            {slide.backgroundVideoUrl && (
+              <video
+                src={slide.backgroundVideoUrl}
+                className="absolute inset-0 h-full w-full object-cover"
+                autoPlay
+                muted
+                loop
+                playsInline
+              />
+            )}
             <Slide slide={slide} />
           </div>
         ))}
