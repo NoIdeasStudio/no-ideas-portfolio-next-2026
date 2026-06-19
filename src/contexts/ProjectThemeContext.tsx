@@ -11,9 +11,12 @@ type ProjectThemeContextValue = {
   /** Title of the active project (for header). Set by the active carousel. */
   activeProjectTitle: string | null
   setActiveProjectTitle: (title: string | null) => void
-  /** Slug of the project whose description is open (clicking header title toggles). */
+  /** Slug of the project whose description is open (clicking Info toggles). */
   descriptionOpenSlug: string | null
   setDescriptionOpenSlug: (slug: string | null) => void
+  /** Slug of the project whose info panel is expanded to full screen. */
+  infoExpandedSlug: string | null
+  setInfoExpandedSlug: (slug: string | null) => void
 }
 
 const ProjectThemeContext = createContext<ProjectThemeContextValue | null>(null)
@@ -23,6 +26,7 @@ export function ProjectThemeProvider({ children }: { children: ReactNode }) {
   const [activeProjectSlug, setActiveProjectSlug] = useState<string | null>(null)
   const [activeProjectTitle, setActiveProjectTitle] = useState<string | null>(null)
   const [descriptionOpenSlug, setDescriptionOpenSlug] = useState<string | null>(null)
+  const [infoExpandedSlug, setInfoExpandedSlug] = useState<string | null>(null)
   return (
     <ProjectThemeContext.Provider
       value={{
@@ -34,6 +38,8 @@ export function ProjectThemeProvider({ children }: { children: ReactNode }) {
         setActiveProjectTitle,
         descriptionOpenSlug,
         setDescriptionOpenSlug,
+        infoExpandedSlug,
+        setInfoExpandedSlug,
       }}
     >
       {children}

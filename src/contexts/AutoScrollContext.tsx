@@ -30,6 +30,8 @@ type AutoScrollContextValue = {
   onCarouselInteraction: (projectSlug: string, options?: { isLoopCopy?: boolean }) => void
   /** Set height of one full loop (enables infinite scroll). Call from homepage with measured first-block height. */
   setLoopHeight: (height: number) => void
+  /** Lock page scroll and pause auto-scroll (e.g. while full info panel is open). */
+  setScrollLocked: (locked: boolean) => void
 }
 
 const AutoScrollContext = createContext<AutoScrollContextValue | null>(null)
@@ -44,6 +46,7 @@ export function AutoScrollProvider({ children }: AutoScrollProviderProps) {
   const pathname = usePathname()
   const autoScrollActiveRef = useRef(true)
   const userInteractingRef = useRef(false)
+  const scrollLockedRef = useRef(false)
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const hasStartedRef = useRef(false)
   const loopHeightRef = useRef<number>(0)
@@ -53,7 +56,7 @@ export function AutoScrollProvider({ children }: AutoScrollProviderProps) {
   }, [])
 
   const startAutoScroll = useCallback(() => {
-    if (!autoScrollActiveRef.current || userInteractingRef.current) return
+    if (!autoScrollActiveRef.current || userInteractingRef.current || scrollLockedRef.current) return
     const loopHeight = loopHeightRef.current
     const targetY = loopHeight > 0 ? loopHeight : 'max'
     gsap.to(window, {
@@ -148,10 +151,25 @@ export function AutoScrollProvider({ children }: AutoScrollProviderProps) {
     loopHeightRef.current = height
   }, [])
 
+  const setScrollLocked = useCallback(
+    (locked: boolean) => {
+      scrollLockedRef.current = locked
+      if (locked) {
+        stopAutoScroll()
+        if (scrollTimeoutRef.current) {
+          clearTimeout(scrollTimeoutRef.current)
+          scrollTimeoutRef.current = null
+        }
+      }
+    },
+    [stopAutoScroll]
+  )
+
   const contextValue: AutoScrollContextValue = {
     pauseAndResumeAfter,
     onCarouselInteraction,
     setLoopHeight,
+    setScrollLocked,
   }
 
   useEffect(() => {

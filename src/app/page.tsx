@@ -1,6 +1,7 @@
 import type { PortableTextBlock } from '@portabletext/types'
 import { HomepageInfiniteLoop } from '../components/HomepageInfiniteLoop'
 import { ProjectCarousel, type TwoUpItem } from '../components/ProjectCarousel'
+import type { ProjectCategory } from '../components/ProjectInfoPanel'
 import { ScrollToHash } from '../components/ScrollToHash'
 import { SplashOverlay } from '../components/SplashOverlay'
 import { sanityClient } from '../lib/sanity.client'
@@ -75,6 +76,11 @@ async function getProjects() {
       title: string
       slug: string
       description?: unknown
+      visitUrl?: string | null
+      recognition?: unknown
+      credits?: unknown
+      categories?: ProjectCategory[]
+      year?: string | null
       textTheme?: string | null
       textThemeCustomColor?: string | null
       slides?: SlideItem[]
@@ -104,6 +110,11 @@ async function getProjects() {
   return raw.map((project) => ({
     ...project,
     themeColor: resolveThemeColor(project.textTheme, project.textThemeCustomColor),
+    categories: project.categories ?? [],
+    visitUrl: project.visitUrl ?? null,
+    recognition: (project.recognition ?? null) as PortableTextBlock[] | null,
+    credits: (project.credits ?? null) as PortableTextBlock[] | null,
+    year: project.year ?? null,
     slides: (project.slides ?? []).map((slide) => {
       const bg = slide.backgroundColor ?? '#000000'
       if (slide.layout === 'twoUp' && slide.items?.length === 2) {

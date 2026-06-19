@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { PortableText } from 'next-sanity'
 import type { PortableTextBlock } from '@portabletext/types'
 import { useProjectTheme } from '../contexts/ProjectThemeContext'
 import { useAutoScroll } from '../contexts/AutoScrollContext'
+import { ProjectInfoPanel, type ProjectCategory } from './ProjectInfoPanel'
 import { Slide } from './Slide'
 
 export type TwoUpItem = {
@@ -41,6 +41,11 @@ export type CarouselSlide =
 type ProjectCarouselProps = {
   projectTitle: string
   projectDescription?: PortableTextBlock[] | string | null
+  projectCategories?: ProjectCategory[]
+  projectYear?: string | null
+  visitUrl?: string | null
+  recognition?: PortableTextBlock[] | null
+  credits?: PortableTextBlock[] | null
   projectSlug?: string
   themeColor?: string
   slides: CarouselSlide[]
@@ -51,6 +56,11 @@ type ProjectCarouselProps = {
 export function ProjectCarousel({
   projectTitle,
   projectDescription,
+  projectCategories = [],
+  projectYear,
+  visitUrl,
+  recognition,
+  credits,
   projectSlug,
   themeColor: projectThemeColor = '#fff',
   slides,
@@ -63,15 +73,20 @@ export function ProjectCarousel({
     setActiveProjectTitle,
     descriptionOpenSlug,
     setDescriptionOpenSlug,
+    infoExpandedSlug,
+    setInfoExpandedSlug,
   } = useProjectTheme() ?? {
     activeProjectSlug: null,
     setThemeColor: () => {},
     setActiveProjectTitle: () => {},
     descriptionOpenSlug: null,
     setDescriptionOpenSlug: () => {},
+    infoExpandedSlug: null,
+    setInfoExpandedSlug: () => {},
   }
   const autoScroll = useAutoScroll()
   const descriptionOpen = descriptionOpenSlug === projectSlug
+  const infoExpanded = infoExpandedSlug === projectSlug
   const count = slides.length
   const hasMultiple = count > 1
   const current = slides[index]
@@ -81,7 +96,6 @@ export function ProjectCarousel({
       : undefined
   const effectiveTheme = slideTheme ?? projectThemeColor
   const themeStyle = { color: effectiveTheme }
-  const themeStyleMuted = { color: effectiveTheme, opacity: 0.95 }
 
   useEffect(() => {
     if (projectSlug && activeProjectSlug === projectSlug) {
@@ -108,17 +122,39 @@ export function ProjectCarousel({
       ? projectDescription.length > 0
       : typeof projectDescription === 'string' && projectDescription.trim().length > 0)
 
+  const closeInfo = useCallback(() => {
+    if (!projectSlug) return
+    setDescriptionOpenSlug(null)
+    setInfoExpandedSlug(null)
+  }, [projectSlug, setDescriptionOpenSlug, setInfoExpandedSlug])
+
   const handleInfoClick = useCallback(() => {
     if (!projectSlug) return
-    setDescriptionOpenSlug(descriptionOpenSlug === projectSlug ? null : projectSlug)
+    if (descriptionOpenSlug === projectSlug) {
+      closeInfo()
+    } else {
+      setDescriptionOpenSlug(projectSlug)
+      setInfoExpandedSlug(null)
+    }
     autoScroll?.onCarouselInteraction(projectSlug, { isLoopCopy: isLoopCopy ?? false })
   }, [
     projectSlug,
     descriptionOpenSlug,
+    closeInfo,
     setDescriptionOpenSlug,
+    setInfoExpandedSlug,
     autoScroll,
     isLoopCopy,
   ])
+
+  const handleExpandInfo = useCallback(() => {
+    if (!projectSlug) return
+    setInfoExpandedSlug(projectSlug)
+  }, [projectSlug, setInfoExpandedSlug])
+
+  const handleCollapseInfo = useCallback(() => {
+    setInfoExpandedSlug(null)
+  }, [setInfoExpandedSlug])
 
   if (!count) return null
 
@@ -157,7 +193,7 @@ export function ProjectCarousel({
       </div>
 
       {/* Left nav: 40% width, cursor w-resize (system left arrow) */}
-      {hasMultiple && (
+      {hasMultiple && !infoExpanded && (
         <button
           type="button"
           onClick={goPrev}
@@ -167,7 +203,7 @@ export function ProjectCarousel({
       )}
 
       {/* Right nav: 40% width, cursor e-resize (system right arrow) */}
-      {hasMultiple && (
+      {hasMultiple && !infoExpanded && (
         <button
           type="button"
           onClick={goNext}
@@ -176,64 +212,46 @@ export function ProjectCarousel({
         />
       )}
 
-      {/* Info trigger + description (bottom left); above slide arrows */}
+      {/* Info trigger (bottom left) */}
       <div className="absolute bottom-0 left-0 z-20 max-w-[80%] py-[1.3%] px-[2%] pointer-events-none">
         <div className="type-size-1 pointer-events-auto" style={themeStyle}>
-          {hasDescription && (
+          {hasDescription && !infoExpanded && (
             <button
               type="button"
               onClick={handleInfoClick}
-              className={`project-info-trigger block text-left font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2 ${descriptionOpen ? 'project-info-trigger-open' : ''}`.trim()}
+              className="project-info-trigger block text-left font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2"
               aria-expanded={descriptionOpen}
-              aria-controls={projectSlug ? `project-description-${projectSlug}` : undefined}
+              aria-controls={projectSlug ? `project-info-${projectSlug}` : undefined}
             >
               Info
             </button>
           )}
-          {descriptionOpen && projectDescription && (
-            <div
-              id={projectSlug ? `project-description-${projectSlug}` : undefined}
-              className="mt-2 project-description-content"
-              style={{
-                ...themeStyleMuted,
-                textShadow: '0 4px 4px rgba(0, 0, 0, 0.45)',
-              }}
-            >
-              {Array.isArray(projectDescription) && projectDescription.length > 0 ? (
-                <PortableText
-                  value={projectDescription}
-                  components={{
-                    block: {
-                      normal: ({ children }) => <p className="whitespace-pre-wrap">{children}</p>,
-                    },
-                    marks: {
-                      link: ({ value, children }) => (
-                        <a
-                          href={value?.href}
-                          target={value?.blank ? '_blank' : undefined}
-                          rel={value?.blank ? 'noopener noreferrer' : undefined}
-                        >
-                          {children}
-                        </a>
-                      ),
-                    },
-                  }}
-                />
-              ) : typeof projectDescription === 'string' ? (
-                <p className="whitespace-pre-wrap">{projectDescription}</p>
-              ) : null}
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Slide counter (bottom right) — type-size-1, same padding as header */}
-      <div className="absolute bottom-0 right-0 z-10 py-[1.3%] px-[2%]">
-        <p className="type-size-1 text-right" style={themeStyle} aria-live="polite">
-          {index + 1} / {count}
-        </p>
-      </div>
+      <ProjectInfoPanel
+        projectSlug={projectSlug ?? ''}
+        description={projectDescription}
+        categories={projectCategories}
+        year={projectYear}
+        visitUrl={visitUrl}
+        recognition={recognition}
+        credits={credits}
+        isOpen={descriptionOpen}
+        isExpanded={infoExpanded}
+        onClose={closeInfo}
+        onExpand={handleExpandInfo}
+        onCollapse={handleCollapseInfo}
+      />
 
+      {/* Slide counter (bottom right) — type-size-1, same padding as header */}
+      {!infoExpanded && (
+        <div className="absolute bottom-0 right-0 z-10 py-[1.3%] px-[2%]">
+          <p className="type-size-1 text-right" style={themeStyle} aria-live="polite">
+            {index + 1} / {count}
+          </p>
+        </div>
+      )}
     </section>
   )
 }

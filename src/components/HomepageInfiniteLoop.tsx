@@ -6,12 +6,18 @@ import { useAutoScroll } from '../contexts/AutoScrollContext'
 import { HomepageThemeObserver } from './HomepageThemeObserver'
 import { LazyLoopSection } from './LazyLoopSection'
 import { ProjectCarousel, type CarouselSlide } from './ProjectCarousel'
+import type { ProjectCategory } from './ProjectInfoPanel'
 
 export type HomepageProject = {
   _id: string
   title: string
   slug: string
   description?: unknown
+  categories?: ProjectCategory[]
+  year?: string | null
+  visitUrl?: string | null
+  recognition?: PortableTextBlock[] | null
+  credits?: PortableTextBlock[] | null
   themeColor?: string | null
   slides: CarouselSlide[]
 }
@@ -53,6 +59,11 @@ export function HomepageInfiniteLoop({
             projectDescription={
               (project.description ?? null) as PortableTextBlock[] | string | null
             }
+            projectCategories={project.categories ?? []}
+            projectYear={project.year}
+            visitUrl={project.visitUrl}
+            recognition={project.recognition}
+            credits={project.credits}
             projectSlug={project.slug}
             themeColor={project.themeColor ?? '#fff'}
             slides={project.slides ?? []}

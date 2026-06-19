@@ -25,6 +25,11 @@ export const allProjectsWithSlidesQuery = groq`*[_type == "project"]{
   title,
   "slug": slug.current,
   description,
+  visitUrl,
+  recognition,
+  credits,
+  "categories": categories[]->{ _id, title, "slug": slug.current },
+  year,
   textTheme,
   textThemeCustomColor,
   slides[]{

@@ -1,4 +1,5 @@
 import { defineArrayMember, defineField, defineType } from 'sanity'
+import { linkableBlockMember } from './linkableBlock'
 
 /** Portfolio project: a full-viewport slideshow of slides. */
 export const projectType = defineType({
@@ -36,33 +37,28 @@ export const projectType = defineType({
       name: 'description',
       type: 'array',
       title: 'Description',
-      description: 'Shown when the project name is clicked on the slideshow (bottom left). Plain text and URL links only.',
-      of: [
-        defineArrayMember({
-          type: 'block',
-          styles: [{ title: 'Normal', value: 'normal' }],
-          lists: [],
-          marks: {
-            decorators: [],
-            annotations: [
-              {
-                name: 'link',
-                type: 'object',
-                title: 'URL',
-                fields: [
-                  { name: 'href', type: 'url', title: 'URL' },
-                  {
-                    name: 'blank',
-                    type: 'boolean',
-                    title: 'Open in new tab',
-                    initialValue: true,
-                  },
-                ],
-              },
-            ],
-          },
-        }),
-      ],
+      description: 'Shown in the project Info panel. Plain text and URL links only.',
+      of: [linkableBlockMember],
+    }),
+    defineField({
+      name: 'visitUrl',
+      type: 'url',
+      title: 'Visit URL',
+      description: 'Project website link shown in the expanded Info panel.',
+    }),
+    defineField({
+      name: 'recognition',
+      type: 'array',
+      title: 'Recognition',
+      description: 'Awards and press. Shown in the expanded Info panel. Plain text and URL links only.',
+      of: [linkableBlockMember],
+    }),
+    defineField({
+      name: 'credits',
+      type: 'array',
+      title: 'Credits',
+      description: 'Project credits. Shown in the expanded Info panel. Plain text and URL links only.',
+      of: [linkableBlockMember],
     }),
     defineField({
       name: 'textTheme',

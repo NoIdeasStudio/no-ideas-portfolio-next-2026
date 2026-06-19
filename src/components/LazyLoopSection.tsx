@@ -63,6 +63,11 @@ export function LazyLoopSection({ project }: LazyLoopSectionProps) {
         projectDescription={
           (project.description ?? null) as PortableTextBlock[] | string | null
         }
+        projectCategories={project.categories ?? []}
+        projectYear={project.year}
+        visitUrl={project.visitUrl}
+        recognition={project.recognition}
+        credits={project.credits}
         projectSlug={project.slug}
         themeColor={project.themeColor ?? '#fff'}
         slides={project.slides ?? []}

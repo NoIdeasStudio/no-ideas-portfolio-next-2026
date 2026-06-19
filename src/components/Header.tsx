@@ -13,13 +13,15 @@ export function Header() {
     projectTheme?.activeProjectSlug != null &&
     projectTheme?.activeProjectTitle != null
   const headerColor =
-    isHomepage && projectTheme?.themeColor != null
-      ? projectTheme.themeColor
-      : undefined
+    isHomepage && projectTheme?.infoExpandedSlug
+      ? '#000'
+      : isHomepage && projectTheme?.themeColor != null
+        ? projectTheme.themeColor
+        : undefined
 
   return (
     <header
-      className={`type-size-1${headerColor ? ' header-theme-override' : ''}`}
+      className={`type-size-1${headerColor ? ' header-theme-override' : ''}${projectTheme?.infoExpandedSlug ? ' header-info-expanded' : ''}`}
       style={headerColor ? { color: headerColor } : undefined}
     >
       <div className="header-left">

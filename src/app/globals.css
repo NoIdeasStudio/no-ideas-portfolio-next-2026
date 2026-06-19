@@ -68,10 +68,192 @@ body {
   text-align: left;
 }
 
-/* Homepage project: Info control toggles description (shadow affordance on Info only) */
-.project-info-trigger:hover,
-.project-info-trigger-open {
-  text-shadow: 0 4px 4px rgba(0, 0, 0, 0.45);
+/* Project info panel — half (bottom sheet) and full (screen takeover) */
+.project-info-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 35;
+  pointer-events: none;
+}
+
+.project-info-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
+  pointer-events: auto;
+}
+
+.project-info-half {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  background: #fff;
+  color: #000;
+  padding: 2%;
+  pointer-events: auto;
+  font-size: 2vw;
+  line-height: 1.1;
+}
+
+.project-info-full {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  background: #fff;
+  color: #000;
+  font-size: 2vw;
+  line-height: 1.1;
+  opacity: 0;
+  animation: project-info-full-in 0.35s ease forwards;
+}
+
+@keyframes project-info-full-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes project-info-full-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.project-info-full--out {
+  animation: project-info-full-out 0.35s ease forwards;
+  pointer-events: none;
+}
+
+.project-info-full-scroll {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 10% 2% 4%;
+}
+
+.project-info-columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  width: 100%;
+}
+
+.project-info-main {
+  width: 66.66667%;
+  padding: 0 2%;
+}
+
+.project-info-meta {
+  width: 33.33333%;
+  padding: 0 2%;
+}
+
+.project-info-heading,
+.project-info-meta-heading {
+  margin: 0;
+  font-weight: 500;
+}
+
+.project-info-para {
+  margin: 0;
+}
+
+.project-info-description--clamped .project-info-para {
+  display: inline;
+  margin: 0;
+}
+
+.project-info-description--clamped .project-info-para + .project-info-para::before {
+  content: ' ';
+}
+
+.project-info-description--clamped {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.project-info-inline-action {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.project-info-inline-action:hover {
+  transform: none;
+}
+
+.project-info-meta-block + .project-info-meta-block {
+  margin-top: 6%;
+}
+
+.project-info-meta-text {
+  margin: 0;
+}
+
+.project-info-meta-text .project-info-para {
+  margin: 0;
+}
+
+.project-info-text-link {
+  text-decoration: underline;
+}
+
+.project-info-text-link:hover {
+  transform: none;
+}
+
+#homepage .project-info-half a,
+#homepage .project-info-full a {
+  color: #000;
+}
+
+#homepage header.header-info-expanded {
+  z-index: 40;
+}
+
+#homepage header.header-info-expanded,
+#homepage header.header-info-expanded a {
+  color: #000;
+}
+
+@media (max-width: 800px) {
+  .project-info-full-scroll {
+    padding-top: 17%;
+  }
+
+  .project-info-main,
+  .project-info-meta {
+    width: 100%;
+    padding: 0 4%;
+  }
+
+  .project-info-meta {
+    margin-top: 6%;
+  }
+
+  .project-info-half {
+    padding: 4%;
+  }
 }
 
 /* Webflow-style image scaling: cover = fill viewport, contain = fit with letterbox */
