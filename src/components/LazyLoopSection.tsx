@@ -102,7 +102,7 @@ export function LazyLoopSection({
     <div
       ref={wrapperRef}
       id={sectionId}
-      className="project-viewport-height relative w-full flex-shrink-0"
+        className="relative h-screen w-full flex-shrink-0"
       style={{ backgroundColor: getFirstSlideBg(project) }}
       aria-label={`Project: ${project.title} (loading)`}
     />

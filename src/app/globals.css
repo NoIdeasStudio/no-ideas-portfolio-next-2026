@@ -48,12 +48,6 @@ body {
   line-height: var(--line-height-body);
 }
 
-/* Full-viewport project sections — dvh tracks visible height on mobile Safari; vh fallback */
-.project-viewport-height {
-  height: 100vh;
-  height: 100dvh;
-}
-
 /* Project name: text-shadow fades in on hover or when description is open */
 .project-name-btn {
   transition: text-shadow 0.2s ease-out;

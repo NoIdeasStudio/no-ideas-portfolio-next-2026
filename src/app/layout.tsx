@@ -1,5 +1,5 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { ReactNode } from "react";
 import { AutoScrollProvider } from "../contexts/AutoScrollContext";
 import { ProjectThemeProvider } from "../contexts/ProjectThemeContext";
@@ -9,6 +9,12 @@ import { Header } from "../components/Header";
 export const metadata: Metadata = {
   title: "No Ideas",
   description: "Design and art direction studio."
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
