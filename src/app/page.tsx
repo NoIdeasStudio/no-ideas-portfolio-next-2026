@@ -6,7 +6,11 @@ import { ScrollToHash } from '../components/ScrollToHash'
 import { SplashOverlay } from '../components/SplashOverlay'
 import { sanityClient } from '../lib/sanity.client'
 import { allProjectsWithSlidesQuery, siteLayoutQuery } from '../lib/sanity.queries'
-import { sanityImageServeUrl, type SanityImageWithAssetUrl } from '../sanity/lib/image'
+import {
+  resolveCarouselImage,
+  CAROUSEL_TWO_UP_MAX_PX,
+  type SanityImageWithMetadata,
+} from '../sanity/lib/image'
 import { seedProjects } from '../data/seed-projects'
 
 type SiteLayout = {
@@ -46,7 +50,7 @@ function resolveThemeColor(
 type SlideItem = {
   layout: string
   mediaType: string
-  image?: SanityImageWithAssetUrl
+  image?: SanityImageWithMetadata
   imageUrl?: string
   videoUrl?: string
   lottieUrl?: string | null
@@ -58,7 +62,7 @@ type SlideItem = {
   textThemeCustomColor?: string | null
   items?: Array<{
     mediaType: string
-    image?: SanityImageWithAssetUrl
+    image?: SanityImageWithMetadata
     imageUrl?: string
     videoUrl?: string
     lottieUrl?: string | null
@@ -121,10 +125,16 @@ async function getProjects() {
       const bg = slide.backgroundColor ?? '#000000'
       if (slide.layout === 'twoUp' && slide.items?.length === 2) {
         const items = slide.items.map((item) => {
-          const imageUrl = sanityImageServeUrl(item.image ?? null, item.imageUrl ?? null)
+          const resolved = resolveCarouselImage(
+            item.image ?? null,
+            item.imageUrl ?? null,
+            { maxWidth: CAROUSEL_TWO_UP_MAX_PX }
+          )
           return {
             mediaType: item.mediaType as 'image' | 'video' | 'lottie',
-            imageUrl: imageUrl ?? null,
+            imageUrl: resolved.imageUrl,
+            imageLqip: resolved.imageLqip,
+            imagePlaceholderUrl: resolved.imagePlaceholderUrl,
             videoUrl: item.videoUrl ?? null,
             lottieUrl: item.lottieUrl ?? null,
             backgroundVideoUrl: item.backgroundVideoUrl ?? null,
@@ -143,11 +153,13 @@ async function getProjects() {
               : undefined,
         }
       }
-      const imageUrl = sanityImageServeUrl(slide.image ?? null, slide.imageUrl ?? null)
+      const resolved = resolveCarouselImage(slide.image ?? null, slide.imageUrl ?? null)
       return {
         layout: slide.layout as 'fullBleed' | 'contain',
         mediaType: slide.mediaType as 'image' | 'video' | 'lottie',
-        imageUrl: imageUrl ?? null,
+        imageUrl: resolved.imageUrl,
+        imageLqip: resolved.imageLqip,
+        imagePlaceholderUrl: resolved.imagePlaceholderUrl,
         videoUrl: slide.videoUrl ?? null,
         lottieUrl: slide.lottieUrl ?? null,
         caption: slide.caption ?? null,
