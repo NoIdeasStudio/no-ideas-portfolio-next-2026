@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import type { CarouselSlide, TwoUpItem } from './ProjectCarousel'
 import { LottiePlayer } from './LottiePlayer'
@@ -48,61 +48,10 @@ export function CarouselVideo({
   )
 }
 
-function ProgressiveImage({
-  src,
-  alt,
-  className,
-  placeholderUrl,
-  lqip,
-  objectFit,
-}: {
-  src: string
-  alt: string
-  className: string
-  placeholderUrl?: string | null
-  lqip?: string | null
-  objectFit: 'cover' | 'contain'
-}) {
-  const [loaded, setLoaded] = useState(false)
-  const fitClass = objectFit === 'contain' ? 'object-contain' : 'object-cover'
-  const hasPlaceholder = Boolean(lqip || placeholderUrl)
-
-  return (
-    <>
-      {lqip && (
-        <img
-          src={lqip}
-          alt=""
-          aria-hidden
-          className={`absolute inset-0 h-full w-full ${fitClass} scale-105 blur-lg transition-opacity duration-300 ${loaded ? 'opacity-0' : 'opacity-100'}`}
-        />
-      )}
-      {!lqip && placeholderUrl && (
-        <img
-          src={placeholderUrl}
-          alt=""
-          aria-hidden
-          className={`absolute inset-0 h-full w-full ${fitClass} transition-opacity duration-300 ${loaded ? 'opacity-0' : 'opacity-100'}`}
-        />
-      )}
-      <img
-        src={src}
-        alt={alt}
-        onLoad={() => setLoaded(true)}
-        decoding="async"
-        loading="eager"
-        className={`${className} transition-opacity duration-300 ${hasPlaceholder && !loaded ? 'opacity-0' : 'opacity-100'}`}
-      />
-    </>
-  )
-}
-
 function SingleMedia({
   layout,
   mediaType,
   imageUrl,
-  imageLqip,
-  imagePlaceholderUrl,
   videoUrl,
   lottieUrl,
   caption,
@@ -112,8 +61,6 @@ function SingleMedia({
   layout: 'fullBleed' | 'contain'
   mediaType: 'image' | 'video' | 'lottie'
   imageUrl?: string | null
-  imageLqip?: string | null
-  imagePlaceholderUrl?: string | null
   videoUrl?: string | null
   lottieUrl?: string | null
   caption?: string | null
@@ -157,12 +104,8 @@ function SingleMedia({
   }
 
   if (mediaType === 'image' && imageUrl) {
+    /* Use img for contain so it respects padding and isn't cropped (Next/Image fill is absolute and can crop). */
     const useNextImage = isSanityImage(imageUrl) && !isContain
-    const blurDataURL = imageLqip ?? undefined
-    const imgClass = isContain
-      ? 'relative max-h-full max-w-full w-auto h-auto object-contain'
-      : 'absolute inset-0 w-full h-full object-cover'
-
     return (
       <div className={containerClass} style={containerStyle}>
         {useNextImage ? (
@@ -173,17 +116,18 @@ function SingleMedia({
             className="object-cover"
             sizes="100vw"
             priority={isActive}
-            placeholder={blurDataURL ? 'blur' : 'empty'}
-            blurDataURL={blurDataURL}
           />
         ) : (
-          <ProgressiveImage
+          <img
             src={imageUrl}
             alt={caption || ''}
-            className={imgClass}
-            lqip={imageLqip}
-            placeholderUrl={imagePlaceholderUrl}
-            objectFit={isContain ? 'contain' : 'cover'}
+            className={
+              isContain
+                ? 'relative max-h-full max-w-full w-auto h-auto object-contain'
+                : 'absolute inset-0 w-full h-full object-cover'
+            }
+            loading="eager"
+            decoding="async"
           />
         )}
         {caption && isActive && (
@@ -199,17 +143,7 @@ function SingleMedia({
 }
 
 function TwoUpCell({ item, isActive }: { item: TwoUpItem; isActive: boolean }) {
-  const {
-    mediaType,
-    imageUrl,
-    imageLqip,
-    imagePlaceholderUrl,
-    videoUrl,
-    lottieUrl,
-    backgroundVideoUrl,
-    fit,
-    containPadding,
-  } = item
+  const { mediaType, imageUrl, videoUrl, lottieUrl, backgroundVideoUrl, fit, containPadding } = item
   const isContain = fit === 'contain'
   const paddingPercent = isContain ? `${containPadding ?? '0'}%` : '0'
   const cellClass =
@@ -254,11 +188,6 @@ function TwoUpCell({ item, isActive }: { item: TwoUpItem; isActive: boolean }) {
 
   if (mediaType === 'image' && imageUrl) {
     const useNextImage = isSanityImage(imageUrl) && !isContain
-    const blurDataURL = imageLqip ?? undefined
-    const imgClass = isContain
-      ? 'relative max-h-full max-w-full w-auto h-auto object-contain'
-      : 'absolute inset-0 w-full h-full object-cover'
-
     return (
       <div className={cellClass} style={cellStyle}>
         {backgroundVideoUrl && (
@@ -276,17 +205,18 @@ function TwoUpCell({ item, isActive }: { item: TwoUpItem; isActive: boolean }) {
             className="object-cover"
             sizes="50vw"
             priority={isActive}
-            placeholder={blurDataURL ? 'blur' : 'empty'}
-            blurDataURL={blurDataURL}
           />
         ) : (
-          <ProgressiveImage
+          <img
             src={imageUrl}
             alt=""
-            className={imgClass}
-            lqip={imageLqip}
-            placeholderUrl={imagePlaceholderUrl}
-            objectFit={isContain ? 'contain' : 'cover'}
+            className={
+              isContain
+                ? 'relative max-h-full max-w-full w-auto h-auto object-contain'
+                : 'absolute inset-0 w-full h-full object-cover'
+            }
+            loading="eager"
+            decoding="async"
           />
         )}
       </div>
@@ -327,8 +257,6 @@ export function Slide({
       layout={slide.layout}
       mediaType={slide.mediaType}
       imageUrl={slide.imageUrl}
-      imageLqip={slide.imageLqip}
-      imagePlaceholderUrl={slide.imagePlaceholderUrl}
       videoUrl={slide.videoUrl}
       lottieUrl={slide.lottieUrl}
       caption={slide.caption}

@@ -2,20 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ABC Diatype — matches Webflow no-ideas typography */
-@font-face {
-  font-family: "ABC Diatype";
-  src: url("/fonts/ABCDiatype-Medium.woff2") format("woff2");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
+/* ABC Diatype — loaded via next/font/local in layout.tsx (preloaded automatically) */
 
 /* Match Webflow no-ideas typography and layout */
 :root {
   --background: #fff;
   --foreground: #333;
-  --font-body: "ABC Diatype", Arial, Helvetica Neue, Helvetica, sans-serif;
+  --font-body: var(--font-abc-diatype), Arial, Helvetica Neue, Helvetica, sans-serif;
   --font-size-body: 14px;
   --line-height-body: 20px;
 }

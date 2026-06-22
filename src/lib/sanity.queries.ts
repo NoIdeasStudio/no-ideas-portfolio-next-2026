@@ -40,9 +40,7 @@ export const allProjectsWithSlidesQuery = groq`*[_type == "project"]{
       asset,
       crop,
       hotspot,
-      "assetUrl": asset->url,
-      "lqip": asset->metadata.lqip,
-      "dimensions": asset->metadata.dimensions
+      "assetUrl": asset->url
     },
     imageUrl,
     videoUrl,
@@ -59,9 +57,7 @@ export const allProjectsWithSlidesQuery = groq`*[_type == "project"]{
         asset,
         crop,
         hotspot,
-        "assetUrl": asset->url,
-        "lqip": asset->metadata.lqip,
-        "dimensions": asset->metadata.dimensions
+        "assetUrl": asset->url
       },
       imageUrl,
       videoUrl,

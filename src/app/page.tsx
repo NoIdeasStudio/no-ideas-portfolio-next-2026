@@ -1,6 +1,6 @@
 import type { PortableTextBlock } from '@portabletext/types'
 import { HomepageInfiniteLoop } from '../components/HomepageInfiniteLoop'
-import { ProjectCarousel, type TwoUpItem } from '../components/ProjectCarousel'
+import { type TwoUpItem } from '../components/ProjectCarousel'
 import type { ProjectCategory } from '../components/ProjectInfoPanel'
 import { ScrollToHash } from '../components/ScrollToHash'
 import { SplashOverlay } from '../components/SplashOverlay'
@@ -9,7 +9,7 @@ import { allProjectsWithSlidesQuery, siteLayoutQuery } from '../lib/sanity.queri
 import {
   resolveCarouselImage,
   CAROUSEL_TWO_UP_MAX_PX,
-  type SanityImageWithMetadata,
+  type SanityImageWithAssetUrl,
 } from '../sanity/lib/image'
 import { seedProjects } from '../data/seed-projects'
 
@@ -50,7 +50,7 @@ function resolveThemeColor(
 type SlideItem = {
   layout: string
   mediaType: string
-  image?: SanityImageWithMetadata
+  image?: SanityImageWithAssetUrl
   imageUrl?: string
   videoUrl?: string
   lottieUrl?: string | null
@@ -62,7 +62,7 @@ type SlideItem = {
   textThemeCustomColor?: string | null
   items?: Array<{
     mediaType: string
-    image?: SanityImageWithMetadata
+    image?: SanityImageWithAssetUrl
     imageUrl?: string
     videoUrl?: string
     lottieUrl?: string | null
@@ -71,6 +71,8 @@ type SlideItem = {
     containPadding?: string | null
   }>
 }
+
+type TwoUpSlideItem = NonNullable<SlideItem['items']>[number]
 
 async function getProjects() {
   const [layout, data] = await Promise.all([
@@ -124,24 +126,23 @@ async function getProjects() {
     slides: (project.slides ?? []).map((slide) => {
       const bg = slide.backgroundColor ?? '#000000'
       if (slide.layout === 'twoUp' && slide.items?.length === 2) {
-        const items = slide.items.map((item) => {
-          const resolved = resolveCarouselImage(
+        const mapTwoUpItem = (item: TwoUpSlideItem): TwoUpItem => ({
+          mediaType: item.mediaType as 'image' | 'video' | 'lottie',
+          imageUrl: resolveCarouselImage(
             item.image ?? null,
             item.imageUrl ?? null,
             { maxWidth: CAROUSEL_TWO_UP_MAX_PX }
-          )
-          return {
-            mediaType: item.mediaType as 'image' | 'video' | 'lottie',
-            imageUrl: resolved.imageUrl,
-            imageLqip: resolved.imageLqip,
-            imagePlaceholderUrl: resolved.imagePlaceholderUrl,
-            videoUrl: item.videoUrl ?? null,
-            lottieUrl: item.lottieUrl ?? null,
-            backgroundVideoUrl: item.backgroundVideoUrl ?? null,
-            fit: (item.fit as 'cover' | 'contain') ?? 'cover',
-            containPadding: item.containPadding ?? '0',
-          }
-        }) as [TwoUpItem, TwoUpItem]
+          ),
+          videoUrl: item.videoUrl ?? null,
+          lottieUrl: item.lottieUrl ?? null,
+          backgroundVideoUrl: item.backgroundVideoUrl ?? null,
+          fit: (item.fit as 'cover' | 'contain') ?? 'cover',
+          containPadding: item.containPadding ?? '0',
+        })
+        const items: [TwoUpItem, TwoUpItem] = [
+          mapTwoUpItem(slide.items[0]),
+          mapTwoUpItem(slide.items[1]),
+        ]
         return {
           layout: 'twoUp' as const,
           items,
@@ -153,13 +154,11 @@ async function getProjects() {
               : undefined,
         }
       }
-      const resolved = resolveCarouselImage(slide.image ?? null, slide.imageUrl ?? null)
+      const imageUrl = resolveCarouselImage(slide.image ?? null, slide.imageUrl ?? null)
       return {
         layout: slide.layout as 'fullBleed' | 'contain',
         mediaType: slide.mediaType as 'image' | 'video' | 'lottie',
-        imageUrl: resolved.imageUrl,
-        imageLqip: resolved.imageLqip,
-        imagePlaceholderUrl: resolved.imagePlaceholderUrl,
+        imageUrl,
         videoUrl: slide.videoUrl ?? null,
         lottieUrl: slide.lottieUrl ?? null,
         caption: slide.caption ?? null,

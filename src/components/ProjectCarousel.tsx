@@ -10,8 +10,6 @@ import { Slide, CarouselVideo } from './Slide'
 export type TwoUpItem = {
   mediaType: 'image' | 'video' | 'lottie'
   imageUrl?: string | null
-  imageLqip?: string | null
-  imagePlaceholderUrl?: string | null
   videoUrl?: string | null
   lottieUrl?: string | null
   backgroundVideoUrl?: string | null
@@ -24,8 +22,6 @@ export type CarouselSlide =
       layout: 'fullBleed' | 'contain'
       mediaType: 'image' | 'video' | 'lottie'
       imageUrl?: string | null
-      imageLqip?: string | null
-      imagePlaceholderUrl?: string | null
       videoUrl?: string | null
       lottieUrl?: string | null
       caption?: string | null
