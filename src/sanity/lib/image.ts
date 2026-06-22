@@ -24,11 +24,11 @@ export function sanityImageServeUrl(
   externalImageUrl?: string | null
 ): string | null {
   if (externalImageUrl) return externalImageUrl
-  if (image?.assetUrl) return image.assetUrl
-  if (image) {
-    return builder.image(image).url()
-  }
-  return null
+  if (!image || typeof image !== 'object') return null
+  const ref = image as { asset?: unknown; assetUrl?: string | null }
+  if (ref.assetUrl) return ref.assetUrl
+  if (!ref.asset) return null
+  return builder.image(image as SanityImageSource).url()
 }
 
 /** Max edge length for projects grid thumbs (Sanity Image API resize). */
