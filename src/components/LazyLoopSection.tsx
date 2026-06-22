@@ -63,6 +63,7 @@ export function LazyLoopSection({ project }: LazyLoopSectionProps) {
         projectDescription={
           (project.description ?? null) as PortableTextBlock[] | string | null
         }
+        extendedDescription={project.extendedDescription}
         projectCategories={project.categories ?? []}
         projectYear={project.year}
         visitUrl={project.visitUrl}

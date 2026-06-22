@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { PortableText } from 'next-sanity'
 import type { PortableTextBlock } from '@portabletext/types'
 import { useAutoScroll } from '../contexts/AutoScrollContext'
@@ -45,59 +45,61 @@ function formatVisitLabel(url: string) {
   }
 }
 
-function hasPortableText(value?: PortableTextBlock[] | string | null) {
+export function hasPortableText(value?: PortableTextBlock[] | string | null) {
   if (Array.isArray(value)) return value.length > 0
   return typeof value === 'string' && value.trim().length > 0
 }
 
-function DescriptionText({
+function DescriptionContent({
   description,
+  extendedDescription,
   expanded,
+  showExtended,
   showMore,
   onMore,
   onLess,
 }: {
-  description: PortableTextBlock[] | string
+  description?: PortableTextBlock[] | string | null
+  extendedDescription?: PortableTextBlock[] | null
   expanded: boolean
+  showExtended: boolean
   showMore: boolean
   onMore: () => void
   onLess: () => void
 }) {
-  if (Array.isArray(description)) {
+  const shortDescription = hasPortableText(description) ? (
+    Array.isArray(description) ? (
+      <PortableText value={description} components={portableTextComponents} />
+    ) : (
+      <p className="project-info-para">{description}</p>
+    )
+  ) : null
+
+  if (!expanded && showMore) {
     return (
-      <div
-        className={
-          expanded ? 'project-info-description' : 'project-info-description project-info-description--clamped'
-        }
-      >
-        <PortableText value={description} components={portableTextComponents} />
-        {!expanded && showMore && (
-          <button type="button" className="project-info-inline-action" onClick={onMore}>
-            More
-          </button>
-        )}
-        {expanded && (
-          <button type="button" className="project-info-inline-action" onClick={onLess}>
-            Less
-          </button>
-        )}
+      <div className="project-info-description project-info-description--with-more">
+        {shortDescription}
+        <button type="button" className="project-info-inline-action" onClick={onMore}>
+          More
+        </button>
       </div>
     )
   }
 
   return (
-    <div
-      className={
-        expanded ? 'project-info-description' : 'project-info-description project-info-description--clamped'
-      }
-    >
-      <p className="project-info-para">{description}</p>
-      {!expanded && showMore && (
-        <button type="button" className="project-info-inline-action" onClick={onMore}>
-          More
-        </button>
+    <div className="project-info-description">
+      {shortDescription}
+      {showExtended && hasPortableText(extendedDescription) && (
+        <div className="project-info-extended project-info-description--with-more">
+          <PortableText value={extendedDescription!} components={portableTextComponents} />
+          {expanded && (
+            <button type="button" className="project-info-inline-action" onClick={onLess}>
+              Less
+            </button>
+          )}
+        </div>
       )}
-      {expanded && (
+      {expanded && !hasPortableText(extendedDescription) && (
         <button type="button" className="project-info-inline-action" onClick={onLess}>
           Less
         </button>
@@ -175,6 +177,7 @@ function MetaColumn({
 type ProjectInfoPanelProps = {
   projectSlug: string
   description?: PortableTextBlock[] | string | null
+  extendedDescription?: PortableTextBlock[] | null
   categories?: ProjectCategory[]
   year?: string | null
   visitUrl?: string | null
@@ -182,6 +185,8 @@ type ProjectInfoPanelProps = {
   credits?: PortableTextBlock[] | null
   isOpen: boolean
   isExpanded: boolean
+  isClosing: boolean
+  onLess: () => void
   onClose: () => void
   onExpand: () => void
   onCollapse: () => void
@@ -190,6 +195,7 @@ type ProjectInfoPanelProps = {
 export function ProjectInfoPanel({
   projectSlug,
   description,
+  extendedDescription,
   categories = [],
   year,
   visitUrl,
@@ -197,42 +203,30 @@ export function ProjectInfoPanel({
   credits,
   isOpen,
   isExpanded,
+  isClosing,
+  onLess,
   onClose,
   onExpand,
   onCollapse,
 }: ProjectInfoPanelProps) {
   const autoScroll = useAutoScroll()
-  const [isClosing, setIsClosing] = useState(false)
-
-  const handleLess = useCallback(() => {
-    setIsClosing(true)
-  }, [])
-
-  useEffect(() => {
-    if (isExpanded) setIsClosing(false)
-  }, [isExpanded])
 
   useEffect(() => {
     if (!isClosing) return
     const timer = window.setTimeout(() => {
-      setIsClosing(false)
       onClose()
     }, 350)
     return () => window.clearTimeout(timer)
   }, [isClosing, onClose])
 
   const hasExpandableContent =
-    hasPortableText(description) &&
-    (Array.isArray(description)
-      ? description.length > 1 ||
-        JSON.stringify(description).length > 280 ||
-        !!visitUrl ||
-        hasPortableText(recognition) ||
-        hasPortableText(credits)
-      : typeof description === 'string' && description.length > 280 ||
-        !!visitUrl ||
-        hasPortableText(recognition) ||
-        hasPortableText(credits))
+    hasPortableText(extendedDescription) ||
+    !!visitUrl ||
+    hasPortableText(recognition) ||
+    hasPortableText(credits)
+
+  const hasInfoContent =
+    hasPortableText(description) || hasPortableText(extendedDescription)
 
   useEffect(() => {
     if (!isExpanded && !isClosing) return
@@ -259,9 +253,8 @@ export function ProjectInfoPanel({
     }
   }, [isExpanded, isClosing, autoScroll])
 
-  if (!isOpen || !hasPortableText(description)) return null
+  if (!isOpen || !hasInfoContent) return null
 
-  const descriptionContent = description as PortableTextBlock[] | string
   const panelId = `project-info-${projectSlug}`
 
   if (isExpanded || isClosing) {
@@ -277,12 +270,14 @@ export function ProjectInfoPanel({
           <div className="project-info-columns">
             <div className="project-info-main">
               <h2 className="project-info-heading">Info</h2>
-              <DescriptionText
-                description={descriptionContent}
+              <DescriptionContent
+                description={description}
+                extendedDescription={extendedDescription}
                 expanded
+                showExtended
                 showMore={false}
                 onMore={onExpand}
-                onLess={handleLess}
+                onLess={onLess}
               />
             </div>
             <MetaColumn
@@ -311,9 +306,11 @@ export function ProjectInfoPanel({
         <div className="project-info-columns">
           <div className="project-info-main">
             <h2 className="project-info-heading">Info</h2>
-            <DescriptionText
-              description={descriptionContent}
+            <DescriptionContent
+              description={description}
+              extendedDescription={extendedDescription}
               expanded={false}
+              showExtended={false}
               showMore={hasExpandableContent}
               onMore={onExpand}
               onLess={onCollapse}

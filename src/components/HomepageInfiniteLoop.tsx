@@ -13,6 +13,7 @@ export type HomepageProject = {
   title: string
   slug: string
   description?: unknown
+  extendedDescription?: PortableTextBlock[] | null
   categories?: ProjectCategory[]
   year?: string | null
   visitUrl?: string | null
@@ -59,6 +60,7 @@ export function HomepageInfiniteLoop({
             projectDescription={
               (project.description ?? null) as PortableTextBlock[] | string | null
             }
+            extendedDescription={project.extendedDescription}
             projectCategories={project.categories ?? []}
             projectYear={project.year}
             visitUrl={project.visitUrl}

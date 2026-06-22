@@ -76,6 +76,7 @@ async function getProjects() {
       title: string
       slug: string
       description?: unknown
+      extendedDescription?: unknown
       visitUrl?: string | null
       recognition?: unknown
       credits?: unknown
@@ -114,6 +115,7 @@ async function getProjects() {
     visitUrl: project.visitUrl ?? null,
     recognition: (project.recognition ?? null) as PortableTextBlock[] | null,
     credits: (project.credits ?? null) as PortableTextBlock[] | null,
+    extendedDescription: (project.extendedDescription ?? null) as PortableTextBlock[] | null,
     year: project.year ?? null,
     slides: (project.slides ?? []).map((slide) => {
       const bg = slide.backgroundColor ?? '#000000'

@@ -1,5 +1,8 @@
 import { defineArrayMember, defineField, defineType } from 'sanity'
 import { linkableBlockMember } from './linkableBlock'
+import { portableTextCharCount } from '../lib/portableTextCharCount'
+
+const DESCRIPTION_CHAR_LIMIT = 215
 
 /** Portfolio project: a full-viewport slideshow of slides. */
 export const projectType = defineType({
@@ -37,7 +40,22 @@ export const projectType = defineType({
       name: 'description',
       type: 'array',
       title: 'Description',
-      description: 'Shown in the project Info panel. Plain text and URL links only.',
+      description: `Short description for the Info panel (max ${DESCRIPTION_CHAR_LIMIT} characters). Plain text and URL links only.`,
+      of: [linkableBlockMember],
+      validation: (Rule) =>
+        Rule.custom((value) => {
+          if (!value) return true
+          const count = portableTextCharCount(value)
+          return count <= DESCRIPTION_CHAR_LIMIT
+            ? true
+            : `Description must be ${DESCRIPTION_CHAR_LIMIT} characters or fewer (currently ${count}).`
+        }),
+    }),
+    defineField({
+      name: 'extendedDescription',
+      type: 'array',
+      title: 'Extended description',
+      description: 'Longer project description. Shown below the short description in the Info panel. Plain text and URL links only.',
       of: [linkableBlockMember],
     }),
     defineField({

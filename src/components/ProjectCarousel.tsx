@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import type { PortableTextBlock } from '@portabletext/types'
 import { useProjectTheme } from '../contexts/ProjectThemeContext'
 import { useAutoScroll } from '../contexts/AutoScrollContext'
-import { ProjectInfoPanel, type ProjectCategory } from './ProjectInfoPanel'
+import { ProjectInfoPanel, type ProjectCategory, hasPortableText } from './ProjectInfoPanel'
 import { Slide } from './Slide'
 
 export type TwoUpItem = {
@@ -41,6 +41,7 @@ export type CarouselSlide =
 type ProjectCarouselProps = {
   projectTitle: string
   projectDescription?: PortableTextBlock[] | string | null
+  extendedDescription?: PortableTextBlock[] | null
   projectCategories?: ProjectCategory[]
   projectYear?: string | null
   visitUrl?: string | null
@@ -56,6 +57,7 @@ type ProjectCarouselProps = {
 export function ProjectCarousel({
   projectTitle,
   projectDescription,
+  extendedDescription,
   projectCategories = [],
   projectYear,
   visitUrl,
@@ -67,6 +69,7 @@ export function ProjectCarousel({
   isLoopCopy = false,
 }: ProjectCarouselProps) {
   const [index, setIndex] = useState(0)
+  const [infoClosing, setInfoClosing] = useState(false)
   const {
     activeProjectSlug,
     setThemeColor,
@@ -87,6 +90,7 @@ export function ProjectCarousel({
   const autoScroll = useAutoScroll()
   const descriptionOpen = descriptionOpenSlug === projectSlug
   const infoExpanded = infoExpandedSlug === projectSlug
+  const chromeUnderFull = infoExpanded && !infoClosing
   const count = slides.length
   const hasMultiple = count > 1
   const current = slides[index]
@@ -118,15 +122,22 @@ export function ProjectCarousel({
 
   const hasDescription =
     !!projectSlug &&
-    (Array.isArray(projectDescription)
-      ? projectDescription.length > 0
-      : typeof projectDescription === 'string' && projectDescription.trim().length > 0)
+    (hasPortableText(projectDescription) || hasPortableText(extendedDescription))
 
   const closeInfo = useCallback(() => {
     if (!projectSlug) return
+    setInfoClosing(false)
     setDescriptionOpenSlug(null)
     setInfoExpandedSlug(null)
   }, [projectSlug, setDescriptionOpenSlug, setInfoExpandedSlug])
+
+  const handleLess = useCallback(() => {
+    setInfoClosing(true)
+  }, [])
+
+  useEffect(() => {
+    if (infoExpanded) setInfoClosing(false)
+  }, [infoExpanded])
 
   const handleInfoClick = useCallback(() => {
     if (!projectSlug) return
@@ -149,6 +160,7 @@ export function ProjectCarousel({
 
   const handleExpandInfo = useCallback(() => {
     if (!projectSlug) return
+    setInfoClosing(false)
     setInfoExpandedSlug(projectSlug)
   }, [projectSlug, setInfoExpandedSlug])
 
@@ -213,15 +225,19 @@ export function ProjectCarousel({
       )}
 
       {/* Info trigger (bottom left) */}
-      <div className="absolute bottom-0 left-0 z-20 max-w-[80%] py-[1.3%] px-[2%] pointer-events-none">
+      <div
+        className={`absolute bottom-0 left-0 z-20 max-w-[80%] py-[1.3%] px-[2%] pointer-events-none project-carousel-chrome${chromeUnderFull ? ' project-carousel-chrome--under-full' : ''}`}
+        aria-hidden={chromeUnderFull}
+      >
         <div className="type-size-1 pointer-events-auto" style={themeStyle}>
-          {hasDescription && !infoExpanded && (
+          {hasDescription && (
             <button
               type="button"
               onClick={handleInfoClick}
               className="project-info-trigger block text-left font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2"
               aria-expanded={descriptionOpen}
               aria-controls={projectSlug ? `project-info-${projectSlug}` : undefined}
+              tabIndex={chromeUnderFull ? -1 : 0}
             >
               Info
             </button>
@@ -232,6 +248,7 @@ export function ProjectCarousel({
       <ProjectInfoPanel
         projectSlug={projectSlug ?? ''}
         description={projectDescription}
+        extendedDescription={extendedDescription}
         categories={projectCategories}
         year={projectYear}
         visitUrl={visitUrl}
@@ -239,19 +256,22 @@ export function ProjectCarousel({
         credits={credits}
         isOpen={descriptionOpen}
         isExpanded={infoExpanded}
+        isClosing={infoClosing}
+        onLess={handleLess}
         onClose={closeInfo}
         onExpand={handleExpandInfo}
         onCollapse={handleCollapseInfo}
       />
 
       {/* Slide counter (bottom right) — type-size-1, same padding as header */}
-      {!infoExpanded && (
-        <div className="absolute bottom-0 right-0 z-10 py-[1.3%] px-[2%]">
-          <p className="type-size-1 text-right" style={themeStyle} aria-live="polite">
-            {index + 1} / {count}
-          </p>
-        </div>
-      )}
+      <div
+        className={`absolute bottom-0 right-0 z-10 py-[1.3%] px-[2%] project-carousel-chrome${chromeUnderFull ? ' project-carousel-chrome--under-full' : ''}`}
+        aria-hidden={chromeUnderFull}
+      >
+        <p className="type-size-1 text-right" style={themeStyle} aria-live="polite">
+          {index + 1} / {count}
+        </p>
+      </div>
     </section>
   )
 }

@@ -68,6 +68,17 @@ body {
   text-align: left;
 }
 
+.project-info-trigger:hover {
+  transform: rotateX(180deg);
+  display: inline-block;
+}
+
+.project-carousel-chrome--under-full {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
 /* Project info panel — half (bottom sheet) and full (screen takeover) */
 .project-info-layer {
   position: absolute;
@@ -151,13 +162,13 @@ body {
 }
 
 .project-info-main {
-  width: 66.66667%;
-  padding: 0 2%;
+  width: 65%;
+  padding: 0 2% 0 0;
 }
 
 .project-info-meta {
-  width: 33.33333%;
-  padding: 0 2%;
+  width: 35%;
+  padding: 0;
 }
 
 .project-info-heading,
@@ -175,7 +186,13 @@ body {
   margin: 0;
 }
 
-.project-info-description--clamped .project-info-para + .project-info-para::before {
+.project-info-description--with-more .project-info-para {
+  display: inline;
+  margin: 0;
+}
+
+.project-info-description--clamped .project-info-para + .project-info-para::before,
+.project-info-description--with-more .project-info-para + .project-info-para::before {
   content: ' ';
 }
 
@@ -186,9 +203,13 @@ body {
   overflow: hidden;
 }
 
+.project-info-extended.project-info-description--with-more {
+  margin-top: 6%;
+}
+
 .project-info-inline-action {
   display: inline;
-  margin: 0;
+  margin: 0 0 0 2%;
   padding: 0;
   border: 0;
   background: none;
@@ -238,13 +259,14 @@ body {
 
 @media (max-width: 800px) {
   .project-info-full-scroll {
-    padding-top: 17%;
+    padding: 16% 4% 4% 4%;
+    font-size: 4.2vw;
   }
 
   .project-info-main,
   .project-info-meta {
     width: 100%;
-    padding: 0 4%;
+    padding: 0;
   }
 
   .project-info-meta {
