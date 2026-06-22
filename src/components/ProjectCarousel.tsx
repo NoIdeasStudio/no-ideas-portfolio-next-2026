@@ -52,6 +52,8 @@ type ProjectCarouselProps = {
   slides: CarouselSlide[]
   /** When true, section has no id (used for duplicate in infinite loop). */
   isLoopCopy?: boolean
+  /** When true, parent wrapper owns the section id (lazy-mount placeholder). */
+  omitSectionId?: boolean
 }
 
 export function ProjectCarousel({
@@ -67,6 +69,7 @@ export function ProjectCarousel({
   themeColor: projectThemeColor = '#fff',
   slides,
   isLoopCopy = false,
+  omitSectionId = false,
 }: ProjectCarouselProps) {
   const [index, setIndex] = useState(0)
   const [infoClosing, setInfoClosing] = useState(false)
@@ -190,38 +193,30 @@ export function ProjectCarousel({
 
   if (!count) return null
 
+  const activeSlide = slides[index]
+
   return (
     <section
-      id={isLoopCopy ? undefined : (projectSlug ?? undefined)}
-      className="hero-slider relative h-screen w-full overflow-hidden bg-black"
+      id={isLoopCopy || omitSectionId ? undefined : (projectSlug ?? undefined)}
+      className="hero-slider project-viewport-height relative w-full overflow-hidden bg-black"
       aria-label={`Project: ${projectTitle}`}
     >
-      {/* Slider mask: one visible slide */}
-      <div className="relative h-full w-full">
-        {slides.map((slide, i) => (
-          <div
-            key={i}
-            className="absolute inset-0 h-full w-full"
-            style={{
-              opacity: i === index ? 1 : 0,
-              pointerEvents: i === index ? 'auto' : 'none',
-              backgroundColor: slide.backgroundColor ?? '#000000',
-            }}
-            aria-hidden={i !== index}
-          >
-            {slide.backgroundVideoUrl && (
-              <video
-                src={slide.backgroundVideoUrl}
-                className="absolute inset-0 h-full w-full object-cover"
-                autoPlay
-                muted
-                loop
-                playsInline
-              />
-            )}
-            <Slide slide={slide} />
-          </div>
-        ))}
+      {/* Active slide only — avoids loading every slide's media at once */}
+      <div
+        className="relative h-full w-full"
+        style={{ backgroundColor: activeSlide?.backgroundColor ?? '#000000' }}
+      >
+        {activeSlide?.backgroundVideoUrl && (
+          <video
+            src={activeSlide.backgroundVideoUrl}
+            className="absolute inset-0 h-full w-full object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+          />
+        )}
+        {activeSlide && <Slide slide={activeSlide} />}
       </div>
 
       {/* Left nav: 40% width, cursor w-resize (system left arrow) */}

@@ -10,18 +10,48 @@ const LOAD_THRESHOLD_PX = 800
 
 type LazyLoopSectionProps = {
   project: HomepageProject
+  /** Duplicate block in infinite loop — no section id. */
+  isLoopCopy?: boolean
+  /** Mount carousel immediately (e.g. first homepage project for LCP). */
+  mountImmediately?: boolean
+}
+
+function getFirstSlideBg(project: HomepageProject): string {
+  const first = project.slides?.[0]
+  if (first && 'backgroundColor' in first && first.backgroundColor) {
+    return first.backgroundColor
+  }
+  return '#000000'
+}
+
+function shouldMountFromHash(slug: string): boolean {
+  if (typeof window === 'undefined') return false
+  return window.location.hash === `#${slug}`
 }
 
 /**
  * Renders a lightweight placeholder until the section is near the viewport,
- * then mounts the full ProjectCarousel (images/videos). Used for the duplicate
- * block in the infinite loop to avoid loading all duplicate media up front.
+ * then mounts the full ProjectCarousel. Used for off-screen homepage projects
+ * and duplicate blocks in the infinite loop.
  */
-export function LazyLoopSection({ project }: LazyLoopSectionProps) {
-  const [inView, setInView] = useState(false)
+export function LazyLoopSection({
+  project,
+  isLoopCopy = false,
+  mountImmediately = false,
+}: LazyLoopSectionProps) {
+  const [inView, setInView] = useState(mountImmediately)
   const wrapperRef = useRef<HTMLDivElement>(null)
+  const sectionId = !isLoopCopy ? project.slug : undefined
 
   useEffect(() => {
+    if (mountImmediately || inView) return
+    if (shouldMountFromHash(project.slug)) {
+      setInView(true)
+    }
+  }, [mountImmediately, inView, project.slug])
+
+  useEffect(() => {
+    if (inView) return
     const el = wrapperRef.current
     if (!el) return
 
@@ -38,42 +68,43 @@ export function LazyLoopSection({ project }: LazyLoopSectionProps) {
 
     observer.observe(el)
     return () => observer.disconnect()
-  }, [])
+  }, [inView])
 
-  const firstSlideBg =
-    project.slides?.[0] && 'backgroundColor' in project.slides[0]
-      ? (project.slides[0].backgroundColor as string) ?? '#000000'
-      : '#000000'
+  const carousel = (
+    <ProjectCarousel
+      projectTitle={project.title}
+      projectDescription={
+        (project.description ?? null) as PortableTextBlock[] | string | null
+      }
+      extendedDescription={project.extendedDescription}
+      projectCategories={project.categories ?? []}
+      projectYear={project.year}
+      visitUrl={project.visitUrl}
+      recognition={project.recognition}
+      credits={project.credits}
+      projectSlug={project.slug}
+      themeColor={project.themeColor ?? '#fff'}
+      slides={project.slides ?? []}
+      isLoopCopy={isLoopCopy}
+      omitSectionId={Boolean(sectionId)}
+    />
+  )
 
-  if (!inView) {
+  if (inView) {
     return (
-      <div
-        ref={wrapperRef}
-        className="relative h-screen w-full flex-shrink-0"
-        style={{ backgroundColor: firstSlideBg }}
-        aria-label={`Project: ${project.title} (loading)`}
-      />
+      <div ref={wrapperRef} id={sectionId}>
+        {carousel}
+      </div>
     )
   }
 
   return (
-    <div ref={wrapperRef}>
-      <ProjectCarousel
-        projectTitle={project.title}
-        projectDescription={
-          (project.description ?? null) as PortableTextBlock[] | string | null
-        }
-        extendedDescription={project.extendedDescription}
-        projectCategories={project.categories ?? []}
-        projectYear={project.year}
-        visitUrl={project.visitUrl}
-        recognition={project.recognition}
-        credits={project.credits}
-        projectSlug={project.slug}
-        themeColor={project.themeColor ?? '#fff'}
-        slides={project.slides ?? []}
-        isLoopCopy
-      />
-    </div>
+    <div
+      ref={wrapperRef}
+      id={sectionId}
+      className="project-viewport-height relative w-full flex-shrink-0"
+      style={{ backgroundColor: getFirstSlideBg(project) }}
+      aria-label={`Project: ${project.title} (loading)`}
+    />
   )
 }

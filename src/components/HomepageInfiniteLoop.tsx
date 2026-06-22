@@ -5,7 +5,7 @@ import type { PortableTextBlock } from '@portabletext/types'
 import { useAutoScroll } from '../contexts/AutoScrollContext'
 import { HomepageThemeObserver } from './HomepageThemeObserver'
 import { LazyLoopSection } from './LazyLoopSection'
-import { ProjectCarousel, type CarouselSlide } from './ProjectCarousel'
+import type { CarouselSlide } from './ProjectCarousel'
 import type { ProjectCategory } from './ProjectInfoPanel'
 
 export type HomepageProject = {
@@ -53,22 +53,11 @@ export function HomepageInfiniteLoop({
     <>
       <HomepageThemeObserver projects={themeObserverProjects} />
       <div ref={loopRef} aria-hidden={false}>
-        {projects.map((project) => (
-          <ProjectCarousel
+        {projects.map((project, i) => (
+          <LazyLoopSection
             key={project._id}
-            projectTitle={project.title}
-            projectDescription={
-              (project.description ?? null) as PortableTextBlock[] | string | null
-            }
-            extendedDescription={project.extendedDescription}
-            projectCategories={project.categories ?? []}
-            projectYear={project.year}
-            visitUrl={project.visitUrl}
-            recognition={project.recognition}
-            credits={project.credits}
-            projectSlug={project.slug}
-            themeColor={project.themeColor ?? '#fff'}
-            slides={project.slides ?? []}
+            project={project}
+            mountImmediately={i === 0}
           />
         ))}
       </div>
