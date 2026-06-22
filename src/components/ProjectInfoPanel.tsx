@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { PortableText } from 'next-sanity'
 import type { PortableTextBlock } from '@portabletext/types'
 import { useAutoScroll } from '../contexts/AutoScrollContext'
@@ -210,6 +211,11 @@ export function ProjectInfoPanel({
   onCollapse,
 }: ProjectInfoPanelProps) {
   const autoScroll = useAutoScroll()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     if (!isClosing) return
@@ -232,23 +238,23 @@ export function ProjectInfoPanel({
     if (!isExpanded && !isClosing) return
 
     autoScroll?.setScrollLocked(true)
+    const html = document.documentElement
+    const body = document.body
     const scrollY = window.scrollY
-    const { style } = document.body
-    style.position = 'fixed'
-    style.top = `-${scrollY}px`
-    style.left = '0'
-    style.right = '0'
-    style.overflow = 'hidden'
-    style.width = '100%'
+
+    const prevHtmlOverflow = html.style.overflow
+    const prevBodyOverflow = body.style.overflow
+    const prevBodyTouchAction = body.style.touchAction
+
+    html.style.overflow = 'hidden'
+    body.style.overflow = 'hidden'
+    body.style.touchAction = 'none'
 
     return () => {
       autoScroll?.setScrollLocked(false)
-      style.position = ''
-      style.top = ''
-      style.left = ''
-      style.right = ''
-      style.overflow = ''
-      style.width = ''
+      html.style.overflow = prevHtmlOverflow
+      body.style.overflow = prevBodyOverflow
+      body.style.touchAction = prevBodyTouchAction
       window.scrollTo(0, scrollY)
     }
   }, [isExpanded, isClosing, autoScroll])
@@ -258,7 +264,7 @@ export function ProjectInfoPanel({
   const panelId = `project-info-${projectSlug}`
 
   if (isExpanded || isClosing) {
-    return (
+    const fullPanel = (
       <div
         id={panelId}
         className={`project-info-full${isClosing ? ' project-info-full--out' : ''}`}
@@ -292,6 +298,8 @@ export function ProjectInfoPanel({
         </div>
       </div>
     )
+
+    return mounted ? createPortal(fullPanel, document.body) : null
   }
 
   return (

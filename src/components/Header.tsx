@@ -22,7 +22,10 @@ export function Header() {
   return (
     <header
       className={`type-size-1${headerColor ? ' header-theme-override' : ''}${projectTheme?.infoExpandedSlug ? ' header-info-expanded' : ''}`}
-      style={headerColor ? { color: headerColor } : undefined}
+      style={{
+        ...(headerColor ? { color: headerColor } : {}),
+        ...(projectTheme?.infoExpandedSlug ? { zIndex: 50 } : {}),
+      }}
     >
       <div className="header-left">
         <Link href="/" className={pathname === '/' ? 'selected' : ''}>

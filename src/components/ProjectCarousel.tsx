@@ -158,6 +158,26 @@ export function ProjectCarousel({
     isLoopCopy,
   ])
 
+  const handleTitleClick = useCallback(() => {
+    if (!projectSlug || !hasDescription) return
+    if (descriptionOpenSlug === projectSlug) {
+      closeInfo()
+    } else {
+      setDescriptionOpenSlug(projectSlug)
+      setInfoExpandedSlug(projectSlug)
+    }
+    autoScroll?.onCarouselInteraction(projectSlug, { isLoopCopy: isLoopCopy ?? false })
+  }, [
+    projectSlug,
+    hasDescription,
+    descriptionOpenSlug,
+    closeInfo,
+    setDescriptionOpenSlug,
+    setInfoExpandedSlug,
+    autoScroll,
+    isLoopCopy,
+  ])
+
   const handleExpandInfo = useCallback(() => {
     if (!projectSlug) return
     setInfoClosing(false)
@@ -224,9 +244,9 @@ export function ProjectCarousel({
         />
       )}
 
-      {/* Info trigger (bottom left) */}
+      {/* Info trigger (bottom left, desktop) */}
       <div
-        className={`absolute bottom-0 left-0 z-20 max-w-[80%] py-[1.3%] px-[2%] pointer-events-none project-carousel-chrome${chromeUnderFull ? ' project-carousel-chrome--under-full' : ''}`}
+        className={`absolute bottom-0 left-0 z-20 max-w-[80%] py-[1.3%] px-[2%] pointer-events-none project-carousel-chrome project-carousel-chrome--desktop${chromeUnderFull ? ' project-carousel-chrome--under-full' : ''}`}
         aria-hidden={chromeUnderFull}
       >
         <div className="type-size-1 pointer-events-auto" style={themeStyle}>
@@ -255,7 +275,7 @@ export function ProjectCarousel({
         recognition={recognition}
         credits={credits}
         isOpen={descriptionOpen}
-        isExpanded={infoExpanded}
+        isExpanded={infoExpanded && !isLoopCopy}
         isClosing={infoClosing}
         onLess={handleLess}
         onClose={closeInfo}
@@ -263,13 +283,39 @@ export function ProjectCarousel({
         onCollapse={handleCollapseInfo}
       />
 
-      {/* Slide counter (bottom right) — type-size-1, same padding as header */}
+      {/* Project title + slide counter (bottom center, mobile) */}
       <div
-        className={`absolute bottom-0 right-0 z-10 py-[1.3%] px-[2%] project-carousel-chrome${chromeUnderFull ? ' project-carousel-chrome--under-full' : ''}`}
+        className={`project-carousel-chrome project-carousel-chrome--mobile${chromeUnderFull ? ' project-carousel-chrome--under-full' : ''}`}
+        aria-hidden={chromeUnderFull}
+      >
+        <div className="type-size-1 project-carousel-bottom-mobile" style={themeStyle}>
+          {hasDescription ? (
+            <button
+              type="button"
+              onClick={handleTitleClick}
+              className={`project-title-btn project-name-btn font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2${descriptionOpen ? ' is-open' : ''}`}
+              aria-expanded={descriptionOpen}
+              aria-controls={projectSlug ? `project-info-${projectSlug}` : undefined}
+              tabIndex={chromeUnderFull ? -1 : 0}
+            >
+              {projectTitle}
+            </button>
+          ) : (
+            <p className="project-carousel-mobile-title font-medium">{projectTitle}</p>
+          )}
+          <p className="project-carousel-slide-count" aria-live="polite">
+            {index + 1} of {count}
+          </p>
+        </div>
+      </div>
+
+      {/* Slide counter (bottom right, desktop) — type-size-1, same padding as header */}
+      <div
+        className={`absolute bottom-0 right-0 z-10 py-[1.3%] px-[2%] project-carousel-chrome project-carousel-chrome--desktop${chromeUnderFull ? ' project-carousel-chrome--under-full' : ''}`}
         aria-hidden={chromeUnderFull}
       >
         <p className="type-size-1 text-right" style={themeStyle} aria-live="polite">
-          {index + 1} / {count}
+          {index + 1} of {count}
         </p>
       </div>
     </section>
