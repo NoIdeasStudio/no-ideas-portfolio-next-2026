@@ -1,10 +1,52 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import type { CarouselSlide, TwoUpItem } from './ProjectCarousel'
 import { LottiePlayer } from './LottiePlayer'
 
 const isSanityImage = (url: string) => url.includes('cdn.sanity.io')
+
+export function CarouselVideo({
+  src,
+  className,
+  isActive,
+  isContain = false,
+}: {
+  src: string
+  className?: string
+  isActive: boolean
+  isContain?: boolean
+}) {
+  const ref = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    const video = ref.current
+    if (!video) return
+    if (isActive) {
+      void video.play().catch(() => {})
+    } else {
+      video.pause()
+    }
+  }, [isActive])
+
+  return (
+    <video
+      ref={ref}
+      src={src}
+      className={
+        className ??
+        (isContain
+          ? 'video-contain max-h-full max-w-full object-contain w-auto h-auto'
+          : 'video-cover absolute inset-0 h-full w-full object-cover')
+      }
+      playsInline
+      muted
+      loop
+      preload="auto"
+    />
+  )
+}
 
 function SingleMedia({
   layout,
@@ -14,6 +56,7 @@ function SingleMedia({
   lottieUrl,
   caption,
   containPadding = '0',
+  isActive,
 }: {
   layout: 'fullBleed' | 'contain'
   mediaType: 'image' | 'video' | 'lottie'
@@ -22,6 +65,7 @@ function SingleMedia({
   lottieUrl?: string | null
   caption?: string | null
   containPadding?: string | null
+  isActive: boolean
 }) {
   const isContain = layout === 'contain'
   const paddingPercent = `${containPadding}%`
@@ -35,8 +79,9 @@ function SingleMedia({
           src={lottieUrl}
           fit={isContain ? 'contain' : 'cover'}
           className={isContain ? 'relative h-full w-full' : 'absolute inset-0 h-full w-full'}
+          autoplay={isActive}
         />
-        {caption && (
+        {caption && isActive && (
           <p className="absolute bottom-4 left-4 right-4 text-xs text-white/80 text-center z-10">
             {caption}
           </p>
@@ -48,19 +93,8 @@ function SingleMedia({
   if (mediaType === 'video' && videoUrl) {
     return (
       <div className={containerClass} style={containerStyle}>
-        <video
-          src={videoUrl}
-          className={
-            isContain
-              ? 'video-contain max-h-full max-w-full object-contain w-auto h-auto'
-              : 'video-cover absolute inset-0 h-full w-full object-cover'
-          }
-          playsInline
-          muted
-          loop
-          autoPlay
-        />
-        {caption && (
+        <CarouselVideo src={videoUrl} isActive={isActive} isContain={isContain} />
+        {caption && isActive && (
           <p className="absolute bottom-4 left-4 right-4 text-xs text-white/80 text-center z-10">
             {caption}
           </p>
@@ -81,6 +115,7 @@ function SingleMedia({
             fill
             className="object-cover"
             sizes="100vw"
+            priority={isActive}
           />
         ) : (
           <img
@@ -91,10 +126,11 @@ function SingleMedia({
                 ? 'relative max-h-full max-w-full w-auto h-auto object-contain'
                 : 'absolute inset-0 w-full h-full object-cover'
             }
-            loading={isContain ? 'eager' : 'lazy'}
+            loading="eager"
+            decoding="async"
           />
         )}
-        {caption && (
+        {caption && isActive && (
           <p className="absolute bottom-4 left-4 right-4 text-xs text-white/80 text-center z-10">
             {caption}
           </p>
@@ -106,7 +142,7 @@ function SingleMedia({
   return null
 }
 
-function TwoUpCell({ item }: { item: TwoUpItem }) {
+function TwoUpCell({ item, isActive }: { item: TwoUpItem; isActive: boolean }) {
   const { mediaType, imageUrl, videoUrl, lottieUrl, backgroundVideoUrl, fit, containPadding } = item
   const isContain = fit === 'contain'
   const paddingPercent = isContain ? `${containPadding ?? '0'}%` : '0'
@@ -119,19 +155,17 @@ function TwoUpCell({ item }: { item: TwoUpItem }) {
     return (
       <div className={cellClass} style={cellStyle}>
         {backgroundVideoUrl && (
-          <video
+          <CarouselVideo
             src={backgroundVideoUrl}
+            isActive={isActive}
             className="absolute inset-0 h-full w-full object-cover"
-            autoPlay
-            muted
-            loop
-            playsInline
           />
         )}
         <LottiePlayer
           src={lottieUrl}
           fit={isContain ? 'contain' : 'cover'}
           className={isContain ? 'relative h-full w-full' : 'absolute inset-0 h-full w-full'}
+          autoplay={isActive}
         />
       </div>
     )
@@ -141,27 +175,13 @@ function TwoUpCell({ item }: { item: TwoUpItem }) {
     return (
       <div className={cellClass} style={cellStyle}>
         {backgroundVideoUrl && (
-          <video
+          <CarouselVideo
             src={backgroundVideoUrl}
+            isActive={isActive}
             className="absolute inset-0 h-full w-full object-cover"
-            autoPlay
-            muted
-            loop
-            playsInline
           />
         )}
-        <video
-          src={videoUrl}
-          className={
-            isContain
-              ? 'relative max-h-full max-w-full w-auto h-auto object-contain'
-              : 'absolute inset-0 w-full h-full object-cover'
-          }
-          playsInline
-          muted
-          loop
-          autoPlay
-        />
+        <CarouselVideo src={videoUrl} isActive={isActive} isContain={isContain} />
       </div>
     )
   }
@@ -171,13 +191,10 @@ function TwoUpCell({ item }: { item: TwoUpItem }) {
     return (
       <div className={cellClass} style={cellStyle}>
         {backgroundVideoUrl && (
-          <video
+          <CarouselVideo
             src={backgroundVideoUrl}
+            isActive={isActive}
             className="absolute inset-0 h-full w-full object-cover"
-            autoPlay
-            muted
-            loop
-            playsInline
           />
         )}
         {useNextImage ? (
@@ -187,6 +204,7 @@ function TwoUpCell({ item }: { item: TwoUpItem }) {
             fill
             className="object-cover"
             sizes="50vw"
+            priority={isActive}
           />
         ) : (
           <img
@@ -197,7 +215,8 @@ function TwoUpCell({ item }: { item: TwoUpItem }) {
                 ? 'relative max-h-full max-w-full w-auto h-auto object-contain'
                 : 'absolute inset-0 w-full h-full object-cover'
             }
-            loading={isContain ? 'eager' : 'lazy'}
+            loading="eager"
+            decoding="async"
           />
         )}
       </div>
@@ -207,25 +226,28 @@ function TwoUpCell({ item }: { item: TwoUpItem }) {
   return (
     <div className={cellClass}>
       {backgroundVideoUrl && (
-        <video
+        <CarouselVideo
           src={backgroundVideoUrl}
+          isActive={isActive}
           className="absolute inset-0 h-full w-full object-cover"
-          autoPlay
-          muted
-          loop
-          playsInline
         />
       )}
     </div>
   )
 }
 
-export function Slide({ slide }: { slide: CarouselSlide }) {
+export function Slide({
+  slide,
+  isActive = true,
+}: {
+  slide: CarouselSlide
+  isActive?: boolean
+}) {
   if (slide.layout === 'twoUp') {
     return (
       <div className="slide-content relative h-full w-full flex flex-col md:flex-row overflow-hidden">
-        <TwoUpCell item={slide.items[0]} />
-        <TwoUpCell item={slide.items[1]} />
+        <TwoUpCell item={slide.items[0]} isActive={isActive} />
+        <TwoUpCell item={slide.items[1]} isActive={isActive} />
       </div>
     )
   }
@@ -239,6 +261,7 @@ export function Slide({ slide }: { slide: CarouselSlide }) {
       lottieUrl={slide.lottieUrl}
       caption={slide.caption}
       containPadding={slide.containPadding}
+      isActive={isActive}
     />
   )
 }

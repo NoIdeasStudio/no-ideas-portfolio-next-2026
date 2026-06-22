@@ -7,16 +7,25 @@ type LottiePlayerProps = {
   src: string
   className?: string
   fit?: 'cover' | 'contain'
+  /** When false, animation loads but stays paused until set true. */
+  autoplay?: boolean
 }
 
-export function LottiePlayer({ src, className, fit = 'cover' }: LottiePlayerProps) {
+export function LottiePlayer({
+  src,
+  className,
+  fit = 'cover',
+  autoplay = true,
+}: LottiePlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const animationRef = useRef<AnimationItem | undefined>(undefined)
+  const autoplayRef = useRef(autoplay)
+  autoplayRef.current = autoplay
 
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
 
-    let animation: AnimationItem | undefined
     let cancelled = false
 
     async function load() {
@@ -32,28 +41,39 @@ export function LottiePlayer({ src, className, fit = 'cover' }: LottiePlayerProp
         }
         const animationData = await response.json()
         if (cancelled || !containerRef.current) return
-        animation = lottie.loadAnimation({
+        const animation = lottie.loadAnimation({
           container: containerRef.current,
           renderer: 'svg',
           loop: true,
-          autoplay: true,
+          autoplay: false,
           animationData,
           rendererSettings: {
             preserveAspectRatio: fit === 'contain' ? 'xMidYMid meet' : 'xMidYMid slice',
           },
         })
+        animationRef.current = animation
+        if (autoplayRef.current) animation.play()
       } catch (err) {
         console.error('[LottiePlayer] Failed to load animation:', err)
       }
     }
 
+    animationRef.current = undefined
     void load()
 
     return () => {
       cancelled = true
-      animation?.destroy()
+      animationRef.current?.destroy()
+      animationRef.current = undefined
     }
   }, [src, fit])
+
+  useEffect(() => {
+    const animation = animationRef.current
+    if (!animation) return
+    if (autoplay) animation.play()
+    else animation.pause()
+  }, [autoplay])
 
   return (
     <div

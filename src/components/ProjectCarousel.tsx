@@ -5,7 +5,7 @@ import type { PortableTextBlock } from '@portabletext/types'
 import { useProjectTheme } from '../contexts/ProjectThemeContext'
 import { useAutoScroll } from '../contexts/AutoScrollContext'
 import { ProjectInfoPanel, type ProjectCategory, hasPortableText } from './ProjectInfoPanel'
-import { Slide } from './Slide'
+import { Slide, CarouselVideo } from './Slide'
 
 export type TwoUpItem = {
   mediaType: 'image' | 'video' | 'lottie'
@@ -54,6 +54,14 @@ type ProjectCarouselProps = {
   isLoopCopy?: boolean
   /** When true, parent wrapper owns the section id (lazy-mount placeholder). */
   omitSectionId?: boolean
+}
+
+/** Active slide plus adjacent slides for prefetch (max 3 mounted at once). */
+function getMountedSlideIndices(activeIndex: number, count: number): number[] {
+  if (count <= 1) return [activeIndex]
+  const prev = activeIndex <= 0 ? count - 1 : activeIndex - 1
+  const next = activeIndex >= count - 1 ? 0 : activeIndex + 1
+  return [prev, activeIndex, next]
 }
 
 export function ProjectCarousel({
@@ -193,7 +201,7 @@ export function ProjectCarousel({
 
   if (!count) return null
 
-  const activeSlide = slides[index]
+  const mountedIndices = getMountedSlideIndices(index, count)
 
   return (
     <section
@@ -201,22 +209,32 @@ export function ProjectCarousel({
       className="hero-slider relative h-screen w-full overflow-hidden bg-black"
       aria-label={`Project: ${projectTitle}`}
     >
-      {/* Active slide only — avoids loading every slide's media at once */}
-      <div
-        className="relative h-full w-full"
-        style={{ backgroundColor: activeSlide?.backgroundColor ?? '#000000' }}
-      >
-        {activeSlide?.backgroundVideoUrl && (
-          <video
-            src={activeSlide.backgroundVideoUrl}
-            className="absolute inset-0 h-full w-full object-cover"
-            autoPlay
-            muted
-            loop
-            playsInline
-          />
-        )}
-        {activeSlide && <Slide slide={activeSlide} />}
+      <div className="relative h-full w-full">
+        {mountedIndices.map((i) => {
+          const slide = slides[i]
+          const isActive = i === index
+          return (
+            <div
+              key={i}
+              className="absolute inset-0 h-full w-full"
+              style={{
+                opacity: isActive ? 1 : 0,
+                pointerEvents: isActive ? 'auto' : 'none',
+                backgroundColor: slide.backgroundColor ?? '#000000',
+              }}
+              aria-hidden={!isActive}
+            >
+              {slide.backgroundVideoUrl && (
+                <CarouselVideo
+                  src={slide.backgroundVideoUrl}
+                  isActive={isActive}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              )}
+              <Slide slide={slide} isActive={isActive} />
+            </div>
+          )
+        })}
       </div>
 
       {/* Left nav: 40% width, cursor w-resize (system left arrow) */}
