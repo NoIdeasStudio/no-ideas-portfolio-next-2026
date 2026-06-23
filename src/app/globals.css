@@ -41,6 +41,14 @@ body {
   line-height: var(--line-height-body);
 }
 
+/* Safari 26+ samples html/body background for toolbar tinting (not #homepage / #index wrappers) */
+html:has(#homepage),
+html:has(#index),
+body:has(#homepage),
+body:has(#index) {
+  background-color: #000;
+}
+
 /* Project sections: dvh sizes to visible viewport (bottom chrome above browser UI); adapts as toolbars animate */
 .project-viewport-height {
   height: 100vh;
