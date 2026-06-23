@@ -61,7 +61,8 @@ function getMountedSlideIndices(activeIndex: number, count: number): number[] {
   if (count <= 1) return [activeIndex]
   const prev = activeIndex <= 0 ? count - 1 : activeIndex - 1
   const next = activeIndex >= count - 1 ? 0 : activeIndex + 1
-  return [prev, activeIndex, next]
+  // With only 2 slides, prev and next are the same index — dedupe for React keys.
+  return [...new Set([prev, activeIndex, next])]
 }
 
 export function ProjectCarousel({
