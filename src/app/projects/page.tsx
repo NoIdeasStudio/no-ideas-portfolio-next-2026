@@ -5,6 +5,7 @@ import {
   siteLayoutQuery,
   allProjectsWithSlidesQuery,
 } from '../../lib/sanity.queries'
+import { sortByOrderIds } from '../../lib/sortByOrderIds'
 import { sanityImageGridUrl, type SanityImageWithAssetUrl } from '../../sanity/lib/image'
 import {
   IndexPageClient,
@@ -23,23 +24,6 @@ export const metadata = {
 type SiteLayout = {
   projectOrderIds?: string[] | null
   categoryOrderIds?: string[] | null
-}
-
-function sortByOrderIds<T extends { _id: string }>(
-  items: T[],
-  orderIds: string[] | undefined | null
-): T[] {
-  if (!orderIds?.length) return items
-  const byId = new Map(items.map((i) => [i._id, i]))
-  const ordered: T[] = []
-  for (const id of orderIds) {
-    const item = byId.get(id)
-    if (item) ordered.push(item)
-  }
-  for (const item of items) {
-    if (!orderIds.includes(item._id)) ordered.push(item)
-  }
-  return ordered
 }
 
 type RawSlide = {
