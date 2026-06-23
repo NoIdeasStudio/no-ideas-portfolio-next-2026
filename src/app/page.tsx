@@ -7,11 +7,7 @@ import { SplashOverlay } from '../components/SplashOverlay'
 import { sanityClient } from '../lib/sanity.client'
 import { allProjectsWithSlidesQuery, siteLayoutQuery } from '../lib/sanity.queries'
 import { sortByOrderIds } from '../lib/sortByOrderIds'
-import {
-  resolveCarouselImage,
-  CAROUSEL_TWO_UP_MAX_PX,
-  type SanityImageWithAssetUrl,
-} from '../sanity/lib/image'
+import { sanityImageServeUrl, type SanityImageWithAssetUrl } from '../sanity/lib/image'
 import { seedProjects } from '../data/seed-projects'
 
 type SiteLayout = {
@@ -112,11 +108,7 @@ async function getProjects() {
       if (slide.layout === 'twoUp' && slide.items?.length === 2) {
         const mapTwoUpItem = (item: TwoUpSlideItem): TwoUpItem => ({
           mediaType: item.mediaType as 'image' | 'video' | 'lottie',
-          imageUrl: resolveCarouselImage(
-            item.image ?? null,
-            item.imageUrl ?? null,
-            { maxWidth: CAROUSEL_TWO_UP_MAX_PX }
-          ),
+          imageUrl: sanityImageServeUrl(item.image ?? null, item.imageUrl ?? null),
           videoUrl: item.videoUrl ?? null,
           lottieUrl: item.lottieUrl ?? null,
           backgroundVideoUrl: item.backgroundVideoUrl ?? null,
@@ -138,7 +130,7 @@ async function getProjects() {
               : undefined,
         }
       }
-      const imageUrl = resolveCarouselImage(slide.image ?? null, slide.imageUrl ?? null)
+      const imageUrl = sanityImageServeUrl(slide.image ?? null, slide.imageUrl ?? null)
       return {
         layout: slide.layout as 'fullBleed' | 'contain',
         mediaType: slide.mediaType as 'image' | 'video' | 'lottie',

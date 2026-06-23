@@ -158,13 +158,17 @@ function TwoUpCell({ item, isActive }: { item: TwoUpItem; isActive: boolean }) {
           <CarouselVideo
             src={backgroundVideoUrl}
             isActive={isActive}
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 z-0 h-full w-full object-cover"
           />
         )}
         <LottiePlayer
           src={lottieUrl}
           fit={isContain ? 'contain' : 'cover'}
-          className={isContain ? 'relative h-full w-full' : 'absolute inset-0 h-full w-full'}
+          className={
+            isContain
+              ? 'relative z-10 h-full w-full'
+              : 'absolute inset-0 z-10 h-full w-full'
+          }
           autoplay={isActive}
         />
       </div>
@@ -178,10 +182,19 @@ function TwoUpCell({ item, isActive }: { item: TwoUpItem; isActive: boolean }) {
           <CarouselVideo
             src={backgroundVideoUrl}
             isActive={isActive}
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 z-0 h-full w-full object-cover"
           />
         )}
-        <CarouselVideo src={videoUrl} isActive={isActive} isContain={isContain} />
+        <CarouselVideo
+          src={videoUrl}
+          isActive={isActive}
+          isContain={isContain}
+          className={
+            isContain
+              ? 'relative z-10 video-contain max-h-full max-w-full object-contain w-auto h-auto'
+              : 'absolute inset-0 z-10 h-full w-full object-cover'
+          }
+        />
       </div>
     )
   }
@@ -194,7 +207,7 @@ function TwoUpCell({ item, isActive }: { item: TwoUpItem; isActive: boolean }) {
           <CarouselVideo
             src={backgroundVideoUrl}
             isActive={isActive}
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 z-0 h-full w-full object-cover"
           />
         )}
         {useNextImage ? (
@@ -202,7 +215,7 @@ function TwoUpCell({ item, isActive }: { item: TwoUpItem; isActive: boolean }) {
             src={imageUrl}
             alt=""
             fill
-            className="object-cover"
+            className="z-10 object-cover"
             sizes="50vw"
             priority={isActive}
           />
@@ -212,8 +225,8 @@ function TwoUpCell({ item, isActive }: { item: TwoUpItem; isActive: boolean }) {
             alt=""
             className={
               isContain
-                ? 'relative max-h-full max-w-full w-auto h-auto object-contain'
-                : 'absolute inset-0 w-full h-full object-cover'
+                ? 'relative z-10 max-h-full max-w-full w-auto h-auto object-contain'
+                : 'absolute inset-0 z-10 w-full h-full object-cover'
             }
             loading="eager"
             decoding="async"
@@ -229,7 +242,7 @@ function TwoUpCell({ item, isActive }: { item: TwoUpItem; isActive: boolean }) {
         <CarouselVideo
           src={backgroundVideoUrl}
           isActive={isActive}
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 z-0 h-full w-full object-cover"
         />
       )}
     </div>
