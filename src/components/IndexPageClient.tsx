@@ -148,14 +148,16 @@ type IndexPageClientProps = {
   categories: IndexCategory[]
   projects: IndexProject[]
   gridItems?: IndexGridItem[]
+  initialFilter?: string
 }
 
 export function IndexPageClient({
   categories,
   projects,
   gridItems = [],
+  initialFilter = 'all',
 }: IndexPageClientProps) {
-  const [filter, setFilter] = useState<string>('all')
+  const [filter, setFilter] = useState<string>(initialFilter)
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
 
   useEffect(() => {

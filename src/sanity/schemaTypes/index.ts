@@ -2,6 +2,7 @@ import { type SchemaTypeDefinition } from 'sanity'
 import { categoryType } from './category'
 import { infoPageType } from './infoPage'
 import { infoSectionObject } from './infoSection'
+import { introParagraphObject } from './introParagraph'
 import { projectType } from './project'
 import { siteLayoutType } from './siteLayout'
 import { slideObject } from './slide'
@@ -14,6 +15,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     siteLayoutType,
     slideObject,
     twoUpItemObject,
+    introParagraphObject,
     infoSectionObject,
     infoPageType,
   ],

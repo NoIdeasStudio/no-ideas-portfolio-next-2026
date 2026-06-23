@@ -119,14 +119,25 @@ async function getIndexData(): Promise<{
   }
 }
 
-export default async function ProjectsPage() {
+export default async function ProjectsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>
+}) {
+  const { category: categorySlug } = await searchParams
   const { categories, projects, gridItems } = await getIndexData()
+
+  const initialFilter =
+    categorySlug != null
+      ? (categories.find((cat) => cat.slug === categorySlug)?._id ?? 'all')
+      : 'all'
 
   return (
     <IndexPageClient
       categories={categories}
       projects={projects}
       gridItems={gridItems}
+      initialFilter={initialFilter}
     />
   )
 }

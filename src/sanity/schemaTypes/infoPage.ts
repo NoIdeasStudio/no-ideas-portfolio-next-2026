@@ -21,55 +21,7 @@ export const infoPageType = defineType({
       type: 'array',
       title: 'Intro paragraphs',
       description: 'Add or remove paragraphs. Each paragraph supports links. New paragraphs are indented.',
-      of: [
-        defineArrayMember({
-          type: 'object',
-          name: 'introParagraph',
-          fields: [
-            {
-              name: 'content',
-              type: 'array',
-              title: 'Paragraph',
-              validation: (Rule) => Rule.required(),
-              of: [
-                defineArrayMember({
-                  type: 'block',
-                  styles: [{ title: 'Normal', value: 'normal' }],
-                  lists: [],
-                  marks: {
-                    decorators: [],
-                    annotations: [
-                      {
-                        name: 'link',
-                        type: 'object',
-                        title: 'URL',
-                        fields: [
-                          { name: 'href', type: 'url', title: 'URL' },
-                          {
-                            name: 'blank',
-                            type: 'boolean',
-                            title: 'Open in new tab',
-                            initialValue: true,
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                }),
-              ],
-            },
-          ],
-          preview: {
-            select: { content: 'content' },
-            prepare({ content }) {
-              const block = Array.isArray(content) ? content.find((b: { _type?: string }) => b?._type === 'block') : null
-              const text = block && 'children' in block ? (block.children as { text?: string }[]).map((c) => c.text).join('') : ''
-              const excerpt = typeof text === 'string' ? text.slice(0, 60) : ''
-              return { title: excerpt ? `${excerpt}${excerpt.length >= 60 ? '…' : ''}` : 'Paragraph' }
-            },
-          },
-        }),
-      ],
+      of: [defineArrayMember({ type: 'introParagraph' })],
     }),
     defineField({
       name: 'sections',

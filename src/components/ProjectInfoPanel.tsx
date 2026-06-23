@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { PortableText } from 'next-sanity'
@@ -124,14 +125,24 @@ function MetaColumn({
   credits?: PortableTextBlock[] | null
   expanded: boolean
 }) {
-  const services = categories.map((c) => c.title).join(', ')
-
   return (
     <div className="project-info-meta">
-      {services && (
+      {categories.length > 0 && (
         <div className="project-info-meta-block">
           <h3 className="project-info-meta-heading">Services</h3>
-          <p className="project-info-meta-text">{services}</p>
+          <p className="project-info-meta-text">
+            {categories.map((cat, i) => (
+              <span key={cat._id}>
+                {i > 0 && ', '}
+                <Link
+                  href={`/projects?category=${encodeURIComponent(cat.slug)}`}
+                  className="project-info-text-link"
+                >
+                  {cat.title}
+                </Link>
+              </span>
+            ))}
+          </p>
         </div>
       )}
       {year && (

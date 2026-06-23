@@ -244,12 +244,12 @@ body:has(#index) {
 }
 
 .project-info-extended.project-info-description--with-more {
-  margin-top: 6%;
+  text-indent: 1.5em;
 }
 
 .project-info-inline-action {
-  display: inline;
-  margin: 0 0 0 2%;
+  display: block;
+  margin: 0;
   padding: 0;
   border: 0;
   background: none;
@@ -261,6 +261,7 @@ body:has(#index) {
 
 .project-info-inline-action:hover {
   transform: none;
+  text-decoration: none;
 }
 
 .project-info-meta-block + .project-info-meta-block {
@@ -276,11 +277,16 @@ body:has(#index) {
 }
 
 .project-info-text-link {
+  text-decoration: none;
+}
+
+.project-info-meta-text > .project-info-text-link {
   text-decoration: underline;
 }
 
-.project-info-text-link:hover {
+.project-info-meta-text > .project-info-text-link:hover {
   transform: none;
+  text-decoration: none;
 }
 
 #homepage .project-info-half a,
