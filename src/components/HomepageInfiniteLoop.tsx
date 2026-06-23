@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { PortableTextBlock } from '@portabletext/types'
 import { useAutoScroll } from '../contexts/AutoScrollContext'
+import { isMobileUserAgent } from '../lib/isMobile'
 import { HomepageThemeObserver } from './HomepageThemeObserver'
 import { LazyLoopSection } from './LazyLoopSection'
 import type { CarouselSlide } from './ProjectCarousel'
@@ -34,6 +35,11 @@ export function HomepageInfiniteLoop({
 }: HomepageInfiniteLoopProps) {
   const loopRef = useRef<HTMLDivElement>(null)
   const setLoopHeight = useAutoScroll()?.setLoopHeight
+  const [showLoopDuplicate, setShowLoopDuplicate] = useState(false)
+
+  useEffect(() => {
+    setShowLoopDuplicate(!isMobileUserAgent())
+  }, [])
 
   useEffect(() => {
     if (!loopRef.current || !setLoopHeight) return
@@ -61,11 +67,17 @@ export function HomepageInfiniteLoop({
           />
         ))}
       </div>
-      <div aria-hidden="true">
-        {projects.map((project) => (
-          <LazyLoopSection key={`${project._id}-loop`} project={project} />
-        ))}
-      </div>
+      {showLoopDuplicate && (
+        <div aria-hidden="true">
+          {projects.map((project) => (
+            <LazyLoopSection
+              key={`${project._id}-loop`}
+              project={project}
+              isLoopCopy
+            />
+          ))}
+        </div>
+      )}
     </>
   )
 }

@@ -459,10 +459,6 @@ header a.selected {
   color: inherit;
 }
 
-#homepage footer {
-  color: rgba(255, 255, 255, 0.7);
-}
-
 @media (max-width: 800px) {
   .type-size-1 {
     font-size: 5.9vw;
@@ -480,11 +476,6 @@ header a.selected {
 
 #info header {
   position: fixed;
-}
-
-/* Only the global layout footer (direct child of #info), not .info-page-footer inside main */
-#info > footer {
-  display: none;
 }
 
 #info .info {
@@ -749,11 +740,6 @@ header a.selected {
   position: fixed;
 }
 
-/* Only the global layout footer (direct child of #index), not .info-page-footer inside main */
-#index > footer {
-  display: none;
-}
-
 .index {
   width: 100%;
   padding: 10% 0 0;
@@ -999,6 +985,9 @@ header a.selected {
   .index-grid {
     padding-left: 4%;
     padding-right: 4%;
+  }
+  .index-list {
+    margin: 0;
   }
   .index-grid {
     grid-template-columns: repeat(2, 1fr);

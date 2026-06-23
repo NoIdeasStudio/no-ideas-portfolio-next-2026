@@ -11,9 +11,7 @@ import {
 import { usePathname } from 'next/navigation'
 import { gsap } from 'gsap'
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
-
-const isMobile = () =>
-  typeof navigator !== 'undefined' && /Mobi|Android/i.test(navigator.userAgent)
+import { isMobileUserAgent } from '../lib/isMobile'
 
 const SCROLL_DURATION_SEC = 120
 const DELAY_AFTER_WHEEL_MS = 1500
@@ -173,7 +171,7 @@ export function AutoScrollProvider({ children }: AutoScrollProviderProps) {
   }
 
   useEffect(() => {
-    if (pathname !== '/' || isMobile() || hasStartedRef.current) return
+    if (pathname !== '/' || isMobileUserAgent() || hasStartedRef.current) return
     if (typeof window === 'undefined') return
 
     gsap.registerPlugin(ScrollToPlugin)
