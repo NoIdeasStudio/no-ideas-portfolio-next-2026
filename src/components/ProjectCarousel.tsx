@@ -207,7 +207,7 @@ export function ProjectCarousel({
   return (
     <section
       id={isLoopCopy || omitSectionId ? undefined : (projectSlug ?? undefined)}
-      className="hero-slider relative h-screen w-full overflow-hidden bg-black"
+      className="hero-slider project-viewport-height relative w-full overflow-hidden bg-black"
       aria-label={`Project: ${projectTitle}`}
     >
       <div className="relative h-full w-full">

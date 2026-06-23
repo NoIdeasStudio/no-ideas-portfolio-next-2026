@@ -41,6 +41,13 @@ body {
   line-height: var(--line-height-body);
 }
 
+/* Project sections: dvh sizes to visible viewport (bottom chrome above browser UI); adapts as toolbars animate */
+.project-viewport-height {
+  height: 100vh;
+  height: 100svh;
+  height: 100dvh;
+}
+
 /* Project name: text-shadow fades in on hover or when description is open */
 .project-name-btn {
   transition: text-shadow 0.2s ease-out;
@@ -318,6 +325,7 @@ body {
     right: 0;
     z-index: 20;
     padding: 4%;
+    padding-bottom: calc(4% + env(safe-area-inset-bottom, 0px));
     pointer-events: none;
   }
 }
