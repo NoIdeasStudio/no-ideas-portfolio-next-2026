@@ -3,11 +3,15 @@
 import { useEffect } from 'react'
 import { isMobileUserAgent } from '../lib/isMobile'
 
-/** Scroll distance before locking slideshow height to the large viewport. */
+/** Scroll down past this to animate svh → lvh. */
 const EXPAND_SCROLL_PX = 8
+/** Scroll back above this to animate lvh → svh (hysteresis avoids flicker). */
+const COLLAPSE_SCROLL_PX = 4
 
-const EXPAND_DURATION_MS = 450
-const EXPAND_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)'
+const VIEWPORT_ANIM_MS = 450
+const VIEWPORT_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)'
+
+type ViewportMode = 'collapsed' | 'expanded'
 
 function measureViewportUnit(unit: 'svh' | 'lvh'): number {
   const probe = document.createElement('div')
@@ -18,66 +22,57 @@ function measureViewportUnit(unit: 'svh' | 'lvh'): number {
   return height
 }
 
+function getSections() {
+  return Array.from(document.querySelectorAll<HTMLElement>('.project-viewport-height'))
+}
+
 /**
- * On mobile, project sections start at 100svh (browser chrome visible).
- * After the user scrolls, animate to 100lvh so sections don't shrink when the
- * address bar reappears on scroll-up.
+ * On mobile, project sections use 100svh at the top (browser chrome visible) and
+ * animate to 100lvh once the user scrolls down. Scrolling back to the top
+ * animates back to svh so the transition tracks the browser UI in both directions.
  */
 export function MobileViewportHeightExpand() {
   useEffect(() => {
     if (!isMobileUserAgent()) return
 
     const root = document.documentElement
-    let expanding = false
+    let mode: ViewportMode = root.classList.contains('viewport-expanded') ? 'expanded' : 'collapsed'
+    let animating = false
+    let cancelAnimation: (() => void) | null = null
 
-    const finishExpand = (sections: HTMLElement[]) => {
-      sections.forEach((el) => {
-        el.style.height = ''
-        el.style.transition = ''
-      })
-      root.classList.remove('viewport-expanding')
-      root.classList.add('viewport-expanded')
-      expanding = false
+    const setModeInstant = (next: ViewportMode) => {
+      mode = next
+      root.classList.remove('viewport-expanding', 'viewport-collapsing')
+      if (next === 'expanded') {
+        root.classList.add('viewport-expanded')
+      } else {
+        root.classList.remove('viewport-expanded')
+      }
     }
 
-    const expand = () => {
-      if (
-        expanding ||
-        root.classList.contains('viewport-expanded') ||
-        root.classList.contains('viewport-expanding')
-      ) {
-        return
-      }
+    const animateSections = (
+      sections: HTMLElement[],
+      toHeight: number,
+      animClass: 'viewport-expanding' | 'viewport-collapsing',
+      onComplete: () => void
+    ) => {
+      cancelAnimation?.()
 
-      window.removeEventListener('scroll', onScroll)
-
-      const sections = Array.from(
-        document.querySelectorAll<HTMLElement>('.project-viewport-height')
-      )
-
-      if (!sections.length) {
-        root.classList.add('viewport-expanded')
-        return
-      }
-
-      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       const fromHeight = sections[0].getBoundingClientRect().height
-      const toHeight = measureViewportUnit('lvh')
-
-      if (reducedMotion || Math.abs(toHeight - fromHeight) < 1) {
-        root.classList.add('viewport-expanded')
+      if (Math.abs(toHeight - fromHeight) < 1) {
+        onComplete()
         return
       }
 
-      expanding = true
-      root.classList.add('viewport-expanding')
+      animating = true
+      root.classList.remove('viewport-expanding', 'viewport-collapsing')
+      root.classList.add(animClass)
 
       sections.forEach((el) => {
         el.style.height = `${fromHeight}px`
-        el.style.transition = `height ${EXPAND_DURATION_MS}ms ${EXPAND_EASING}`
+        el.style.transition = `height ${VIEWPORT_ANIM_MS}ms ${VIEWPORT_EASING}`
       })
 
-      // Double rAF so the browser paints the start height before animating.
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           sections.forEach((el) => {
@@ -90,8 +85,17 @@ export function MobileViewportHeightExpand() {
       const cleanup = () => {
         if (finished) return
         finished = true
-        finishExpand(sections)
+        cancelAnimation = null
+        animating = false
+        sections.forEach((el) => {
+          el.style.height = ''
+          el.style.transition = ''
+        })
+        root.classList.remove('viewport-expanding', 'viewport-collapsing')
+        onComplete()
       }
+
+      cancelAnimation = cleanup
 
       sections[0].addEventListener(
         'transitionend',
@@ -101,20 +105,72 @@ export function MobileViewportHeightExpand() {
         { once: true }
       )
 
-      window.setTimeout(cleanup, EXPAND_DURATION_MS + 80)
+      window.setTimeout(cleanup, VIEWPORT_ANIM_MS + 80)
     }
 
-    const onScroll = () => {
-      if (window.scrollY >= EXPAND_SCROLL_PX) expand()
+    const expand = () => {
+      if (mode === 'expanded' || animating) return
+
+      const sections = getSections()
+      if (!sections.length) {
+        setModeInstant('expanded')
+        return
+      }
+
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      const toHeight = measureViewportUnit('lvh')
+
+      if (reducedMotion) {
+        setModeInstant('expanded')
+        return
+      }
+
+      animateSections(sections, toHeight, 'viewport-expanding', () => {
+        setModeInstant('expanded')
+      })
     }
 
-    if (window.scrollY >= EXPAND_SCROLL_PX) {
-      expand()
-      return
+    const collapse = () => {
+      if (mode === 'collapsed' || animating) return
+
+      const sections = getSections()
+      if (!sections.length) {
+        setModeInstant('collapsed')
+        return
+      }
+
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      const toHeight = measureViewportUnit('svh')
+
+      if (reducedMotion) {
+        setModeInstant('collapsed')
+        return
+      }
+
+      // Drop lvh CSS while inline heights drive the animation.
+      root.classList.remove('viewport-expanded')
+
+      animateSections(sections, toHeight, 'viewport-collapsing', () => {
+        setModeInstant('collapsed')
+      })
     }
 
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    const syncToScroll = () => {
+      const y = window.scrollY
+      if (y >= EXPAND_SCROLL_PX) {
+        expand()
+      } else if (y <= COLLAPSE_SCROLL_PX) {
+        collapse()
+      }
+    }
+
+    syncToScroll()
+    window.addEventListener('scroll', syncToScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener('scroll', syncToScroll)
+      cancelAnimation?.()
+    }
   }, [])
 
   return null

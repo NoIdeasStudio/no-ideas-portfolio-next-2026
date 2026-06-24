@@ -49,7 +49,7 @@ body:has(#index) {
   background-color: #000;
 }
 
-/* Project sections: full viewport height; mobile uses svh → lvh after first scroll */
+/* Project sections: full viewport height; mobile toggles svh ↔ lvh on scroll */
 .project-viewport-height {
   height: 100vh;
 }
@@ -67,7 +67,8 @@ body:has(#index) {
     height: 100lvh;
   }
 
-  html.viewport-expanding .project-viewport-height {
+  html.viewport-expanding .project-viewport-height,
+  html.viewport-collapsing .project-viewport-height {
     will-change: height;
   }
 }
