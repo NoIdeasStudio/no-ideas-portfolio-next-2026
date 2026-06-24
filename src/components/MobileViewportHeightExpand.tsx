@@ -7,8 +7,6 @@ import { isMobileUserAgent } from '../lib/isMobile'
 const EXPAND_SCROLL_PX = 8
 /** Scroll back above this to animate lvh → svh (hysteresis avoids flicker). */
 const COLLAPSE_SCROLL_PX = 4
-/** Wait for scroll + browser chrome to settle before collapsing at the top. */
-const COLLAPSE_SETTLE_MS = 120
 
 const VIEWPORT_ANIM_MS = 450
 const VIEWPORT_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)'
@@ -54,14 +52,6 @@ export function MobileViewportHeightExpand() {
     let mode: ViewportMode = root.classList.contains('viewport-expanded') ? 'expanded' : 'collapsed'
     let animating = false
     let cancelAnimation: (() => void) | null = null
-    let collapseTimer: ReturnType<typeof setTimeout> | null = null
-
-    const clearCollapseTimer = () => {
-      if (collapseTimer) {
-        clearTimeout(collapseTimer)
-        collapseTimer = null
-      }
-    }
 
     const setModeInstant = (next: ViewportMode) => {
       mode = next
@@ -137,7 +127,6 @@ export function MobileViewportHeightExpand() {
     }
 
     const expand = () => {
-      clearCollapseTimer()
       if (mode === 'expanded' || animating) return
 
       const sections = getSections()
@@ -161,7 +150,6 @@ export function MobileViewportHeightExpand() {
     }
 
     const collapse = () => {
-      clearCollapseTimer()
       if (mode === 'collapsed' || animating) return
 
       const sections = getSections()
@@ -189,29 +177,13 @@ export function MobileViewportHeightExpand() {
       })
     }
 
-    const scheduleCollapse = () => {
-      clearCollapseTimer()
-      collapseTimer = setTimeout(() => {
-        collapseTimer = null
-        if (window.scrollY <= COLLAPSE_SCROLL_PX) collapse()
-      }, COLLAPSE_SETTLE_MS)
-    }
-
     const syncToScroll = () => {
       const y = window.scrollY
-
       if (y >= EXPAND_SCROLL_PX) {
-        clearCollapseTimer()
         expand()
-        return
+      } else if (y <= COLLAPSE_SCROLL_PX) {
+        collapse()
       }
-
-      if (y <= COLLAPSE_SCROLL_PX && mode === 'expanded' && !animating) {
-        scheduleCollapse()
-        return
-      }
-
-      clearCollapseTimer()
     }
 
     syncToScroll()
@@ -219,7 +191,6 @@ export function MobileViewportHeightExpand() {
 
     return () => {
       window.removeEventListener('scroll', syncToScroll)
-      clearCollapseTimer()
       cancelAnimation?.()
     }
   }, [])
