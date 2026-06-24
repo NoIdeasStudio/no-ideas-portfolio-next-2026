@@ -7,6 +7,8 @@ import { isMobileUserAgent } from '../lib/isMobile'
 const EXPAND_SCROLL_PX = 8
 /** Scroll back above this to animate lvh → svh (hysteresis avoids flicker). */
 const COLLAPSE_SCROLL_PX = 4
+/** Wait for scroll + browser chrome to settle before collapsing at the top. */
+const COLLAPSE_SETTLE_MS = 120
 
 const VIEWPORT_ANIM_MS = 450
 const VIEWPORT_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)'
@@ -26,6 +28,19 @@ function getSections() {
   return Array.from(document.querySelectorAll<HTMLElement>('.project-viewport-height'))
 }
 
+function pinSectionHeights(sections: HTMLElement[], height: number) {
+  sections.forEach((el) => {
+    el.style.height = `${height}px`
+  })
+}
+
+function clearSectionHeights(sections: HTMLElement[]) {
+  sections.forEach((el) => {
+    el.style.height = ''
+    el.style.transition = ''
+  })
+}
+
 /**
  * On mobile, project sections use 100svh at the top (browser chrome visible) and
  * animate to 100lvh once the user scrolls down. Scrolling back to the top
@@ -39,6 +54,14 @@ export function MobileViewportHeightExpand() {
     let mode: ViewportMode = root.classList.contains('viewport-expanded') ? 'expanded' : 'collapsed'
     let animating = false
     let cancelAnimation: (() => void) | null = null
+    let collapseTimer: ReturnType<typeof setTimeout> | null = null
+
+    const clearCollapseTimer = () => {
+      if (collapseTimer) {
+        clearTimeout(collapseTimer)
+        collapseTimer = null
+      }
+    }
 
     const setModeInstant = (next: ViewportMode) => {
       mode = next
@@ -52,14 +75,15 @@ export function MobileViewportHeightExpand() {
 
     const animateSections = (
       sections: HTMLElement[],
+      fromHeight: number,
       toHeight: number,
       animClass: 'viewport-expanding' | 'viewport-collapsing',
       onComplete: () => void
     ) => {
       cancelAnimation?.()
 
-      const fromHeight = sections[0].getBoundingClientRect().height
       if (Math.abs(toHeight - fromHeight) < 1) {
+        clearSectionHeights(sections)
         onComplete()
         return
       }
@@ -68,16 +92,14 @@ export function MobileViewportHeightExpand() {
       root.classList.remove('viewport-expanding', 'viewport-collapsing')
       root.classList.add(animClass)
 
+      pinSectionHeights(sections, fromHeight)
       sections.forEach((el) => {
-        el.style.height = `${fromHeight}px`
         el.style.transition = `height ${VIEWPORT_ANIM_MS}ms ${VIEWPORT_EASING}`
       })
 
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          sections.forEach((el) => {
-            el.style.height = `${toHeight}px`
-          })
+          pinSectionHeights(sections, toHeight)
         })
       })
 
@@ -87,12 +109,18 @@ export function MobileViewportHeightExpand() {
         finished = true
         cancelAnimation = null
         animating = false
+
+        // Hold the final pixel height for one frame before handing off to CSS units.
+        pinSectionHeights(sections, toHeight)
         sections.forEach((el) => {
-          el.style.height = ''
           el.style.transition = ''
         })
-        root.classList.remove('viewport-expanding', 'viewport-collapsing')
-        onComplete()
+
+        requestAnimationFrame(() => {
+          clearSectionHeights(sections)
+          root.classList.remove('viewport-expanding', 'viewport-collapsing')
+          onComplete()
+        })
       }
 
       cancelAnimation = cleanup
@@ -109,6 +137,7 @@ export function MobileViewportHeightExpand() {
     }
 
     const expand = () => {
+      clearCollapseTimer()
       if (mode === 'expanded' || animating) return
 
       const sections = getSections()
@@ -118,6 +147,7 @@ export function MobileViewportHeightExpand() {
       }
 
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      const fromHeight = sections[0].getBoundingClientRect().height
       const toHeight = measureViewportUnit('lvh')
 
       if (reducedMotion) {
@@ -125,12 +155,13 @@ export function MobileViewportHeightExpand() {
         return
       }
 
-      animateSections(sections, toHeight, 'viewport-expanding', () => {
+      animateSections(sections, fromHeight, toHeight, 'viewport-expanding', () => {
         setModeInstant('expanded')
       })
     }
 
     const collapse = () => {
+      clearCollapseTimer()
       if (mode === 'collapsed' || animating) return
 
       const sections = getSections()
@@ -140,6 +171,8 @@ export function MobileViewportHeightExpand() {
       }
 
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      // Measure lvh height while expanded CSS is still active.
+      const fromHeight = sections[0].getBoundingClientRect().height
       const toHeight = measureViewportUnit('svh')
 
       if (reducedMotion) {
@@ -147,21 +180,38 @@ export function MobileViewportHeightExpand() {
         return
       }
 
-      // Drop lvh CSS while inline heights drive the animation.
+      // Pin lvh in pixels before dropping expanded CSS — prevents instant snap to svh.
+      pinSectionHeights(sections, fromHeight)
       root.classList.remove('viewport-expanded')
 
-      animateSections(sections, toHeight, 'viewport-collapsing', () => {
+      animateSections(sections, fromHeight, toHeight, 'viewport-collapsing', () => {
         setModeInstant('collapsed')
       })
     }
 
+    const scheduleCollapse = () => {
+      clearCollapseTimer()
+      collapseTimer = setTimeout(() => {
+        collapseTimer = null
+        if (window.scrollY <= COLLAPSE_SCROLL_PX) collapse()
+      }, COLLAPSE_SETTLE_MS)
+    }
+
     const syncToScroll = () => {
       const y = window.scrollY
+
       if (y >= EXPAND_SCROLL_PX) {
+        clearCollapseTimer()
         expand()
-      } else if (y <= COLLAPSE_SCROLL_PX) {
-        collapse()
+        return
       }
+
+      if (y <= COLLAPSE_SCROLL_PX && mode === 'expanded' && !animating) {
+        scheduleCollapse()
+        return
+      }
+
+      clearCollapseTimer()
     }
 
     syncToScroll()
@@ -169,6 +219,7 @@ export function MobileViewportHeightExpand() {
 
     return () => {
       window.removeEventListener('scroll', syncToScroll)
+      clearCollapseTimer()
       cancelAnimation?.()
     }
   }, [])
