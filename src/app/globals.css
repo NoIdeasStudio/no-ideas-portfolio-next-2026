@@ -55,12 +55,20 @@ body:has(#index) {
 }
 
 @media (max-width: 800px) {
+  #homepage {
+    overflow-anchor: auto;
+  }
+
   .project-viewport-height {
     height: 100svh;
   }
 
   html.viewport-expanded .project-viewport-height {
     height: 100lvh;
+  }
+
+  html.viewport-expanding .project-viewport-height {
+    will-change: height;
   }
 }
 
