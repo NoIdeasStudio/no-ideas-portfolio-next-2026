@@ -49,11 +49,19 @@ body:has(#index) {
   background-color: #000;
 }
 
-/* Project sections: dvh sizes to visible viewport (bottom chrome above browser UI); adapts as toolbars animate */
+/* Project sections: full viewport height; mobile uses svh → lvh after first scroll */
 .project-viewport-height {
   height: 100vh;
-  height: 100svh;
-  height: 100dvh;
+}
+
+@media (max-width: 800px) {
+  .project-viewport-height {
+    height: 100svh;
+  }
+
+  html.viewport-expanded .project-viewport-height {
+    height: 100lvh;
+  }
 }
 
 /* Project name: text-shadow fades in on hover or when description is open */
@@ -203,7 +211,7 @@ body:has(#index) {
 
 .project-info-main {
   width: 65%;
-  padding: 0 2% 0 0;
+  padding: 0 3% 0 0;
 }
 
 .project-info-meta {
@@ -244,7 +252,7 @@ body:has(#index) {
 }
 
 .project-info-extended.project-info-description--with-more {
-  text-indent: 1.5em;
+  padding-top: 3%;
 }
 
 .project-info-inline-action {
@@ -262,6 +270,11 @@ body:has(#index) {
 .project-info-inline-action:hover {
   transform: none;
   text-decoration: none;
+}
+
+.project-info-extended .project-info-inline-action,
+.project-info-description:not(.project-info-description--with-more) > .project-info-inline-action {
+  padding-top: 3%;
 }
 
 .project-info-meta-block + .project-info-meta-block {

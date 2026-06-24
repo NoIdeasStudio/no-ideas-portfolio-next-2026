@@ -6,6 +6,7 @@ import { useAutoScroll } from '../contexts/AutoScrollContext'
 import { isMobileUserAgent } from '../lib/isMobile'
 import { HomepageThemeObserver } from './HomepageThemeObserver'
 import { LazyLoopSection } from './LazyLoopSection'
+import { MobileViewportHeightExpand } from './MobileViewportHeightExpand'
 import type { CarouselSlide } from './ProjectCarousel'
 import type { ProjectCategory } from './ProjectInfoPanel'
 
@@ -57,6 +58,7 @@ export function HomepageInfiniteLoop({
 
   return (
     <>
+      <MobileViewportHeightExpand />
       <HomepageThemeObserver projects={themeObserverProjects} />
       <div ref={loopRef} aria-hidden={false}>
         {projects.map((project, i) => (
