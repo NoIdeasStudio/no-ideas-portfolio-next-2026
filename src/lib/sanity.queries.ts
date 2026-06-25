@@ -45,6 +45,7 @@ export const allProjectsWithSlidesQuery = groq`*[_type == "project"]{
     imageUrl,
     videoUrl,
     "lottieUrl": lottieFile.asset->url,
+    "animatedSvgUrl": coalesce(animatedSvgFile.asset->url, animatedSvgUrl),
     caption,
     containPadding,
     backgroundColor,
@@ -62,6 +63,7 @@ export const allProjectsWithSlidesQuery = groq`*[_type == "project"]{
       imageUrl,
       videoUrl,
       "lottieUrl": lottieFile.asset->url,
+    "animatedSvgUrl": coalesce(animatedSvgFile.asset->url, animatedSvgUrl),
       backgroundVideoUrl,
       fit,
       containPadding

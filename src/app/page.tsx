@@ -34,6 +34,7 @@ type SlideItem = {
   imageUrl?: string
   videoUrl?: string
   lottieUrl?: string | null
+  animatedSvgUrl?: string | null
   caption?: string
   containPadding?: string | null
   backgroundColor?: string | null
@@ -46,6 +47,7 @@ type SlideItem = {
     imageUrl?: string
     videoUrl?: string
     lottieUrl?: string | null
+    animatedSvgUrl?: string | null
     backgroundVideoUrl?: string | null
     fit?: string | null
     containPadding?: string | null
@@ -107,10 +109,11 @@ async function getProjects() {
       const bg = slide.backgroundColor ?? '#000000'
       if (slide.layout === 'twoUp' && slide.items?.length === 2) {
         const mapTwoUpItem = (item: TwoUpSlideItem): TwoUpItem => ({
-          mediaType: item.mediaType as 'image' | 'video' | 'lottie',
+          mediaType: item.mediaType as 'image' | 'video' | 'lottie' | 'animatedSvg',
           imageUrl: sanityImageServeUrl(item.image ?? null, item.imageUrl ?? null),
           videoUrl: item.videoUrl ?? null,
           lottieUrl: item.lottieUrl ?? null,
+          animatedSvgUrl: item.animatedSvgUrl ?? null,
           backgroundVideoUrl: item.backgroundVideoUrl ?? null,
           fit: (item.fit as 'cover' | 'contain') ?? 'cover',
           containPadding: item.containPadding ?? '0',
@@ -133,10 +136,11 @@ async function getProjects() {
       const imageUrl = sanityImageServeUrl(slide.image ?? null, slide.imageUrl ?? null)
       return {
         layout: slide.layout as 'fullBleed' | 'contain',
-        mediaType: slide.mediaType as 'image' | 'video' | 'lottie',
+        mediaType: slide.mediaType as 'image' | 'video' | 'lottie' | 'animatedSvg',
         imageUrl,
         videoUrl: slide.videoUrl ?? null,
         lottieUrl: slide.lottieUrl ?? null,
+        animatedSvgUrl: slide.animatedSvgUrl ?? null,
         caption: slide.caption ?? null,
         containPadding: slide.containPadding ?? '0',
         backgroundColor: bg,

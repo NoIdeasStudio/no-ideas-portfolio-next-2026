@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import type { CarouselSlide, TwoUpItem } from './ProjectCarousel'
 import { LottiePlayer } from './LottiePlayer'
+import { AnimatedSvgPlayer } from './AnimatedSvgPlayer'
 
 const isSanityImage = (url: string) => url.includes('cdn.sanity.io')
 
@@ -54,15 +55,17 @@ function SingleMedia({
   imageUrl,
   videoUrl,
   lottieUrl,
+  animatedSvgUrl,
   caption,
   containPadding = '0',
   isActive,
 }: {
   layout: 'fullBleed' | 'contain'
-  mediaType: 'image' | 'video' | 'lottie'
+  mediaType: 'image' | 'video' | 'lottie' | 'animatedSvg'
   imageUrl?: string | null
   videoUrl?: string | null
   lottieUrl?: string | null
+  animatedSvgUrl?: string | null
   caption?: string | null
   containPadding?: string | null
   isActive: boolean
@@ -71,6 +74,24 @@ function SingleMedia({
   const paddingPercent = `${containPadding}%`
   const containerClass = `slide-content relative h-full w-full flex items-center justify-center overflow-hidden`
   const containerStyle = isContain ? { padding: paddingPercent } : undefined
+
+  if (mediaType === 'animatedSvg' && animatedSvgUrl) {
+    return (
+      <div className={containerClass} style={containerStyle}>
+        <AnimatedSvgPlayer
+          src={animatedSvgUrl}
+          fit={isContain ? 'contain' : 'cover'}
+          className={isContain ? 'relative h-full w-full' : 'absolute inset-0 h-full w-full'}
+          autoplay={isActive}
+        />
+        {caption && isActive && (
+          <p className="absolute bottom-4 left-4 right-4 text-xs text-white/80 text-center z-10">
+            {caption}
+          </p>
+        )}
+      </div>
+    )
+  }
 
   if (mediaType === 'lottie' && lottieUrl) {
     return (
@@ -143,13 +164,37 @@ function SingleMedia({
 }
 
 function TwoUpCell({ item, isActive }: { item: TwoUpItem; isActive: boolean }) {
-  const { mediaType, imageUrl, videoUrl, lottieUrl, backgroundVideoUrl, fit, containPadding } = item
+  const { mediaType, imageUrl, videoUrl, lottieUrl, animatedSvgUrl, backgroundVideoUrl, fit, containPadding } = item
   const isContain = fit === 'contain'
   const paddingPercent = isContain ? `${containPadding ?? '0'}%` : '0'
   const cellClass =
     'relative w-full md:w-1/2 h-1/2 md:h-full overflow-hidden flex items-center justify-center'
 
   const cellStyle = isContain ? { padding: paddingPercent } : undefined
+
+  if (mediaType === 'animatedSvg' && animatedSvgUrl) {
+    return (
+      <div className={cellClass} style={cellStyle}>
+        {backgroundVideoUrl && (
+          <CarouselVideo
+            src={backgroundVideoUrl}
+            isActive={isActive}
+            className="absolute inset-0 z-0 h-full w-full object-cover"
+          />
+        )}
+        <AnimatedSvgPlayer
+          src={animatedSvgUrl}
+          fit={isContain ? 'contain' : 'cover'}
+          className={
+            isContain
+              ? 'relative z-10 h-full w-full'
+              : 'absolute inset-0 z-10 h-full w-full'
+          }
+          autoplay={isActive}
+        />
+      </div>
+    )
+  }
 
   if (mediaType === 'lottie' && lottieUrl) {
     return (
@@ -272,6 +317,7 @@ export function Slide({
       imageUrl={slide.imageUrl}
       videoUrl={slide.videoUrl}
       lottieUrl={slide.lottieUrl}
+      animatedSvgUrl={slide.animatedSvgUrl}
       caption={slide.caption}
       containPadding={slide.containPadding}
       isActive={isActive}

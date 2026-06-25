@@ -55,7 +55,8 @@ export const slideObject = defineType({
         list: [
           { title: 'Image', value: 'image' },
           { title: 'Video (URL)', value: 'video' },
-          { title: 'Lottie animation (URL)', value: 'lottie' },
+          { title: 'Lottie animation', value: 'lottie' },
+          { title: 'Animated SVG', value: 'animatedSvg' },
         ],
         layout: 'radio',
       },
@@ -91,6 +92,21 @@ export const slideObject = defineType({
       description: 'Upload a Lottie JSON file (.json).',
       options: { accept: '.json,application/json' },
       hidden: ({ parent }) => parent?.layout === 'twoUp' || parent?.mediaType !== 'lottie',
+    }),
+    defineField({
+      name: 'animatedSvgFile',
+      type: 'file',
+      title: 'Animated SVG file',
+      description: 'Upload an animated SVG file (.svg), e.g. exported from Figma Motion.',
+      options: { accept: '.svg,image/svg+xml' },
+      hidden: ({ parent }) => parent?.layout === 'twoUp' || parent?.mediaType !== 'animatedSvg',
+    }),
+    defineField({
+      name: 'animatedSvgUrl',
+      type: 'url',
+      title: 'Animated SVG URL (external)',
+      description: 'Link to an animated SVG on a CDN. Ignored if file upload is set.',
+      hidden: ({ parent }) => parent?.layout === 'twoUp' || parent?.mediaType !== 'animatedSvg',
     }),
     defineField({
       name: 'caption',

@@ -8,10 +8,11 @@ import { ProjectInfoPanel, type ProjectCategory, hasPortableText } from './Proje
 import { Slide, CarouselVideo } from './Slide'
 
 export type TwoUpItem = {
-  mediaType: 'image' | 'video' | 'lottie'
+  mediaType: 'image' | 'video' | 'lottie' | 'animatedSvg'
   imageUrl?: string | null
   videoUrl?: string | null
   lottieUrl?: string | null
+  animatedSvgUrl?: string | null
   backgroundVideoUrl?: string | null
   fit?: 'cover' | 'contain'
   containPadding?: string | null
@@ -20,10 +21,11 @@ export type TwoUpItem = {
 export type CarouselSlide =
   | {
       layout: 'fullBleed' | 'contain'
-      mediaType: 'image' | 'video' | 'lottie'
+      mediaType: 'image' | 'video' | 'lottie' | 'animatedSvg'
       imageUrl?: string | null
       videoUrl?: string | null
       lottieUrl?: string | null
+      animatedSvgUrl?: string | null
       caption?: string | null
       containPadding?: string | null
       backgroundColor?: string | null
