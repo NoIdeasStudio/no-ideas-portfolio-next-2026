@@ -1,10 +1,12 @@
-import { sanityClient } from '../../lib/sanity.client'
+import type { Metadata } from 'next'
+import { fetchSanity } from '../../sanity/lib/fetch'
 import {
   allCategoriesQuery,
   indexProjectsQuery,
   siteLayoutQuery,
   allProjectsWithSlidesQuery,
 } from '../../lib/sanity.queries'
+import { buildPageMetadata, getSiteSettings } from '../../lib/metadata'
 import { sortByOrderIds } from '../../lib/sortByOrderIds'
 import { sanityImageGridUrl, type SanityImageWithAssetUrl } from '../../sanity/lib/image'
 import {
@@ -16,9 +18,14 @@ import {
 
 export const revalidate = 60
 
-export const metadata = {
-  title: 'Index — No Ideas',
-  description: 'Index of projects by No Ideas.',
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings()
+
+  return buildPageMetadata(settings, {
+    path: '/projects',
+    title: 'Index',
+    description: 'Index of projects by No Ideas.',
+  })
 }
 
 type SiteLayout = {
@@ -100,10 +107,10 @@ async function getIndexData(): Promise<{
 }> {
   try {
     const [layout, categories, projects, projectsWithSlides] = await Promise.all([
-      sanityClient.fetch<SiteLayout | null>(siteLayoutQuery),
-      sanityClient.fetch<IndexCategory[]>(allCategoriesQuery),
-      sanityClient.fetch<IndexProject[]>(indexProjectsQuery),
-      sanityClient.fetch<RawProjectWithSlides[]>(allProjectsWithSlidesQuery),
+      fetchSanity<SiteLayout | null>(siteLayoutQuery),
+      fetchSanity<IndexCategory[]>(allCategoriesQuery),
+      fetchSanity<IndexProject[]>(indexProjectsQuery),
+      fetchSanity<RawProjectWithSlides[]>(allProjectsWithSlidesQuery),
     ])
     const cats = categories ?? []
     const projs = projects ?? []

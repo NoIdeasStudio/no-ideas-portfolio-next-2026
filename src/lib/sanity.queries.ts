@@ -71,7 +71,18 @@ export const allProjectsWithSlidesQuery = groq`*[_type == "project"]{
   }
 }`;
 
-export const siteSettingsQuery = groq`*[_type == "siteSettings"][0]`;
+export const siteSettingsQuery = groq`*[_type == "siteSettings" && _id == "site-settings"][0]{
+  title,
+  siteUrl,
+  favicon,
+  appleTouchIcon,
+  seo {
+    "title": coalesce(title, ""),
+    "description": coalesce(description, ""),
+    image,
+    noIndex
+  }
+}`;
 
 const newsMediaFields = groq`{
   layout,
@@ -92,7 +103,86 @@ const newsMediaFields = groq`{
   "backgroundVideoUrl": coalesce(backgroundVideoFile.asset->url, backgroundVideoUrl)
 }`;
 
+export const projectBySlugQuery = groq`*[_type == "project" && slug.current == $slug][0]{
+  _id,
+  title,
+  "slug": slug.current,
+  description,
+  extendedDescription,
+  visitUrl,
+  recognition,
+  credits,
+  "categories": categories[]->{ _id, title, "slug": slug.current },
+  year,
+  textTheme,
+  textThemeCustomColor,
+  _updatedAt,
+  seo {
+    "title": coalesce(title, ""),
+    "description": coalesce(description, ""),
+    image,
+    noIndex
+  },
+  "seoImageFallback": slides[0].image,
+  slides[]{
+    layout,
+    mediaType,
+    image {
+      asset,
+      crop,
+      hotspot,
+      "assetUrl": asset->url
+    },
+    imageUrl,
+    "videoUrl": coalesce(videoFile.asset->url, videoUrl),
+    "lottieUrl": lottieFile.asset->url,
+    "animatedSvgUrl": coalesce(animatedSvgFile.asset->url, animatedSvgUrl),
+    caption,
+    containPadding,
+    backgroundColor,
+    "backgroundVideoUrl": coalesce(backgroundVideoFile.asset->url, backgroundVideoUrl),
+    textTheme,
+    textThemeCustomColor,
+    "items": items[]{
+      mediaType,
+      image {
+        asset,
+        crop,
+        hotspot,
+        "assetUrl": asset->url
+      },
+      imageUrl,
+      "videoUrl": coalesce(videoFile.asset->url, videoUrl),
+      "lottieUrl": lottieFile.asset->url,
+      "animatedSvgUrl": coalesce(animatedSvgFile.asset->url, animatedSvgUrl),
+      "backgroundVideoUrl": coalesce(backgroundVideoFile.asset->url, backgroundVideoUrl),
+      fit,
+      containPadding
+    }
+  }
+}`;
+
+export const projectSlugsForSitemapQuery = groq`*[_type == "project" && defined(slug.current) && seo.noIndex != true]{
+  "slug": slug.current,
+  "updatedAt": _updatedAt
+}`;
+
+export const infoPageSeoQuery = groq`*[_type == "infoPage" && _id == "info-page"][0]{
+  seo {
+    "title": coalesce(title, ""),
+    "description": coalesce(description, ""),
+    image,
+    noIndex
+  }
+}`;
+
 export const infoPageQuery = groq`*[_type == "infoPage" && _id == "info-page"][0]{
+  seo {
+    "title": coalesce(title, ""),
+    "description": coalesce(description, ""),
+    image,
+    noIndex
+  },
   introParagraphs[]{
     content
   },

@@ -31,6 +31,12 @@ export const infoPageType = defineType({
       of: [defineArrayMember({ type: infoSectionObject.name })],
     }),
     defineField({
+      name: 'seo',
+      type: 'seo',
+      title: 'SEO',
+      description: 'Optional overrides for search and social previews on the Info page.',
+    }),
+    defineField({
       name: 'newsSection',
       type: 'object',
       title: 'News',

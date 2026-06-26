@@ -11,6 +11,8 @@
     "seed:sanity": "node scripts/seed-dumbo-in-sanity.mjs",
     "remove:project-bg": "node scripts/remove-project-background-color.mjs",
     "seed:info": "node scripts/seed-info-page-in-sanity.mjs",
+    "seed:site-settings": "node scripts/seed-site-settings-in-sanity.mjs",
+    "backfill:project-seo": "node scripts/backfill-project-seo.mjs",
     "migrate:news-descriptions": "node scripts/migrate-news-descriptions.mjs",
     "migrate:videos": "node scripts/migrate-videos-to-sanity.mjs",
     "backfill:video-urls": "node scripts/backfill-video-urls.mjs"

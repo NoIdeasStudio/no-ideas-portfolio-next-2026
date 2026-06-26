@@ -107,6 +107,13 @@ export const projectType = defineType({
         }),
     }),
     defineField({
+      name: 'seo',
+      type: 'seo',
+      title: 'SEO',
+      description:
+        'Optional overrides for search and social previews. Defaults to the project title, short description, and first slide image.',
+    }),
+    defineField({
       name: 'slides',
       type: 'array',
       title: 'Slides',

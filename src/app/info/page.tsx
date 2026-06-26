@@ -1,20 +1,35 @@
 import { PortableText } from 'next-sanity'
 import type { PortableTextBlock } from '@portabletext/types'
+import type { Metadata } from 'next'
 import { InfoPageFooter } from '../../components/InfoPageFooter'
 import { InfoNewsZone } from '../../components/InfoNewsZone'
 import { NewsSection, type NewsRowProps } from '../../components/NewsSection'
 import type { NewsSlide } from '../../components/NewsPostSlideshow'
 import { hasPortableText } from '../../sanity/lib/portableTextPlain'
-import { sanityClient } from '../../lib/sanity.client'
-import { infoPageQuery } from '../../lib/sanity.queries'
+import { fetchSanity } from '../../sanity/lib/fetch'
+import { buildPageMetadata, getSiteSettings, type SeoFields } from '../../lib/metadata'
+import { infoPageQuery, infoPageSeoQuery } from '../../lib/sanity.queries'
 import { seedInfoPage } from '../../data/seed-info-page'
 import { sanityImageServeUrl, type SanityImageWithAssetUrl } from '../../sanity/lib/image'
 
 export const revalidate = 60
 
-export const metadata = {
-  title: 'Info — No Ideas',
-  description: 'No Ideas is a graphic design studio in Brooklyn, New York.',
+export async function generateMetadata(): Promise<Metadata> {
+  const [settings, page] = await Promise.all([
+    getSiteSettings(),
+    fetchSanity<{ seo?: SeoFields | null } | null>(
+      infoPageSeoQuery,
+      {},
+      { perspective: 'published', stega: false },
+    ),
+  ])
+
+  return buildPageMetadata(settings, {
+    path: '/info',
+    seo: page?.seo,
+    title: 'Info',
+    description: 'No Ideas is a graphic design studio in Brooklyn, New York.',
+  })
 }
 
 type IntroParagraph = { content?: PortableTextBlock[] | null }
@@ -255,7 +270,7 @@ function ColumnsSectionBlock({ section }: { section: Section }) {
 }
 
 async function getInfoPage(): Promise<InfoPageData> {
-  const data = await sanityClient.fetch<InfoPageData>(infoPageQuery)
+  const data = await fetchSanity<InfoPageData>(infoPageQuery)
   if (data?.introParagraphs?.length || data?.sections?.length) {
     return data
   }

@@ -1,11 +1,17 @@
 import localFont from "next/font/local";
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
+import { draftMode } from "next/headers";
+import { VisualEditing } from "next-sanity/visual-editing";
 import { ReactNode } from "react";
 import { AutoScrollProvider } from "../contexts/AutoScrollContext";
 import { ProjectThemeProvider } from "../contexts/ProjectThemeContext";
 import { PageWrapper } from "../components/PageWrapper";
 import { Header } from "../components/Header";
+import { DisableDraftMode } from "../components/DisableDraftMode";
+import { SiteJsonLd } from "../components/SiteJsonLd";
+import { buildRootMetadata, getSiteSettings, resolveSiteUrl } from "../lib/metadata";
+import { SanityLive } from "../sanity/lib/live";
 
 const abcDiatype = localFont({
   src: "../../public/fonts/ABCDiatype-Medium.woff2",
@@ -15,10 +21,10 @@ const abcDiatype = localFont({
   variable: "--font-abc-diatype",
 });
 
-export const metadata: Metadata = {
-  title: "No Ideas",
-  description: "Design and art direction studio."
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  return buildRootMetadata(settings);
+}
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -26,10 +32,15 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const settings = await getSiteSettings();
+  const siteUrl = resolveSiteUrl(settings);
+  const isDraftMode = (await draftMode()).isEnabled;
+
   return (
     <html lang="en" className={abcDiatype.variable}>
       <body>
+        <SiteJsonLd settings={settings} siteUrl={siteUrl} />
         <ProjectThemeProvider>
           <AutoScrollProvider>
             <PageWrapper>
@@ -38,6 +49,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </PageWrapper>
           </AutoScrollProvider>
         </ProjectThemeProvider>
+        <SanityLive />
+        {isDraftMode && (
+          <>
+            <DisableDraftMode />
+            <VisualEditing />
+          </>
+        )}
       </body>
     </html>
   );
