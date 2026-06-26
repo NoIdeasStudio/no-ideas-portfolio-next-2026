@@ -1,8 +1,15 @@
+import type { PortableTextBlock as SanityPortableTextBlock } from '@portabletext/types'
+
 type PortableTextSpan = { _type?: string; text?: string }
 
 type PortableTextBlock = {
   _type?: string
   children?: PortableTextSpan[]
+}
+
+export function hasPortableText(value?: SanityPortableTextBlock[] | string | null) {
+  if (Array.isArray(value)) return value.length > 0
+  return typeof value === 'string' && value.trim().length > 0
 }
 
 /** Plain text from portable text blocks (link annotations excluded). */

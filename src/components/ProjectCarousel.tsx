@@ -4,7 +4,8 @@ import { useEffect, useState, useCallback } from 'react'
 import type { PortableTextBlock } from '@portabletext/types'
 import { useProjectTheme } from '../contexts/ProjectThemeContext'
 import { useAutoScroll } from '../contexts/AutoScrollContext'
-import { ProjectInfoPanel, type ProjectCategory, hasPortableText } from './ProjectInfoPanel'
+import { ProjectInfoPanel, type ProjectCategory } from './ProjectInfoPanel'
+import { hasPortableText } from '../lib/hasPortableText'
 import { Slide, CarouselVideo } from './Slide'
 
 export type TwoUpItem = {

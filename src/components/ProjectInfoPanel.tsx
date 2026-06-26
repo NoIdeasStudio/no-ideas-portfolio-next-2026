@@ -7,6 +7,7 @@ import { PortableText } from 'next-sanity'
 import type { PortableTextBlock } from '@portabletext/types'
 import { useAutoScroll } from '../contexts/AutoScrollContext'
 import type { ReactNode } from 'react'
+import { hasPortableText } from '../lib/hasPortableText'
 
 export type ProjectCategory = {
   _id: string
@@ -46,11 +47,6 @@ function formatVisitLabel(url: string) {
   } catch {
     return url
   }
-}
-
-export function hasPortableText(value?: PortableTextBlock[] | string | null) {
-  if (Array.isArray(value)) return value.length > 0
-  return typeof value === 'string' && value.trim().length > 0
 }
 
 function DescriptionContent({
