@@ -28,19 +28,22 @@ export type HomepageProject = {
 type HomepageInfiniteLoopProps = {
   projects: HomepageProject[]
   themeObserverProjects: { slug: string }[]
+  /** When false, skip the duplicate loop block (e.g. single-project SEO pages). */
+  enableLoopDuplicate?: boolean
 }
 
 export function HomepageInfiniteLoop({
   projects,
   themeObserverProjects,
+  enableLoopDuplicate = true,
 }: HomepageInfiniteLoopProps) {
   const loopRef = useRef<HTMLDivElement>(null)
   const setLoopHeight = useAutoScroll()?.setLoopHeight
   const [showLoopDuplicate, setShowLoopDuplicate] = useState(false)
 
   useEffect(() => {
-    setShowLoopDuplicate(!isMobileUserAgent())
-  }, [])
+    setShowLoopDuplicate(enableLoopDuplicate && !isMobileUserAgent())
+  }, [enableLoopDuplicate])
 
   useEffect(() => {
     if (!loopRef.current || !setLoopHeight) return

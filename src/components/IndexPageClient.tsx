@@ -13,7 +13,7 @@ function IndexGridCell({ item }: { item: IndexGridItem }) {
 
   return (
     <Link
-      href={`/projects/${item.projectSlug}`}
+      href={`/#${item.projectSlug}`}
       className={`index-grid-item ${loaded ? 'loaded' : ''}`}
     >
       {isVideo && item.videoUrl ? (
@@ -236,7 +236,7 @@ export function IndexPageClient({
         <ul className="index-list">
           {filtered.map((project) => (
             <li key={project._id} className="index-list-item">
-              <Link href={`/projects/${project.slug}`} className="index-project-link">
+              <Link href={`/#${project.slug}`} className="index-project-link">
                 <div className="index-project-title">
                   <span className="index-project-title-inner">{project.title}</span>
                 </div>
