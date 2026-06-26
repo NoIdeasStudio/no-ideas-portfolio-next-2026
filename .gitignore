@@ -34,3 +34,4 @@ yarn-error.log*
 # Sanity
 sanity.cli.*
 sanity.config.*.ts
+scripts/.migrate-videos-cache.json

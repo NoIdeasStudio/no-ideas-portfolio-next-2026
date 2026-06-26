@@ -21,7 +21,7 @@ export function Header() {
 
   return (
     <header
-      className={`type-size-1${headerColor ? ' header-theme-override' : ''}${projectTheme?.infoExpandedSlug ? ' header-info-expanded' : ''}`}
+      className={`type-primary${headerColor ? ' header-theme-override' : ''}${projectTheme?.infoExpandedSlug ? ' header-info-expanded' : ''}`}
       style={{
         ...(headerColor ? { color: headerColor } : {}),
         ...(projectTheme?.infoExpandedSlug ? { zIndex: 50 } : {}),

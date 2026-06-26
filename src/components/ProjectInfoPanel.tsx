@@ -1,11 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { PortableText } from 'next-sanity'
 import type { PortableTextBlock } from '@portabletext/types'
 import { useAutoScroll } from '../contexts/AutoScrollContext'
+import type { ReactNode } from 'react'
 
 export type ProjectCategory = {
   _id: string
@@ -278,7 +279,7 @@ export function ProjectInfoPanel({
     const fullPanel = (
       <div
         id={panelId}
-        className={`project-info-full${isClosing ? ' project-info-full--out' : ''}`}
+        className={`project-info-full type-secondary${isClosing ? ' project-info-full--out' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-label="Project information"
@@ -321,7 +322,7 @@ export function ProjectInfoPanel({
         onClick={onClose}
         aria-label="Close project information"
       />
-      <div id={panelId} className="project-info-half" onClick={(e) => e.stopPropagation()}>
+      <div id={panelId} className="project-info-half type-secondary" onClick={(e) => e.stopPropagation()}>
         <div className="project-info-columns">
           <div className="project-info-main">
             <h2 className="project-info-heading">Info</h2>

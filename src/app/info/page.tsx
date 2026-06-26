@@ -1,9 +1,14 @@
 import { PortableText } from 'next-sanity'
 import type { PortableTextBlock } from '@portabletext/types'
 import { InfoPageFooter } from '../../components/InfoPageFooter'
+import { InfoNewsZone } from '../../components/InfoNewsZone'
+import { NewsSection, type NewsRowProps } from '../../components/NewsSection'
+import type { NewsSlide } from '../../components/NewsPostSlideshow'
+import { hasPortableText } from '../../components/ProjectInfoPanel'
 import { sanityClient } from '../../lib/sanity.client'
 import { infoPageQuery } from '../../lib/sanity.queries'
 import { seedInfoPage } from '../../data/seed-info-page'
+import { sanityImageServeUrl, type SanityImageWithAssetUrl } from '../../sanity/lib/image'
 
 export const revalidate = 60
 
@@ -25,9 +30,36 @@ type Section = {
   contactLinks?: ContactLink[] | null
   columns?: Column[] | null
 }
+type RawNewsSlide = {
+  layout?: 'fullBleed' | 'contain' | null
+  containPadding?: string | null
+  mediaType?: string | null
+  image?: SanityImageWithAssetUrl | null
+  imageUrl?: string | null
+  videoUrl?: string | null
+  lottieUrl?: string | null
+  animatedSvgUrl?: string | null
+  caption?: string | null
+  backgroundColor?: string | null
+  backgroundVideoUrl?: string | null
+}
+
 type InfoPageData = {
   introParagraphs?: IntroParagraph[] | null
   sections?: Section[] | null
+  newsSection?: {
+    title?: string | null
+    rows?: Array<{
+      layout?: 'full' | 'half' | null
+      posts?: Array<{
+        aspectRatio?: 'native' | 'square' | '3:4' | '4:3' | null
+        limitViewportHeight?: boolean | null
+        publishedAt?: string | null
+        description?: PortableTextBlock[] | string | null
+        slides?: RawNewsSlide[] | null
+      }> | null
+    }> | null
+  } | null
 } | null
 
 type ListRowBlock = {
@@ -229,16 +261,70 @@ async function getInfoPage(): Promise<InfoPageData> {
   return seedInfoPage
 }
 
+function resolveNewsSlide(slide: RawNewsSlide): NewsSlide | null {
+  if (!slide?.mediaType) return null
+  const mediaType = slide.mediaType as NewsSlide['mediaType']
+  const layout = slide.layout === 'contain' ? 'contain' : 'fullBleed'
+  return {
+    layout,
+    mediaType,
+    imageUrl: sanityImageServeUrl(slide.image ?? null, slide.imageUrl ?? null),
+    videoUrl: slide.videoUrl ?? null,
+    lottieUrl: slide.lottieUrl ?? null,
+    animatedSvgUrl: slide.animatedSvgUrl ?? null,
+    caption: slide.caption ?? null,
+    containPadding: slide.containPadding ?? '0',
+    backgroundColor: slide.backgroundColor ?? '#000000',
+    backgroundVideoUrl: slide.backgroundVideoUrl ?? null,
+  }
+}
+
+function resolveNewsRows(
+  newsSection: NonNullable<InfoPageData>['newsSection']
+): NewsRowProps[] {
+  if (!newsSection?.rows?.length) return []
+
+  return newsSection.rows
+    .map((row) => {
+      const layout = row.layout === 'half' ? 'half' : 'full'
+      const posts = (row.posts ?? [])
+        .map((post) => {
+          const slides = (post.slides ?? [])
+            .map(resolveNewsSlide)
+            .filter((s): s is NewsSlide => s != null)
+          if (!slides.length || !post.publishedAt || !hasPortableText(post.description)) return null
+          return {
+            aspectRatio: (post.aspectRatio === '4:3' ? '3:4' : post.aspectRatio ?? 'native') as
+              | 'native'
+              | 'square'
+              | '3:4',
+            limitViewportHeight: post.limitViewportHeight ?? false,
+            slides,
+            publishedAt: post.publishedAt,
+            description: post.description,
+          }
+        })
+        .filter((p): p is NonNullable<typeof p> => p != null)
+
+      if (layout === 'half' && posts.length !== 2) return null
+      if (layout === 'full' && posts.length !== 1) return null
+      return { layout: layout as 'full' | 'half', posts }
+    })
+    .filter((r): r is NewsRowProps => r != null)
+}
+
 export default async function InfoPage() {
   const page = await getInfoPage()
   const introParagraphs = page?.introParagraphs ?? []
   const sections = page?.sections ?? []
   const blocks = buildInfoBlocks(sections)
+  const newsRows = resolveNewsRows(page?.newsSection)
 
   return (
-    <div className="info type-size-1">
-      <div className="info-section-row">
-        <div className="text-12-12">
+    <>
+      <div className="info type-primary">
+        <div className="info-section-row">
+          <div className="text-12-12">
           {introParagraphs.map((p, i) => {
             const content = p?.content
             if (!content?.length) return null
@@ -270,9 +356,9 @@ export default async function InfoPage() {
             )
           })}
         </div>
-      </div>
+        </div>
 
-      {blocks.map((block, i) => {
+        {blocks.map((block, i) => {
         if (block.kind === 'list-row') {
           return (
             <div key={i} className="info-section-row">
@@ -285,9 +371,16 @@ export default async function InfoPage() {
         }
 
         return <ColumnsSectionBlock key={i} section={block.section} />
-      })}
+        })}
 
-      <InfoPageFooter />
-    </div>
+        <InfoPageFooter />
+      </div>
+
+      {newsRows.length > 0 && (
+        <InfoNewsZone>
+          <NewsSection title={page?.newsSection?.title} rows={newsRows} />
+        </InfoNewsZone>
+      )}
+    </>
   )
 }

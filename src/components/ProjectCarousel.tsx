@@ -265,7 +265,7 @@ export function ProjectCarousel({
         className={`absolute bottom-0 left-0 z-20 max-w-[80%] py-[1.3%] px-[2%] pointer-events-none project-carousel-chrome project-carousel-chrome--desktop${chromeUnderFull ? ' project-carousel-chrome--under-full' : ''}`}
         aria-hidden={chromeUnderFull}
       >
-        <div className="type-size-1 pointer-events-auto" style={themeStyle}>
+        <div className="type-primary pointer-events-auto" style={themeStyle}>
           {hasDescription && (
             <button
               type="button"
@@ -304,7 +304,7 @@ export function ProjectCarousel({
         className={`project-carousel-chrome project-carousel-chrome--mobile${chromeUnderFull ? ' project-carousel-chrome--under-full' : ''}`}
         aria-hidden={chromeUnderFull}
       >
-        <div className="type-size-1 project-carousel-bottom-mobile" style={themeStyle}>
+        <div className="type-primary project-carousel-bottom-mobile" style={themeStyle}>
           {hasDescription ? (
             <button
               type="button"
@@ -325,12 +325,12 @@ export function ProjectCarousel({
         </div>
       </div>
 
-      {/* Slide counter (bottom right, desktop) — type-size-1, same padding as header */}
+      {/* Slide counter (bottom right, desktop) — type-primary, same padding as header */}
       <div
         className={`absolute bottom-0 right-0 z-10 py-[1.3%] px-[2%] project-carousel-chrome project-carousel-chrome--desktop${chromeUnderFull ? ' project-carousel-chrome--under-full' : ''}`}
         aria-hidden={chromeUnderFull}
       >
-        <p className="type-size-1 text-right" style={themeStyle} aria-live="polite">
+        <p className="type-primary text-right" style={themeStyle} aria-live="polite">
           {index + 1} of {count}
         </p>
       </div>

@@ -43,13 +43,13 @@ export const allProjectsWithSlidesQuery = groq`*[_type == "project"]{
       "assetUrl": asset->url
     },
     imageUrl,
-    videoUrl,
+    "videoUrl": coalesce(videoFile.asset->url, videoUrl),
     "lottieUrl": lottieFile.asset->url,
     "animatedSvgUrl": coalesce(animatedSvgFile.asset->url, animatedSvgUrl),
     caption,
     containPadding,
     backgroundColor,
-    backgroundVideoUrl,
+    "backgroundVideoUrl": coalesce(backgroundVideoFile.asset->url, backgroundVideoUrl),
     textTheme,
     textThemeCustomColor,
     "items": items[]{
@@ -61,10 +61,10 @@ export const allProjectsWithSlidesQuery = groq`*[_type == "project"]{
         "assetUrl": asset->url
       },
       imageUrl,
-      videoUrl,
+      "videoUrl": coalesce(videoFile.asset->url, videoUrl),
       "lottieUrl": lottieFile.asset->url,
     "animatedSvgUrl": coalesce(animatedSvgFile.asset->url, animatedSvgUrl),
-      backgroundVideoUrl,
+      "backgroundVideoUrl": coalesce(backgroundVideoFile.asset->url, backgroundVideoUrl),
       fit,
       containPadding
     }
@@ -72,6 +72,25 @@ export const allProjectsWithSlidesQuery = groq`*[_type == "project"]{
 }`;
 
 export const siteSettingsQuery = groq`*[_type == "siteSettings"][0]`;
+
+const newsMediaFields = groq`{
+  layout,
+  containPadding,
+  mediaType,
+  image {
+    asset,
+    crop,
+    hotspot,
+    "assetUrl": asset->url
+  },
+  imageUrl,
+  "videoUrl": coalesce(videoFile.asset->url, videoUrl),
+  "lottieUrl": lottieFile.asset->url,
+  "animatedSvgUrl": coalesce(animatedSvgFile.asset->url, animatedSvgUrl),
+  caption,
+  backgroundColor,
+  "backgroundVideoUrl": coalesce(backgroundVideoFile.asset->url, backgroundVideoUrl)
+}`;
 
 export const infoPageQuery = groq`*[_type == "infoPage" && _id == "info-page"][0]{
   introParagraphs[]{
@@ -94,6 +113,19 @@ export const infoPageQuery = groq`*[_type == "infoPage" && _id == "info-page"][0
     columns[]{
       heading,
       items[]
+    }
+  },
+  newsSection{
+    title,
+    rows[]{
+      layout,
+      posts[]{
+        aspectRatio,
+        limitViewportHeight,
+        publishedAt,
+        description,
+        slides[]${newsMediaFields}
+      }
     }
   }
 }`;

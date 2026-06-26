@@ -3,6 +3,9 @@ import { categoryType } from './category'
 import { infoPageType } from './infoPage'
 import { infoSectionObject } from './infoSection'
 import { introParagraphObject } from './introParagraph'
+import { newsMediaItemObject } from './newsMediaItem'
+import { newsPostObject } from './newsPost'
+import { newsRowObject } from './newsRow'
 import { projectType } from './project'
 import { siteLayoutType } from './siteLayout'
 import { slideObject } from './slide'
@@ -17,6 +20,9 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     twoUpItemObject,
     introParagraphObject,
     infoSectionObject,
+    newsMediaItemObject,
+    newsPostObject,
+    newsRowObject,
     infoPageType,
   ],
 }

@@ -184,7 +184,7 @@ export function IndexPageClient({
   }, [gridItems, filtered])
 
   return (
-    <div className="index type-size-1">
+    <div className="index type-primary">
       <div className="index-filters">
         <div className="index-filters-left">
           <div className="index-filters-scroll">

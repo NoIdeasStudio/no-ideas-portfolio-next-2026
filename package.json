@@ -10,7 +10,8 @@
     "sanity": "sanity dev",
     "seed:sanity": "node scripts/seed-dumbo-in-sanity.mjs",
     "remove:project-bg": "node scripts/remove-project-background-color.mjs",
-    "seed:info": "node scripts/seed-info-page-in-sanity.mjs"
+    "seed:info": "node scripts/seed-info-page-in-sanity.mjs",
+    "migrate:videos": "node scripts/migrate-videos-to-sanity.mjs"
   },
   "dependencies": {
     "@sanity/client": "^7.22.0",

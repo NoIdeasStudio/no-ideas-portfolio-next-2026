@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { getCachedSvg, loadSvg } from '../lib/mediaAnimationCache'
 
 type AnimatedSvgPlayerProps = {
   src: string
@@ -17,27 +18,25 @@ export function AnimatedSvgPlayer({
   autoplay = true,
 }: AnimatedSvgPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const [svgMarkup, setSvgMarkup] = useState<string | null>(null)
+  const injectedSrcRef = useRef<string | null>(null)
+  const [svgMarkup, setSvgMarkup] = useState<string | null>(() => getCachedSvg(src) ?? null)
 
   useEffect(() => {
-    let cancelled = false
-
-    async function load() {
-      try {
-        const response = await fetch(src)
-        if (!response.ok) {
-          console.error('[AnimatedSvgPlayer] Failed to fetch SVG:', response.status, src)
-          return
-        }
-        const text = await response.text()
-        if (!cancelled) setSvgMarkup(text)
-      } catch (err) {
-        console.error('[AnimatedSvgPlayer] Failed to load SVG:', err)
-      }
+    const cached = getCachedSvg(src)
+    if (cached) {
+      setSvgMarkup(cached)
+      return
     }
 
-    setSvgMarkup(null)
-    void load()
+    let cancelled = false
+
+    void loadSvg(src)
+      .then((text) => {
+        if (!cancelled) setSvgMarkup(text)
+      })
+      .catch((err) => {
+        console.error('[AnimatedSvgPlayer] Failed to load SVG:', err)
+      })
 
     return () => {
       cancelled = true
@@ -47,6 +46,11 @@ export function AnimatedSvgPlayer({
   useEffect(() => {
     const container = containerRef.current
     if (!container || !svgMarkup) return
+
+    if (injectedSrcRef.current !== src) {
+      container.innerHTML = svgMarkup
+      injectedSrcRef.current = src
+    }
 
     const svg = container.querySelector('svg')
     if (!svg) return
@@ -63,7 +67,7 @@ export function AnimatedSvgPlayer({
     } else {
       svg.pauseAnimations?.()
     }
-  }, [svgMarkup, fit, autoplay])
+  }, [svgMarkup, fit, autoplay, src])
 
   const fitClass = fit === 'contain' ? 'animated-svg-player--contain' : 'animated-svg-player--cover'
 
@@ -72,7 +76,6 @@ export function AnimatedSvgPlayer({
       ref={containerRef}
       className={`animated-svg-player ${fitClass}${autoplay ? '' : ' animated-svg-player--paused'} ${className ?? ''}`.trim()}
       aria-hidden
-      {...(svgMarkup ? { dangerouslySetInnerHTML: { __html: svgMarkup } } : {})}
     />
   )
 }

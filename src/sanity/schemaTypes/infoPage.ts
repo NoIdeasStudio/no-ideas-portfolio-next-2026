@@ -30,6 +30,27 @@ export const infoPageType = defineType({
       description: 'Add, remove, or reorder sections (List, Contact, Columns).',
       of: [defineArrayMember({ type: infoSectionObject.name })],
     }),
+    defineField({
+      name: 'newsSection',
+      type: 'object',
+      title: 'News',
+      description: 'News posts shown below the footer on the info page.',
+      fields: [
+        defineField({
+          name: 'title',
+          type: 'string',
+          title: 'Section title',
+          initialValue: 'News',
+        }),
+        defineField({
+          name: 'rows',
+          type: 'array',
+          title: 'Rows',
+          description: 'Each row is full width (1 post) or half width (2 posts side by side).',
+          of: [defineArrayMember({ type: 'newsRow' })],
+        }),
+      ],
+    }),
   ],
   preview: {
     prepare() {

@@ -1,6 +1,6 @@
 import { defineArrayMember, defineField, defineType } from 'sanity'
 
-/** Reusable slide block: layout + image or video (URL for now; MUX later). */
+/** Reusable slide block: layout + image or video. */
 export const slideObject = defineType({
   name: 'slide',
   type: 'object',
@@ -54,7 +54,7 @@ export const slideObject = defineType({
       options: {
         list: [
           { title: 'Image', value: 'image' },
-          { title: 'Video (URL)', value: 'video' },
+          { title: 'Video', value: 'video' },
           { title: 'Lottie animation', value: 'lottie' },
           { title: 'Animated SVG', value: 'animatedSvg' },
         ],
@@ -79,10 +79,20 @@ export const slideObject = defineType({
       hidden: ({ parent }) => parent?.layout === 'twoUp' || parent?.mediaType !== 'image',
     }),
     defineField({
+      name: 'videoFile',
+      type: 'file',
+      title: 'Video (upload)',
+      description: 'Upload a video file (.mp4, .mov, .webm, .m4v).',
+      options: {
+        accept: 'video/mp4,video/quicktime,video/webm,video/x-m4v,.mp4,.mov,.webm,.m4v',
+      },
+      hidden: ({ parent }) => parent?.layout === 'twoUp' || parent?.mediaType !== 'video',
+    }),
+    defineField({
       name: 'videoUrl',
       type: 'url',
-      title: 'Video URL',
-      description: 'Link to video (e.g. MUX, Vimeo, or direct URL). MUX integration can be added later.',
+      title: 'Video URL (legacy)',
+      description: 'Deprecated — use Video upload. Kept for unmigrated external URLs.',
       hidden: ({ parent }) => parent?.layout === 'twoUp' || parent?.mediaType !== 'video',
     }),
     defineField({
@@ -129,10 +139,19 @@ export const slideObject = defineType({
         }),
     }),
     defineField({
+      name: 'backgroundVideoFile',
+      type: 'file',
+      title: 'Background video (upload)',
+      description: 'Video played as a full-cover background behind the slide content.',
+      options: {
+        accept: 'video/mp4,video/quicktime,video/webm,video/x-m4v,.mp4,.mov,.webm,.m4v',
+      },
+    }),
+    defineField({
       name: 'backgroundVideoUrl',
       type: 'url',
-      title: 'Background video URL',
-      description: 'Video played as a full-cover background behind the slide content.',
+      title: 'Background video URL (legacy)',
+      description: 'Deprecated — use Background video upload.',
     }),
     defineField({
       name: 'textTheme',

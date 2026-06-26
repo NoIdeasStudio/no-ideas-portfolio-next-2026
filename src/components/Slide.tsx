@@ -59,6 +59,7 @@ function SingleMedia({
   caption,
   containPadding = '0',
   isActive,
+  naturalHeight = false,
 }: {
   layout: 'fullBleed' | 'contain'
   mediaType: 'image' | 'video' | 'lottie' | 'animatedSvg'
@@ -69,10 +70,14 @@ function SingleMedia({
   caption?: string | null
   containPadding?: string | null
   isActive: boolean
+  naturalHeight?: boolean
 }) {
   const isContain = layout === 'contain'
+  const useNaturalLayout = naturalHeight && layout === 'fullBleed'
   const paddingPercent = `${containPadding}%`
-  const containerClass = `slide-content relative h-full w-full flex items-center justify-center overflow-hidden`
+  const containerClass = naturalHeight
+    ? 'slide-content relative w-full flex items-center justify-center overflow-hidden'
+    : 'slide-content relative h-full w-full flex items-center justify-center overflow-hidden'
   const containerStyle = isContain ? { padding: paddingPercent } : undefined
 
   if (mediaType === 'animatedSvg' && animatedSvgUrl) {
@@ -80,8 +85,12 @@ function SingleMedia({
       <div className={containerClass} style={containerStyle}>
         <AnimatedSvgPlayer
           src={animatedSvgUrl}
-          fit={isContain ? 'contain' : 'cover'}
-          className={isContain ? 'relative h-full w-full' : 'absolute inset-0 h-full w-full'}
+          fit={isContain || useNaturalLayout ? 'contain' : 'cover'}
+          className={
+            isContain || useNaturalLayout
+              ? 'relative w-full h-auto'
+              : 'absolute inset-0 h-full w-full'
+          }
           autoplay={isActive}
         />
         {caption && isActive && (
@@ -98,8 +107,12 @@ function SingleMedia({
       <div className={containerClass} style={containerStyle}>
         <LottiePlayer
           src={lottieUrl}
-          fit={isContain ? 'contain' : 'cover'}
-          className={isContain ? 'relative h-full w-full' : 'absolute inset-0 h-full w-full'}
+          fit={isContain || useNaturalLayout ? 'contain' : 'cover'}
+          className={
+            isContain || useNaturalLayout
+              ? 'relative w-full h-auto'
+              : 'absolute inset-0 h-full w-full'
+          }
           autoplay={isActive}
         />
         {caption && isActive && (
@@ -114,7 +127,16 @@ function SingleMedia({
   if (mediaType === 'video' && videoUrl) {
     return (
       <div className={containerClass} style={containerStyle}>
-        <CarouselVideo src={videoUrl} isActive={isActive} isContain={isContain} />
+        <CarouselVideo
+          src={videoUrl}
+          isActive={isActive}
+          isContain={isContain || useNaturalLayout}
+          className={
+            useNaturalLayout
+              ? 'relative block w-full h-auto object-contain'
+              : undefined
+          }
+        />
         {caption && isActive && (
           <p className="absolute bottom-4 left-4 right-4 text-xs text-white/80 text-center z-10">
             {caption}
@@ -125,8 +147,8 @@ function SingleMedia({
   }
 
   if (mediaType === 'image' && imageUrl) {
-    /* Use img for contain so it respects padding and isn't cropped (Next/Image fill is absolute and can crop). */
-    const useNextImage = isSanityImage(imageUrl) && !isContain
+    /* Use img for contain/natural height so layout isn't collapsed by absolute/fill children. */
+    const useNextImage = isSanityImage(imageUrl) && !isContain && !naturalHeight
     return (
       <div className={containerClass} style={containerStyle}>
         {useNextImage ? (
@@ -143,9 +165,11 @@ function SingleMedia({
             src={imageUrl}
             alt={caption || ''}
             className={
-              isContain
-                ? 'relative max-h-full max-w-full w-auto h-auto object-contain'
-                : 'absolute inset-0 w-full h-full object-cover'
+              useNaturalLayout
+                ? 'relative block w-full h-auto'
+                : isContain
+                  ? 'relative max-h-full max-w-full w-auto h-auto object-contain'
+                  : 'absolute inset-0 w-full h-full object-cover'
             }
             loading="eager"
             decoding="async"
@@ -297,9 +321,11 @@ function TwoUpCell({ item, isActive }: { item: TwoUpItem; isActive: boolean }) {
 export function Slide({
   slide,
   isActive = true,
+  naturalHeight = false,
 }: {
   slide: CarouselSlide
   isActive?: boolean
+  naturalHeight?: boolean
 }) {
   if (slide.layout === 'twoUp') {
     return (
@@ -321,6 +347,7 @@ export function Slide({
       caption={slide.caption}
       containPadding={slide.containPadding}
       isActive={isActive}
+      naturalHeight={naturalHeight}
     />
   )
 }

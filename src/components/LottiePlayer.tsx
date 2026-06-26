@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import type { AnimationItem } from 'lottie-web'
+import { getCachedLottieData, loadLottieData } from '../lib/mediaAnimationCache'
 
 type LottiePlayerProps = {
   src: string
@@ -19,6 +20,7 @@ export function LottiePlayer({
 }: LottiePlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const animationRef = useRef<AnimationItem | undefined>(undefined)
+  const loadedSrcRef = useRef<string | null>(null)
   const autoplayRef = useRef(autoplay)
   autoplayRef.current = autoplay
 
@@ -28,19 +30,14 @@ export function LottiePlayer({
 
     let cancelled = false
 
-    async function load() {
+    async function load(animationData: unknown) {
       try {
-        const [{ default: lottie }, response] = await Promise.all([
-          import('lottie-web'),
-          fetch(src),
-        ])
+        const { default: lottie } = await import('lottie-web')
         if (cancelled || !containerRef.current) return
-        if (!response.ok) {
-          console.error('[LottiePlayer] Failed to fetch animation:', response.status, src)
-          return
-        }
-        const animationData = await response.json()
-        if (cancelled || !containerRef.current) return
+
+        animationRef.current?.destroy()
+        animationRef.current = undefined
+
         const animation = lottie.loadAnimation({
           container: containerRef.current,
           renderer: 'svg',
@@ -52,28 +49,46 @@ export function LottiePlayer({
           },
         })
         animationRef.current = animation
+        loadedSrcRef.current = src
         if (autoplayRef.current) animation.play()
       } catch (err) {
         console.error('[LottiePlayer] Failed to load animation:', err)
       }
     }
 
-    animationRef.current = undefined
-    void load()
+    const cached = getCachedLottieData(src)
+    if (cached) {
+      void load(cached)
+      return () => {
+        cancelled = true
+        animationRef.current?.destroy()
+        animationRef.current = undefined
+        loadedSrcRef.current = null
+      }
+    }
+
+    void loadLottieData(src)
+      .then((animationData) => {
+        if (!cancelled) void load(animationData)
+      })
+      .catch((err) => {
+        console.error('[LottiePlayer] Failed to fetch animation:', err)
+      })
 
     return () => {
       cancelled = true
       animationRef.current?.destroy()
       animationRef.current = undefined
+      loadedSrcRef.current = null
     }
   }, [src, fit])
 
   useEffect(() => {
     const animation = animationRef.current
-    if (!animation) return
+    if (!animation || loadedSrcRef.current !== src) return
     if (autoplay) animation.play()
     else animation.pause()
-  }, [autoplay])
+  }, [autoplay, src])
 
   return (
     <div
