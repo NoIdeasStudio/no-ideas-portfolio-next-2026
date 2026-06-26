@@ -54,6 +54,7 @@ type InfoPageData = {
       posts?: Array<{
         aspectRatio?: 'native' | 'square' | '3:4' | '4:3' | null
         limitViewportHeight?: boolean | null
+        sidePadding?: boolean | null
         publishedAt?: string | null
         description?: PortableTextBlock[] | string | null
         slides?: RawNewsSlide[] | null
@@ -299,6 +300,7 @@ function resolveNewsRows(
               | 'square'
               | '3:4',
             limitViewportHeight: post.limitViewportHeight ?? false,
+            sidePadding: post.sidePadding ?? false,
             slides,
             publishedAt: post.publishedAt,
             description: post.description,
@@ -306,7 +308,7 @@ function resolveNewsRows(
         })
         .filter((p): p is NonNullable<typeof p> => p != null)
 
-      if (layout === 'half' && posts.length !== 2) return null
+      if (layout === 'half' && (posts.length < 1 || posts.length > 2)) return null
       if (layout === 'full' && posts.length !== 1) return null
       return { layout: layout as 'full' | 'half', posts }
     })

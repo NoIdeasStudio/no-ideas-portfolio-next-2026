@@ -731,6 +731,13 @@ body:has(#info.info--news-zone) {
   width: auto;
 }
 
+@media (min-width: 801px) {
+  .info-news-row--half .news-post:only-child {
+    flex: 0 0 calc((100% - 2%) / 2);
+    max-width: calc((100% - 2%) / 2);
+  }
+}
+
 .news-post {
   width: 100%;
 }
@@ -755,12 +762,15 @@ body:has(#info.info--news-zone) {
   aspect-ratio: 3 / 4;
 }
 
-/* Desktop only: cap slideshow at full viewport height when post toggle is on */
+/* Desktop only: viewport max-height cap and side padding */
 @media (min-width: 801px) {
+  .news-post--side-padding {
+    padding-left: 15%;
+    padding-right: 15%;
+  }
+
   .news-post-slideshow--viewport-height {
-    height: 100vh;
     max-height: 100vh;
-    aspect-ratio: auto;
   }
 
   .news-post-inner--viewport-height.news-post-inner--native {
@@ -768,60 +778,31 @@ body:has(#info.info--news-zone) {
     max-width: 100%;
   }
 
-  .news-post-slideshow--viewport-height .news-post-slideshow-track {
-    position: absolute;
-    inset: 0;
-    height: 100%;
-    display: block;
-  }
-
-  .news-post-slideshow--viewport-height .news-post-slide {
-    position: absolute;
-    inset: 0;
-    height: 100%;
-    grid-area: unset;
+  /* Native: hug content height, never exceed viewport */
+  .news-post-slideshow--viewport-height.news-post-slideshow--native {
     overflow: hidden;
   }
 
-  .news-post-slideshow--viewport-height .news-post-slide .slide-content {
-    height: 100%;
-  }
-
-  /* Undo native auto-height rules inside the fixed viewport box */
-  .news-post-slideshow--viewport-height.news-post-slideshow--native .news-post-slide .slide-content {
-    height: 100%;
-  }
-
   .news-post-slideshow--viewport-height.news-post-slideshow--native
     .news-post-slide
     .slide-content
-    .video-cover,
+    img,
   .news-post-slideshow--viewport-height.news-post-slideshow--native
     .news-post-slide
     .slide-content
-    > img.absolute,
-  .news-post-slideshow--viewport-height.news-post-slideshow--native
-    .news-post-slide
-    .slide-content
-    > span
-    > img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    video {
+    max-height: 100vh;
   }
 
-  .news-post-slideshow--viewport-height.news-post-slideshow--native
-    .news-post-slide
-    .lottie-player,
-  .news-post-slideshow--viewport-height.news-post-slideshow--native
-    .news-post-slide
-    .animated-svg-player {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+  /* Cropped ratios: shrink width when height would exceed the viewport */
+  .news-post-slideshow--viewport-height.news-post-slideshow--square {
+    width: min(100%, 100vh);
+    margin-inline: auto;
+  }
+
+  .news-post-slideshow--viewport-height.news-post-slideshow--3-4 {
+    width: min(100%, calc(100vh * 3 / 4));
+    margin-inline: auto;
   }
 }
 

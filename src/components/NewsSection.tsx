@@ -15,7 +15,7 @@ export function NewsSection({ title = 'News', rows }: NewsSectionProps) {
 
   return (
     <section className="info-news type-secondary" aria-label={title ?? 'News'}>
-      <h2 className="info-news-heading">{title}</h2>
+      <h2 className="info-news-heading type-primary">{title}</h2>
       <div className="info-news-rows">
         {rows.map((row, i) => (
           <div

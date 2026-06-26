@@ -30,7 +30,14 @@ export const newsPostObject = defineType({
       type: 'boolean',
       title: 'Limit to viewport height (desktop)',
       description:
-        'On desktop, caps the slideshow at 100% of the viewport height. Media keeps its natural height on mobile.',
+        'On desktop, sets the slideshow maximum height to 100% of the viewport. Shorter media keeps its natural height. Mobile is unchanged.',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'sidePadding',
+      type: 'boolean',
+      title: 'Side padding (15%, desktop)',
+      description: 'On desktop, adds 15% padding to the left and right of the post.',
       initialValue: false,
     }),
     defineField({

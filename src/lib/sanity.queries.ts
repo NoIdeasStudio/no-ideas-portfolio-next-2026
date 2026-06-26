@@ -122,6 +122,7 @@ export const infoPageQuery = groq`*[_type == "infoPage" && _id == "info-page"][0
       posts[]{
         aspectRatio,
         limitViewportHeight,
+        sidePadding,
         publishedAt,
         description,
         slides[]${newsMediaFields}

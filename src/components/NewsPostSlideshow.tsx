@@ -13,6 +13,7 @@ export type NewsSlide = Extract<CarouselSlide, { layout: 'fullBleed' | 'contain'
 export type NewsPostProps = {
   aspectRatio: 'native' | 'square' | '3:4'
   limitViewportHeight: boolean
+  sidePadding: boolean
   slides: NewsSlide[]
   publishedAt: string
   description: PortableTextBlock[] | string
@@ -21,6 +22,7 @@ export type NewsPostProps = {
 export function NewsPostSlideshow({
   aspectRatio,
   limitViewportHeight = false,
+  sidePadding = false,
   slides,
   publishedAt,
   description,
@@ -46,7 +48,7 @@ export function NewsPostSlideshow({
         : 'news-post-slideshow--native'
 
   return (
-    <article className="news-post">
+    <article className={`news-post${sidePadding ? ' news-post--side-padding' : ''}`}>
       <div
         className={`news-post-inner${isNative ? ' news-post-inner--native' : ''}${limitViewportHeight ? ' news-post-inner--viewport-height' : ''}`}
       >

@@ -46,7 +46,7 @@ export const infoPageType = defineType({
           name: 'rows',
           type: 'array',
           title: 'Rows',
-          description: 'Each row is full width (1 post) or half width (2 posts side by side).',
+          description: 'Each row is full width (1 post) or half width (1–2 posts side by side).',
           of: [defineArrayMember({ type: 'newsRow' })],
         }),
       ],
