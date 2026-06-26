@@ -7,8 +7,27 @@ const nextConfig = {
       { protocol: 'https', hostname: 'cdn.sanity.io', pathname: '/**' },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/sanity-files/:path*',
+        destination: 'https://cdn.sanity.io/files/:path*',
+      },
+    ]
+  },
   async headers() {
     return [
+      {
+        // Allow Presentation to iframe the frontend locally and on Sanity-hosted Studio.
+        source: '/((?!studio|api).*)',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value:
+              "frame-ancestors 'self' http://localhost:3000 http://localhost:3333 http://127.0.0.1:3000 http://127.0.0.1:3333 https://*.sanity.io",
+          },
+        ],
+      },
       {
         source: '/studio/:path*',
         headers: [

@@ -11,9 +11,12 @@ import {structureTool} from 'sanity/structure'
 
 // Go to https://www.sanity.io/docs/api-versioning to learn how API versioning works
 import {apiVersion, dataset, projectId} from './src/sanity/env'
+import {getPreviewOrigin, previewAllowOrigins} from './src/sanity/env.preview'
 import {resolve} from './src/sanity/presentation/resolve'
 import {schema} from './src/sanity/schemaTypes'
 import {structure} from './src/sanity/structure'
+
+const previewOrigin = getPreviewOrigin()
 
 export default defineConfig({
   basePath: '/studio',
@@ -26,9 +29,12 @@ export default defineConfig({
     structureTool({structure}),
     presentationTool({
       resolve,
+      allowOrigins: [...previewAllowOrigins],
       previewUrl: {
+        origin: previewOrigin,
         previewMode: {
           enable: '/api/draft-mode/enable',
+          disable: '/api/draft-mode/disable',
         },
       },
     }),

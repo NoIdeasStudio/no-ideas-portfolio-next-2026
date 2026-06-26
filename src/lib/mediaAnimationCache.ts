@@ -1,3 +1,5 @@
+import { sanityFileFetchUrl } from './sanityFileProxyUrl'
+
 const svgCache = new Map<string, string>()
 const lottieCache = new Map<string, unknown>()
 const inflightSvg = new Map<string, Promise<string>>()
@@ -12,7 +14,7 @@ export function getCachedLottieData(src: string): unknown | undefined {
 }
 
 async function fetchSvg(src: string): Promise<string> {
-  const response = await fetch(src)
+  const response = await fetch(sanityFileFetchUrl(src))
   if (!response.ok) {
     throw new Error(`Failed to fetch SVG (${response.status}): ${src}`)
   }
@@ -22,7 +24,7 @@ async function fetchSvg(src: string): Promise<string> {
 }
 
 async function fetchLottieData(src: string): Promise<unknown> {
-  const response = await fetch(src)
+  const response = await fetch(sanityFileFetchUrl(src))
   if (!response.ok) {
     throw new Error(`Failed to fetch Lottie JSON (${response.status}): ${src}`)
   }
