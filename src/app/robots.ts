@@ -1,10 +1,11 @@
 import type { MetadataRoute } from 'next'
 import { getSiteSettings, resolveSiteUrl } from '../lib/metadata'
+import { shouldBlockSearchIndexing } from '../sanity/lib/preview'
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
   const settings = await getSiteSettings()
   const baseUrl = resolveSiteUrl(settings)
-  const noIndex = settings?.seo?.noIndex === true
+  const noIndex = shouldBlockSearchIndexing() || settings?.seo?.noIndex === true
 
   return {
     rules: noIndex

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { urlFor } from '../sanity/lib/image'
 import { fetchSanity } from '../sanity/lib/fetch'
+import { shouldBlockSearchIndexing } from '../sanity/lib/preview'
 import { siteSettingsQuery } from './sanity.queries'
 
 export type SeoFields = {
@@ -22,10 +23,7 @@ const FALLBACK_TITLE = 'No Ideas'
 const FALLBACK_DESCRIPTION = 'Design and art direction studio.'
 
 export async function getSiteSettings(): Promise<SiteSettings | null> {
-  return fetchSanity<SiteSettings | null>(siteSettingsQuery, {}, {
-    perspective: 'published',
-    stega: false,
-  })
+  return fetchSanity<SiteSettings | null>(siteSettingsQuery, {}, { stega: false })
 }
 
 export function resolveSiteUrl(settings?: SiteSettings | null): string {
@@ -63,7 +61,10 @@ export function buildPageMetadata(
     options.description?.trim() ||
     defaultDescription
   const ogImage = options.seo?.image ?? settings?.seo?.image
-  const noIndex = options.seo?.noIndex === true || settings?.seo?.noIndex === true
+  const noIndex =
+    shouldBlockSearchIndexing() ||
+    options.seo?.noIndex === true ||
+    settings?.seo?.noIndex === true
   const pageUrl = options.path ? `${baseUrl}${options.path}` : baseUrl
 
   const metadata: Metadata = {

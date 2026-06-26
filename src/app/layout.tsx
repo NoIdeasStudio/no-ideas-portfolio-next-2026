@@ -10,8 +10,10 @@ import { PageWrapper } from "../components/PageWrapper";
 import { Header } from "../components/Header";
 import { DisableDraftMode } from "../components/DisableDraftMode";
 import { SiteJsonLd } from "../components/SiteJsonLd";
+import { StagingBanner } from "../components/StagingBanner";
 import { buildRootMetadata, getSiteSettings, resolveSiteUrl } from "../lib/metadata";
 import { SanityLive } from "../sanity/lib/live";
+import { isStagingPreview } from "../sanity/lib/preview";
 
 const abcDiatype = localFont({
   src: "../../public/fonts/ABCDiatype-Medium.woff2",
@@ -36,10 +38,12 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const settings = await getSiteSettings();
   const siteUrl = resolveSiteUrl(settings);
   const isDraftMode = (await draftMode()).isEnabled;
+  const isStaging = isStagingPreview();
 
   return (
     <html lang="en" className={abcDiatype.variable}>
       <body>
+        {isStaging && <StagingBanner />}
         <SiteJsonLd settings={settings} siteUrl={siteUrl} />
         <ProjectThemeProvider>
           <AutoScrollProvider>
@@ -49,7 +53,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             </PageWrapper>
           </AutoScrollProvider>
         </ProjectThemeProvider>
-        <SanityLive />
+        {isDraftMode && <SanityLive />}
         {isDraftMode && (
           <>
             <DisableDraftMode />
