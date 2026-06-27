@@ -48,6 +48,7 @@ const siteSettingsDoc = {
   _type: 'siteSettings',
   title: 'No Ideas',
   siteUrl,
+  googleAnalyticsId: 'G-P2PCFLQFKC',
   seo: {
     title: 'No Ideas',
     description:
