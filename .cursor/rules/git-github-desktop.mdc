@@ -1,0 +1,14 @@
+---
+description: Git workflow preferences — use GitHub Desktop for branch and repo operations
+alwaysApply: true
+---
+
+# Git & GitHub Desktop
+
+The user manages git through **GitHub Desktop**, not the CLI.
+
+When giving git workflow guidance:
+
+- Prefer GitHub Desktop steps (branch switch, stash, commit, push, pull, create PR)
+- Do not default to terminal `git` commands unless the user asks for CLI or you need to inspect repo state
+- For PRs, they may still use `gh` if they ask explicitly

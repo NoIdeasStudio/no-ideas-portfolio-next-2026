@@ -11,6 +11,7 @@ export const siteSettingsType = defineType({
   fieldsets: [
     { name: 'general', title: 'General', options: { columns: 2 } },
     { name: 'seo', title: 'Search & social', options: { collapsible: true } },
+    { name: 'analytics', title: 'Analytics', options: { collapsible: true } },
     { name: 'branding', title: 'Icons', options: { collapsible: true } },
   ],
   fields: [
@@ -39,6 +40,21 @@ export const siteSettingsType = defineType({
       type: 'seo',
       fieldset: 'seo',
       description: 'Default metadata for the homepage and fallback for pages without their own SEO fields.',
+    }),
+    defineField({
+      name: 'googleAnalyticsId',
+      title: 'Google Analytics measurement ID',
+      type: 'string',
+      fieldset: 'analytics',
+      description: 'GA4 measurement ID (e.g. G-XXXXXXXXXX). Loads gtag.js on the live site when set.',
+      validation: (Rule) =>
+        Rule.custom((value) => {
+          if (!value) return true
+          return /^G-[A-Z0-9]+$/.test(value)
+            ? true
+            : 'Use a GA4 measurement ID like G-XXXXXXXXXX'
+        }),
+      initialValue: 'G-P2PCFLQFKC',
     }),
     defineField({
       name: 'favicon',

@@ -13,6 +13,7 @@ export type SeoFields = {
 export type SiteSettings = {
   title?: string | null
   siteUrl?: string | null
+  googleAnalyticsId?: string | null
   favicon?: { asset?: unknown } | null
   appleTouchIcon?: { asset?: unknown } | null
   seo?: SeoFields | null

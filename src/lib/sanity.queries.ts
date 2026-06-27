@@ -74,6 +74,7 @@ export const allProjectsWithSlidesQuery = groq`*[_type == "project"]{
 export const siteSettingsQuery = groq`*[_type == "siteSettings" && _id == "site-settings"][0]{
   title,
   siteUrl,
+  googleAnalyticsId,
   favicon,
   appleTouchIcon,
   seo {
