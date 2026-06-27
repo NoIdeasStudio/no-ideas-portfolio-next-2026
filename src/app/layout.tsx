@@ -9,6 +9,7 @@ import { ProjectThemeProvider } from "../contexts/ProjectThemeContext";
 import { PageWrapper } from "../components/PageWrapper";
 import { Header } from "../components/Header";
 import { DisableDraftMode } from "../components/DisableDraftMode";
+import { GoogleAnalytics } from "../components/GoogleAnalytics";
 import { SiteJsonLd } from "../components/SiteJsonLd";
 import { buildRootMetadata, getSiteSettings, resolveSiteUrl } from "../lib/metadata";
 import { SanityLive } from "../sanity/lib/live";
@@ -36,10 +37,14 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const settings = await getSiteSettings();
   const siteUrl = resolveSiteUrl(settings);
   const isDraftMode = (await draftMode()).isEnabled;
+  const googleAnalyticsId = settings?.googleAnalyticsId?.trim();
 
   return (
     <html lang="en" className={abcDiatype.variable}>
       <body>
+        {!isDraftMode && googleAnalyticsId && (
+          <GoogleAnalytics measurementId={googleAnalyticsId} />
+        )}
         <SiteJsonLd settings={settings} siteUrl={siteUrl} />
         <ProjectThemeProvider>
           <AutoScrollProvider>
