@@ -291,7 +291,6 @@ function resolveNewsSlide(slide: RawNewsSlide): NewsSlide | null {
     animatedSvgUrl: slide.animatedSvgUrl ?? null,
     caption: slide.caption ?? null,
     containPadding: slide.containPadding ?? '0',
-    backgroundTransparent: slide.backgroundTransparent ?? false,
     backgroundColor: slide.backgroundTransparent
       ? null
       : slide.backgroundColor ?? '#000000',
