@@ -55,6 +55,7 @@ type RawNewsSlide = {
   lottieUrl?: string | null
   animatedSvgUrl?: string | null
   caption?: string | null
+  backgroundTransparent?: boolean | null
   backgroundColor?: string | null
   backgroundVideoUrl?: string | null
 }
@@ -290,7 +291,10 @@ function resolveNewsSlide(slide: RawNewsSlide): NewsSlide | null {
     animatedSvgUrl: slide.animatedSvgUrl ?? null,
     caption: slide.caption ?? null,
     containPadding: slide.containPadding ?? '0',
-    backgroundColor: slide.backgroundColor ?? '#000000',
+    backgroundTransparent: slide.backgroundTransparent ?? false,
+    backgroundColor: slide.backgroundTransparent
+      ? null
+      : slide.backgroundColor ?? '#000000',
     backgroundVideoUrl: slide.backgroundVideoUrl ?? null,
   }
 }

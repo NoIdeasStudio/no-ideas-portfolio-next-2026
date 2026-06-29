@@ -100,6 +100,7 @@ const newsMediaFields = groq`{
   "lottieUrl": lottieFile.asset->url,
   "animatedSvgUrl": coalesce(animatedSvgFile.asset->url, animatedSvgUrl),
   caption,
+  backgroundTransparent,
   backgroundColor,
   "backgroundVideoUrl": coalesce(backgroundVideoFile.asset->url, backgroundVideoUrl)
 }`;

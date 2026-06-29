@@ -111,13 +111,23 @@ export const newsMediaItemObject = defineType({
       title: 'Caption',
     }),
     defineField({
+      name: 'backgroundTransparent',
+      type: 'boolean',
+      title: 'Transparent background',
+      description: 'When enabled, no background fill is applied behind the media.',
+      initialValue: false,
+    }),
+    defineField({
       name: 'backgroundColor',
       type: 'string',
       title: 'Background color',
-      description: 'Hex color for this slide (e.g. #000000). Defaults to black if empty.',
+      description: 'Hex color behind the media (e.g. #000000). Defaults to black when empty.',
+      hidden: ({ parent }) => parent?.backgroundTransparent === true,
       initialValue: '#000000',
       validation: (Rule) =>
-        Rule.custom((value) => {
+        Rule.custom((value, context) => {
+          const parent = context.parent as { backgroundTransparent?: boolean } | undefined
+          if (parent?.backgroundTransparent) return true
           if (value === undefined || value === null || value === '') return true
           return /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(value)
             ? true

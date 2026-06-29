@@ -1,0 +1,36 @@
+---
+description: How Sanity content updates reach the live site; when to add on-demand revalidation
+alwaysApply: false
+globs: src/sanity/**/*,src/app/api/**/*,src/lib/**/*
+---
+
+# Sanity content updates (No Ideas)
+
+## What is deployed (do not re-add without discussion)
+
+- **`SanityLive`** in `src/app/layout.tsx` via `defineLive` in `src/sanity/lib/live.ts` — primary mechanism for near-instant **published** updates when a browser tab is open.
+- **ISR fallback**: `export const revalidate = 60` on homepage, projects, info, and project pages.
+- **`SANITY_API_READ_TOKEN`** on Vercel — required for Presentation / draft preview on production, not for public published live updates.
+
+## Custom `/api/revalidate` webhook — intentionally omitted (Jun 2026)
+
+A custom Sanity → `/api/revalidate` webhook was evaluated and **not shipped**. It is redundant for the team's workflow (publish in Sanity, verify on the live URL with a tab open).
+
+Revisit only if:
+- Content stays stale in a **fresh private window** more than ~60s after publish
+- Editors need updates without anyone on the site (crawlers, OG previews, cold traffic)
+- `siteSettings` / layout metadata fails to refresh reliably
+
+If added later: deploy route + `SANITY_REVALIDATE_SECRET` on Vercel + Sanity webhook URL(s); staging needs its own webhook if required.
+
+## Local vs live when testing
+
+- **Visitors / production behavior** → `https://www.noideas.website` (private window after publish)
+- **Local dev / Presentation** → `localhost:3000` with `SANITY_API_READ_TOKEN` in `.env.local`; restart `npm run dev` after env changes
+- Do not assume localhost and production refresh the same way (dev cache vs ISR + edge)
+
+## Editing workflow
+
+1. Publish in Sanity Studio
+2. Check **live URL** (not localhost) for what visitors see
+3. Studio Presentation (option 2) uses draft mode + read token on Vercel
