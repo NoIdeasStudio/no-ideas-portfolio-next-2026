@@ -650,6 +650,26 @@ body:has(#info.info--news-zone) {
   display: inline-block;
 }
 
+/* Info page — email copy cursor */
+.info-email-copy {
+  cursor: none;
+}
+
+.info-email-copy-cursor {
+  position: fixed;
+  z-index: 10000;
+  pointer-events: none;
+  background: #000;
+  color: #fff;
+  border-radius: 9999px;
+  padding: 8px 0.7em 10px;
+  line-height: 1;
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
 @media (max-width: 800px) {
   #info .info {
     padding-top: 17%;

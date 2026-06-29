@@ -1,6 +1,7 @@
 import { PortableText } from 'next-sanity'
 import type { PortableTextBlock } from '@portabletext/types'
 import type { Metadata } from 'next'
+import { CopyEmailLink } from '../../components/CopyEmailLink'
 import { InfoPageFooter } from '../../components/InfoPageFooter'
 import { InfoNewsZone } from '../../components/InfoNewsZone'
 import { NewsSection, type NewsRowProps } from '../../components/NewsSection'
@@ -216,9 +217,7 @@ function ContactSectionColumn({ section }: { section: Section }) {
           <p>
             {section.contactEmails.filter(Boolean).map((email, j) => (
               <span key={j}>
-                <a href={`mailto:${email?.replace(/\s/g, '')}?Subject=new%20biz`}>
-                  {email}
-                </a>
+                <CopyEmailLink email={email!} />
                 <br />
               </span>
             ))}
