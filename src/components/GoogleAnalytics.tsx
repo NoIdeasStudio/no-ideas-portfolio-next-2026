@@ -1,12 +1,18 @@
+'use client'
+
 import Script from 'next/script'
+import { usePathname } from 'next/navigation'
+import { isStudioPath } from '../lib/isStudioPath'
 
 type GoogleAnalyticsProps = {
   measurementId: string
 }
 
 export function GoogleAnalytics({ measurementId }: GoogleAnalyticsProps) {
+  const pathname = usePathname()
   const id = measurementId.trim()
-  if (!id) return null
+
+  if (!id || isStudioPath(pathname)) return null
 
   return (
     <>
