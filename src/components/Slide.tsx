@@ -352,11 +352,18 @@ export function Slide({
   naturalHeight?: boolean
 }) {
   if (slide.layout === 'twoUp') {
-    const splitGutter = slide.twoUpEqualGutter === true
+    const spacing = slide.twoUpSpacing ?? 'default'
+    const splitGutter = spacing === 'equalCentered' || spacing === 'equalHugGutter'
+    const hugGutter = spacing === 'equalHugGutter'
+    const containerClass = [
+      'slide-content relative h-full w-full flex flex-col md:flex-row overflow-hidden',
+      splitGutter && 'two-up-equal-gutter',
+      hugGutter && 'two-up-hug-gutter',
+    ]
+      .filter(Boolean)
+      .join(' ')
     return (
-      <div
-        className={`slide-content relative h-full w-full flex flex-col md:flex-row overflow-hidden${splitGutter ? ' two-up-equal-gutter' : ''}`}
-      >
+      <div className={containerClass}>
         <TwoUpCell item={slide.items[0]} isActive={isActive} position="left" />
         <TwoUpCell item={slide.items[1]} isActive={isActive} position="right" />
       </div>

@@ -65,16 +65,24 @@ export const slideObject = defineType({
       validation: (Rule) => Rule.length(2).error('2-up slides must have exactly 2 items'),
     }),
     defineField({
-      name: 'twoUpEqualGutter',
-      type: 'boolean',
-      title: 'Equal center spacing (desktop)',
+      name: 'twoUpSpacing',
+      type: 'string',
+      title: '2-up spacing (desktop)',
       description:
-        'Splits inner padding so the gap between images matches top and bottom padding. Desktop only; mobile keeps normal padding.',
-      initialValue: false,
+        'Controls gap and alignment between the two images on desktop. Mobile always uses default spacing with centered images.',
+      initialValue: 'default',
+      options: {
+        list: [
+          { title: 'Default', value: 'default' },
+          { title: 'Equal gap, centered', value: 'equalCentered' },
+          { title: 'Equal gap, hug gutter', value: 'equalHugGutter' },
+        ],
+        layout: 'radio',
+      },
       hidden: ({ parent }) => !bothTwoUpItemsContainWithPadding(parent as TwoUpSlideParent),
       validation: (Rule) =>
         Rule.custom((value, context) => {
-          if (!value) return true
+          if (!value || value === 'default') return true
           if (bothTwoUpItemsContainWithPadding(context.parent as TwoUpSlideParent)) return true
           return 'Only applies when both items use Contain with padding'
         }),

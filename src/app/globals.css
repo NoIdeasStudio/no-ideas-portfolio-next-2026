@@ -838,6 +838,14 @@ body:has(#info.info--news-zone) {
   .two-up-equal-gutter .two-up-cell--right.two-up-cell--contain {
     padding: var(--two-up-pad) var(--two-up-pad) var(--two-up-pad) calc(var(--two-up-pad) / 2);
   }
+
+  .two-up-hug-gutter .two-up-cell--left {
+    justify-content: flex-end;
+  }
+
+  .two-up-hug-gutter .two-up-cell--right {
+    justify-content: flex-start;
+  }
 }
 
 .news-post-slideshow-track {

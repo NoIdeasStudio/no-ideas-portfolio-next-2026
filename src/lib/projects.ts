@@ -1,5 +1,5 @@
 import type { PortableTextBlock } from '@portabletext/types'
-import type { TwoUpItem } from '../components/ProjectCarousel'
+import type { TwoUpItem, TwoUpSpacing } from '../components/ProjectCarousel'
 import type { ProjectCategory } from '../components/ProjectInfoPanel'
 import type { HomepageProject } from '../components/HomepageInfiniteLoop'
 import { sanityImageServeUrl, type SanityImageWithAssetUrl } from '../sanity/lib/image'
@@ -30,7 +30,7 @@ type SlideItem = {
   animatedSvgUrl?: string | null
   caption?: string
   containPadding?: string | null
-  twoUpEqualGutter?: boolean | null
+  twoUpSpacing?: string | null
   backgroundColor?: string | null
   backgroundVideoUrl?: string | null
   textTheme?: string | null
@@ -57,6 +57,15 @@ function bothTwoUpItemsContainWithPadding(items: [TwoUpSlideItem, TwoUpSlideItem
     items[0].containPadding !== '0' &&
     items[1].containPadding !== '0'
   )
+}
+
+function resolveTwoUpSpacing(
+  spacing: string | null | undefined,
+  items: [TwoUpSlideItem, TwoUpSlideItem],
+): TwoUpSpacing {
+  if (!bothTwoUpItemsContainWithPadding(items)) return 'default'
+  if (spacing === 'equalCentered' || spacing === 'equalHugGutter') return spacing
+  return 'default'
 }
 
 type RawProject = {
@@ -111,13 +120,11 @@ function mapProject(project: RawProject): HomepageProject {
           mapTwoUpItem(slide.items[0]),
           mapTwoUpItem(slide.items[1]),
         ]
-        const twoUpEqualGutter =
-          slide.twoUpEqualGutter === true &&
-          bothTwoUpItemsContainWithPadding([slide.items[0], slide.items[1]])
+        const twoUpSpacing = resolveTwoUpSpacing(slide.twoUpSpacing, [slide.items[0], slide.items[1]])
         return {
           layout: 'twoUp' as const,
           items,
-          twoUpEqualGutter,
+          twoUpSpacing,
           backgroundColor: bg,
           backgroundVideoUrl: slide.backgroundVideoUrl ?? null,
           themeColor:

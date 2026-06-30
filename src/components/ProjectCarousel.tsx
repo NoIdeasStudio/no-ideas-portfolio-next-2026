@@ -8,6 +8,8 @@ import { ProjectInfoPanel, type ProjectCategory } from './ProjectInfoPanel'
 import { hasPortableText } from '../lib/hasPortableText'
 import { Slide, CarouselVideo } from './Slide'
 
+export type TwoUpSpacing = 'default' | 'equalCentered' | 'equalHugGutter'
+
 export type TwoUpItem = {
   mediaType: 'image' | 'video' | 'lottie' | 'animatedSvg'
   imageUrl?: string | null
@@ -36,7 +38,7 @@ export type CarouselSlide =
   | {
       layout: 'twoUp'
       items: [TwoUpItem, TwoUpItem]
-      twoUpEqualGutter?: boolean
+      twoUpSpacing?: TwoUpSpacing
       backgroundColor?: string | null
       backgroundVideoUrl?: string | null
       themeColor?: string
