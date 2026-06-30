@@ -36,6 +36,7 @@ export type CarouselSlide =
   | {
       layout: 'twoUp'
       items: [TwoUpItem, TwoUpItem]
+      twoUpEqualGutter?: boolean
       backgroundColor?: string | null
       backgroundVideoUrl?: string | null
       themeColor?: string

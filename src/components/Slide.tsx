@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type CSSProperties } from 'react'
 import Image from 'next/image'
 import type { CarouselSlide, TwoUpItem } from './ProjectCarousel'
 import { LottiePlayer } from './LottiePlayer'
@@ -187,14 +187,38 @@ function SingleMedia({
   return null
 }
 
-function TwoUpCell({ item, isActive }: { item: TwoUpItem; isActive: boolean }) {
-  const { mediaType, imageUrl, videoUrl, lottieUrl, animatedSvgUrl, backgroundVideoUrl, fit, containPadding } = item
-  const isContain = fit === 'contain'
-  const paddingPercent = isContain ? `${containPadding ?? '0'}%` : '0'
-  const cellClass =
-    'relative w-full md:w-1/2 h-1/2 md:h-full overflow-hidden flex items-center justify-center'
+function twoUpCellProps(
+  item: TwoUpItem,
+  position: 'left' | 'right',
+): { className: string; style: CSSProperties | undefined } {
+  const isContain = item.fit === 'contain'
+  const pad = item.containPadding ?? '0'
+  const baseClass =
+    'two-up-cell relative w-full md:w-1/2 h-1/2 md:h-full overflow-hidden flex items-center justify-center'
+  const positionClass = position === 'left' ? 'two-up-cell--left' : 'two-up-cell--right'
 
-  const cellStyle = isContain ? { padding: paddingPercent } : undefined
+  if (!isContain || pad === '0') {
+    return { className: `${baseClass} ${positionClass}`, style: undefined }
+  }
+
+  return {
+    className: `${baseClass} ${positionClass} two-up-cell--contain`,
+    style: { '--two-up-pad': `${pad}%` } as CSSProperties,
+  }
+}
+
+function TwoUpCell({
+  item,
+  isActive,
+  position,
+}: {
+  item: TwoUpItem
+  isActive: boolean
+  position: 'left' | 'right'
+}) {
+  const { mediaType, imageUrl, videoUrl, lottieUrl, animatedSvgUrl, backgroundVideoUrl, fit } = item
+  const isContain = fit === 'contain'
+  const { className: cellClass, style: cellStyle } = twoUpCellProps(item, position)
 
   if (mediaType === 'animatedSvg' && animatedSvgUrl) {
     return (
@@ -328,10 +352,13 @@ export function Slide({
   naturalHeight?: boolean
 }) {
   if (slide.layout === 'twoUp') {
+    const splitGutter = slide.twoUpEqualGutter === true
     return (
-      <div className="slide-content relative h-full w-full flex flex-col md:flex-row overflow-hidden">
-        <TwoUpCell item={slide.items[0]} isActive={isActive} />
-        <TwoUpCell item={slide.items[1]} isActive={isActive} />
+      <div
+        className={`slide-content relative h-full w-full flex flex-col md:flex-row overflow-hidden${splitGutter ? ' two-up-equal-gutter' : ''}`}
+      >
+        <TwoUpCell item={slide.items[0]} isActive={isActive} position="left" />
+        <TwoUpCell item={slide.items[1]} isActive={isActive} position="right" />
       </div>
     )
   }
