@@ -1,5 +1,22 @@
 import { defineArrayMember, defineField, defineType } from 'sanity'
 
+type TwoUpSlideParent = {
+  layout?: string
+  items?: Array<{ fit?: string; containPadding?: string }>
+}
+
+function bothTwoUpItemsContainWithPadding(parent: TwoUpSlideParent | undefined) {
+  if (parent?.layout !== 'twoUp') return false
+  const items = parent?.items
+  if (!items?.[0] || !items?.[1]) return false
+  return (
+    items[0].fit === 'contain' &&
+    items[1].fit === 'contain' &&
+    items[0].containPadding !== '0' &&
+    items[1].containPadding !== '0'
+  )
+}
+
 /** Reusable slide block: layout + image or video. */
 export const slideObject = defineType({
   name: 'slide',
@@ -46,6 +63,21 @@ export const slideObject = defineType({
       hidden: ({ parent }) => parent?.layout !== 'twoUp',
       of: [defineArrayMember({ type: 'twoUpItem' })],
       validation: (Rule) => Rule.length(2).error('2-up slides must have exactly 2 items'),
+    }),
+    defineField({
+      name: 'twoUpEqualGutter',
+      type: 'boolean',
+      title: 'Equal center spacing (desktop)',
+      description:
+        'Splits inner padding so the gap between images matches top and bottom padding. Desktop only; mobile keeps normal padding.',
+      initialValue: false,
+      hidden: ({ parent }) => !bothTwoUpItemsContainWithPadding(parent as TwoUpSlideParent),
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          if (!value) return true
+          if (bothTwoUpItemsContainWithPadding(context.parent as TwoUpSlideParent)) return true
+          return 'Only applies when both items use Contain with padding'
+        }),
     }),
     defineField({
       name: 'mediaType',

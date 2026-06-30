@@ -30,6 +30,7 @@ type SlideItem = {
   animatedSvgUrl?: string | null
   caption?: string
   containPadding?: string | null
+  twoUpEqualGutter?: boolean | null
   backgroundColor?: string | null
   backgroundVideoUrl?: string | null
   textTheme?: string | null
@@ -48,6 +49,15 @@ type SlideItem = {
 }
 
 type TwoUpSlideItem = NonNullable<SlideItem['items']>[number]
+
+function bothTwoUpItemsContainWithPadding(items: [TwoUpSlideItem, TwoUpSlideItem]) {
+  return (
+    items[0].fit === 'contain' &&
+    items[1].fit === 'contain' &&
+    items[0].containPadding !== '0' &&
+    items[1].containPadding !== '0'
+  )
+}
 
 type RawProject = {
   _id: string
@@ -101,9 +111,13 @@ function mapProject(project: RawProject): HomepageProject {
           mapTwoUpItem(slide.items[0]),
           mapTwoUpItem(slide.items[1]),
         ]
+        const twoUpEqualGutter =
+          slide.twoUpEqualGutter === true &&
+          bothTwoUpItemsContainWithPadding([slide.items[0], slide.items[1]])
         return {
           layout: 'twoUp' as const,
           items,
+          twoUpEqualGutter,
           backgroundColor: bg,
           backgroundVideoUrl: slide.backgroundVideoUrl ?? null,
           themeColor:
