@@ -1,6 +1,7 @@
 import { PortableText } from 'next-sanity'
 import type { PortableTextBlock } from '@portabletext/types'
 import type { Metadata } from 'next'
+import { CopyEmailLink } from '../../components/CopyEmailLink'
 import { InfoPageFooter } from '../../components/InfoPageFooter'
 import { InfoNewsZone } from '../../components/InfoNewsZone'
 import { NewsSection, type NewsRowProps } from '../../components/NewsSection'
@@ -55,6 +56,7 @@ type RawNewsSlide = {
   lottieUrl?: string | null
   animatedSvgUrl?: string | null
   caption?: string | null
+  backgroundTransparent?: boolean | null
   backgroundColor?: string | null
   backgroundVideoUrl?: string | null
 }
@@ -215,9 +217,7 @@ function ContactSectionColumn({ section }: { section: Section }) {
           <p>
             {section.contactEmails.filter(Boolean).map((email, j) => (
               <span key={j}>
-                <a href={`mailto:${email?.replace(/\s/g, '')}?Subject=new%20biz`}>
-                  {email}
-                </a>
+                <CopyEmailLink email={email!} />
                 <br />
               </span>
             ))}
@@ -290,7 +290,9 @@ function resolveNewsSlide(slide: RawNewsSlide): NewsSlide | null {
     animatedSvgUrl: slide.animatedSvgUrl ?? null,
     caption: slide.caption ?? null,
     containPadding: slide.containPadding ?? '0',
-    backgroundColor: slide.backgroundColor ?? '#000000',
+    backgroundColor: slide.backgroundTransparent
+      ? null
+      : slide.backgroundColor ?? '#000000',
     backgroundVideoUrl: slide.backgroundVideoUrl ?? null,
   }
 }

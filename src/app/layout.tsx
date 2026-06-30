@@ -15,7 +15,7 @@ import { StagingBanner } from "../components/StagingBanner";
 import { buildRootMetadata, getSiteSettings, resolveSiteUrl } from "../lib/metadata";
 import { SanityLive } from "../sanity/lib/live";
 import { isStagingPreview } from "../sanity/lib/preview";
-import { Analytics } from "@vercel/analytics/next";
+import { VercelAnalytics } from "../components/VercelAnalytics";
 
 const abcDiatype = localFont({
   src: "../../public/fonts/ABCDiatype-Medium.woff2",
@@ -66,7 +66,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             <VisualEditing />
           </>
         )}
-        <Analytics />
+        <VercelAnalytics />
       </body>
     </html>
   );

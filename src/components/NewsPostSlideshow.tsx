@@ -67,7 +67,7 @@ export function NewsPostSlideshow({
                   style={{
                     opacity: isActive ? 1 : 0,
                     pointerEvents: isActive ? 'auto' : 'none',
-                    backgroundColor: slide.backgroundColor ?? '#000000',
+                    backgroundColor: slide.backgroundColor ?? 'transparent',
                   }}
                   aria-hidden={!isActive}
                 >
