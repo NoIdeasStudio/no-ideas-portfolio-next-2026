@@ -3,11 +3,12 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useProjectTheme } from '../contexts/ProjectThemeContext'
+import { useIsHomepage } from '../lib/useIsHomepage'
 
 export function Header() {
   const pathname = usePathname()
+  const isHomepage = useIsHomepage()
   const projectTheme = useProjectTheme()
-  const isHomepage = pathname === '/'
   const showProjectTitle =
     isHomepage &&
     projectTheme?.activeProjectSlug != null &&
@@ -28,7 +29,7 @@ export function Header() {
       }}
     >
       <div className="header-left">
-        <Link href="/" className={pathname === '/' ? 'selected' : ''}>
+        <Link href="/" className={isHomepage ? 'selected' : ''}>
           No Ideas
         </Link>
         {showProjectTitle && (

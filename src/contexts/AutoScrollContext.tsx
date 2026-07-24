@@ -8,10 +8,10 @@ import {
   useRef,
   type ReactNode,
 } from 'react'
-import { usePathname } from 'next/navigation'
 import { gsap } from 'gsap'
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
 import { isMobileUserAgent } from '../lib/isMobile'
+import { useIsHomepage } from '../lib/useIsHomepage'
 
 const SCROLL_DURATION_SEC = 120
 const DELAY_AFTER_WHEEL_MS = 1500
@@ -41,7 +41,7 @@ export function useAutoScroll() {
 type AutoScrollProviderProps = { children: ReactNode }
 
 export function AutoScrollProvider({ children }: AutoScrollProviderProps) {
-  const pathname = usePathname()
+  const isHomepage = useIsHomepage()
   const autoScrollActiveRef = useRef(true)
   const userInteractingRef = useRef(false)
   const scrollLockedRef = useRef(false)
@@ -171,7 +171,7 @@ export function AutoScrollProvider({ children }: AutoScrollProviderProps) {
   }
 
   useEffect(() => {
-    if (pathname !== '/' || isMobileUserAgent() || hasStartedRef.current) return
+    if (!isHomepage || isMobileUserAgent() || hasStartedRef.current) return
     if (typeof window === 'undefined') return
 
     gsap.registerPlugin(ScrollToPlugin)
@@ -229,7 +229,7 @@ export function AutoScrollProvider({ children }: AutoScrollProviderProps) {
       stopAutoScroll()
       hasStartedRef.current = false
     }
-  }, [pathname, startAutoScroll, resetAutoScrollTimer, stopAutoScroll])
+  }, [isHomepage, startAutoScroll, resetAutoScrollTimer, stopAutoScroll])
 
   return (
     <AutoScrollContext.Provider value={contextValue}>
