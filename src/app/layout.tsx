@@ -59,7 +59,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             </PageWrapper>
           </AutoScrollProvider>
         </ProjectThemeProvider>
-        {isDraftMode && <SanityLive />}
+        <SanityLive />
         {isDraftMode && (
           <>
             <DisableDraftMode />
