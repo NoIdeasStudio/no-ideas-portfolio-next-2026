@@ -1,4 +1,4 @@
-/** Format like 5.5.2026 05:13PM EST (Eastern Time). */
+/** Format like 5.15.2026 05:13PM EST (Eastern Time). */
 export function formatNewsTimestamp(iso: string): string {
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) return ''
@@ -25,5 +25,5 @@ export function formatNewsTimestamp(iso: string): string {
   const dayPeriod = get('dayPeriod').toUpperCase()
   const tz = get('timeZoneName')
 
-  return `${day}.${month}.${year} ${hour}:${minute}${dayPeriod} ${tz}`
+  return `${month}.${day}.${year} ${hour}:${minute}${dayPeriod} ${tz}`
 }
