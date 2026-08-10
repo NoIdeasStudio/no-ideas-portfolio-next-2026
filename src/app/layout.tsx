@@ -52,7 +52,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         )}
         <SiteJsonLd settings={settings} siteUrl={siteUrl} />
         <ProjectThemeProvider>
-          <AutoScrollProvider>
+          <AutoScrollProvider enabled={!isStaging}>
             <PageWrapper>
               <Header />
               <main className="flex-1 w-full">{children}</main>

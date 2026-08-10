@@ -38,11 +38,18 @@ export function useAutoScroll() {
   return useContext(AutoScrollContext)
 }
 
-type AutoScrollProviderProps = { children: ReactNode }
+type AutoScrollProviderProps = {
+  children: ReactNode
+  /** When false, homepage auto-scroll never starts (e.g. staging for content testing). */
+  enabled?: boolean
+}
 
-export function AutoScrollProvider({ children }: AutoScrollProviderProps) {
+export function AutoScrollProvider({
+  children,
+  enabled = true,
+}: AutoScrollProviderProps) {
   const isHomepage = useIsHomepage()
-  const autoScrollActiveRef = useRef(true)
+  const autoScrollActiveRef = useRef(enabled)
   const userInteractingRef = useRef(false)
   const scrollLockedRef = useRef(false)
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -171,7 +178,11 @@ export function AutoScrollProvider({ children }: AutoScrollProviderProps) {
   }
 
   useEffect(() => {
-    if (!isHomepage || isMobileUserAgent() || hasStartedRef.current) return
+    autoScrollActiveRef.current = enabled
+  }, [enabled])
+
+  useEffect(() => {
+    if (!enabled || !isHomepage || isMobileUserAgent() || hasStartedRef.current) return
     if (typeof window === 'undefined') return
 
     gsap.registerPlugin(ScrollToPlugin)
@@ -229,7 +240,7 @@ export function AutoScrollProvider({ children }: AutoScrollProviderProps) {
       stopAutoScroll()
       hasStartedRef.current = false
     }
-  }, [isHomepage, startAutoScroll, resetAutoScrollTimer, stopAutoScroll])
+  }, [enabled, isHomepage, startAutoScroll, resetAutoScrollTimer, stopAutoScroll])
 
   return (
     <AutoScrollContext.Provider value={contextValue}>
