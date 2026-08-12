@@ -5,7 +5,8 @@ import { PortableText } from 'next-sanity'
 import type { PortableTextBlock } from '@portabletext/types'
 import { formatNewsTimestamp } from '../lib/formatNewsTimestamp'
 import { linkablePortableTextComponents } from '../lib/linkablePortableText'
-import { Slide, CarouselVideo } from './Slide'
+import { Slide } from './Slide'
+import { CarouselVideo } from './CarouselVideo'
 import type { CarouselSlide } from './ProjectCarousel'
 
 export type NewsSlide = Extract<CarouselSlide, { layout: 'fullBleed' | 'contain' }>
@@ -74,6 +75,7 @@ export function NewsPostSlideshow({
                   {slide.backgroundVideoUrl && (
                     <CarouselVideo
                       src={slide.backgroundVideoUrl}
+                      webmSrc={slide.backgroundVideoUrlWebm}
                       isActive={isActive}
                       className="absolute inset-0 h-full w-full object-cover"
                     />

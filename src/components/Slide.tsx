@@ -1,59 +1,20 @@
 'use client'
 
-import { useEffect, useRef, type CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
 import Image from 'next/image'
 import type { CarouselSlide, TwoUpItem } from './ProjectCarousel'
 import { LottiePlayer } from './LottiePlayer'
 import { AnimatedSvgPlayer } from './AnimatedSvgPlayer'
+import { CarouselVideo } from './CarouselVideo'
 
 const isSanityImage = (url: string) => url.includes('cdn.sanity.io')
-
-export function CarouselVideo({
-  src,
-  className,
-  isActive,
-  isContain = false,
-}: {
-  src: string
-  className?: string
-  isActive: boolean
-  isContain?: boolean
-}) {
-  const ref = useRef<HTMLVideoElement>(null)
-
-  useEffect(() => {
-    const video = ref.current
-    if (!video) return
-    if (isActive) {
-      void video.play().catch(() => {})
-    } else {
-      video.pause()
-    }
-  }, [isActive])
-
-  return (
-    <video
-      ref={ref}
-      src={src}
-      className={
-        className ??
-        (isContain
-          ? 'video-contain max-h-full max-w-full object-contain w-auto h-auto'
-          : 'video-cover absolute inset-0 h-full w-full object-cover')
-      }
-      playsInline
-      muted
-      loop
-      preload="auto"
-    />
-  )
-}
 
 function SingleMedia({
   layout,
   mediaType,
   imageUrl,
   videoUrl,
+  videoUrlWebm,
   lottieUrl,
   animatedSvgUrl,
   caption,
@@ -65,6 +26,7 @@ function SingleMedia({
   mediaType: 'image' | 'video' | 'lottie' | 'animatedSvg'
   imageUrl?: string | null
   videoUrl?: string | null
+  videoUrlWebm?: string | null
   lottieUrl?: string | null
   animatedSvgUrl?: string | null
   caption?: string | null
@@ -129,6 +91,7 @@ function SingleMedia({
       <div className={containerClass} style={containerStyle}>
         <CarouselVideo
           src={videoUrl}
+          webmSrc={videoUrlWebm}
           isActive={isActive}
           isContain={isContain || useNaturalLayout}
           className={
@@ -216,7 +179,7 @@ function TwoUpCell({
   isActive: boolean
   position: 'left' | 'right'
 }) {
-  const { mediaType, imageUrl, videoUrl, lottieUrl, animatedSvgUrl, backgroundVideoUrl, fit } = item
+  const { mediaType, imageUrl, videoUrl, videoUrlWebm, lottieUrl, animatedSvgUrl, backgroundVideoUrl, backgroundVideoUrlWebm, fit } = item
   const isContain = fit === 'contain'
   const { className: cellClass, style: cellStyle } = twoUpCellProps(item, position)
 
@@ -226,6 +189,7 @@ function TwoUpCell({
         {backgroundVideoUrl && (
           <CarouselVideo
             src={backgroundVideoUrl}
+            webmSrc={backgroundVideoUrlWebm}
             isActive={isActive}
             className="absolute inset-0 z-0 h-full w-full object-cover"
           />
@@ -250,6 +214,7 @@ function TwoUpCell({
         {backgroundVideoUrl && (
           <CarouselVideo
             src={backgroundVideoUrl}
+            webmSrc={backgroundVideoUrlWebm}
             isActive={isActive}
             className="absolute inset-0 z-0 h-full w-full object-cover"
           />
@@ -274,12 +239,14 @@ function TwoUpCell({
         {backgroundVideoUrl && (
           <CarouselVideo
             src={backgroundVideoUrl}
+            webmSrc={backgroundVideoUrlWebm}
             isActive={isActive}
             className="absolute inset-0 z-0 h-full w-full object-cover"
           />
         )}
         <CarouselVideo
           src={videoUrl}
+          webmSrc={videoUrlWebm}
           isActive={isActive}
           isContain={isContain}
           className={
@@ -299,6 +266,7 @@ function TwoUpCell({
         {backgroundVideoUrl && (
           <CarouselVideo
             src={backgroundVideoUrl}
+            webmSrc={backgroundVideoUrlWebm}
             isActive={isActive}
             className="absolute inset-0 z-0 h-full w-full object-cover"
           />
@@ -334,6 +302,7 @@ function TwoUpCell({
       {backgroundVideoUrl && (
         <CarouselVideo
           src={backgroundVideoUrl}
+          webmSrc={backgroundVideoUrlWebm}
           isActive={isActive}
           className="absolute inset-0 z-0 h-full w-full object-cover"
         />
@@ -376,6 +345,7 @@ export function Slide({
       mediaType={slide.mediaType}
       imageUrl={slide.imageUrl}
       videoUrl={slide.videoUrl}
+      videoUrlWebm={slide.videoUrlWebm}
       lottieUrl={slide.lottieUrl}
       animatedSvgUrl={slide.animatedSvgUrl}
       caption={slide.caption}

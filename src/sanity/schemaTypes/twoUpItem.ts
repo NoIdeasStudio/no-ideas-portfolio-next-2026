@@ -1,4 +1,8 @@
 import { defineField, defineType } from 'sanity'
+import {
+  alphaVideoFallbackFields,
+  backgroundAlphaVideoFallbackFields,
+} from './videoAlphaFallbackFields'
 
 /** One media slot in a 2-up slide (left or right). */
 export const twoUpItemObject = defineType({
@@ -45,6 +49,7 @@ export const twoUpItemObject = defineType({
       },
       hidden: ({ parent }) => parent?.mediaType !== 'video',
     }),
+    ...alphaVideoFallbackFields(),
     defineField({
       name: 'videoUrl',
       type: 'url',
@@ -83,6 +88,7 @@ export const twoUpItemObject = defineType({
         accept: 'video/mp4,video/quicktime,video/webm,video/x-m4v,.mp4,.mov,.webm,.m4v',
       },
     }),
+    ...backgroundAlphaVideoFallbackFields,
     defineField({
       name: 'backgroundVideoUrl',
       type: 'url',

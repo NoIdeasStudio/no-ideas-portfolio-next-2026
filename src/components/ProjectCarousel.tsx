@@ -6,7 +6,8 @@ import { useProjectTheme } from '../contexts/ProjectThemeContext'
 import { useAutoScroll } from '../contexts/AutoScrollContext'
 import { ProjectInfoPanel, type ProjectCategory } from './ProjectInfoPanel'
 import { hasPortableText } from '../lib/hasPortableText'
-import { Slide, CarouselVideo } from './Slide'
+import { Slide } from './Slide'
+import { CarouselVideo } from './CarouselVideo'
 
 export type TwoUpSpacing = 'default' | 'equalCentered' | 'equalHugGutter'
 
@@ -14,9 +15,11 @@ export type TwoUpItem = {
   mediaType: 'image' | 'video' | 'lottie' | 'animatedSvg'
   imageUrl?: string | null
   videoUrl?: string | null
+  videoUrlWebm?: string | null
   lottieUrl?: string | null
   animatedSvgUrl?: string | null
   backgroundVideoUrl?: string | null
+  backgroundVideoUrlWebm?: string | null
   fit?: 'cover' | 'contain'
   containPadding?: string | null
 }
@@ -27,12 +30,14 @@ export type CarouselSlide =
       mediaType: 'image' | 'video' | 'lottie' | 'animatedSvg'
       imageUrl?: string | null
       videoUrl?: string | null
+      videoUrlWebm?: string | null
       lottieUrl?: string | null
       animatedSvgUrl?: string | null
       caption?: string | null
       containPadding?: string | null
       backgroundColor?: string | null
       backgroundVideoUrl?: string | null
+      backgroundVideoUrlWebm?: string | null
       themeColor?: string
     }
   | {
@@ -41,6 +46,7 @@ export type CarouselSlide =
       twoUpSpacing?: TwoUpSpacing
       backgroundColor?: string | null
       backgroundVideoUrl?: string | null
+      backgroundVideoUrlWebm?: string | null
       themeColor?: string
     }
 
@@ -234,6 +240,7 @@ export function ProjectCarousel({
               {slide.backgroundVideoUrl && (
                 <CarouselVideo
                   src={slide.backgroundVideoUrl}
+                  webmSrc={slide.backgroundVideoUrlWebm}
                   isActive={isActive}
                   className="absolute inset-0 h-full w-full object-cover"
                 />

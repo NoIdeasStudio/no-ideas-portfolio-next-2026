@@ -26,6 +26,7 @@ type SlideItem = {
   image?: SanityImageWithAssetUrl
   imageUrl?: string
   videoUrl?: string
+  videoUrlWebm?: string | null
   lottieUrl?: string | null
   animatedSvgUrl?: string | null
   caption?: string
@@ -33,6 +34,7 @@ type SlideItem = {
   twoUpSpacing?: string | null
   backgroundColor?: string | null
   backgroundVideoUrl?: string | null
+  backgroundVideoUrlWebm?: string | null
   textTheme?: string | null
   textThemeCustomColor?: string | null
   items?: Array<{
@@ -40,9 +42,11 @@ type SlideItem = {
     image?: SanityImageWithAssetUrl
     imageUrl?: string
     videoUrl?: string
+    videoUrlWebm?: string | null
     lottieUrl?: string | null
     animatedSvgUrl?: string | null
     backgroundVideoUrl?: string | null
+    backgroundVideoUrlWebm?: string | null
     fit?: string | null
     containPadding?: string | null
   }>
@@ -110,9 +114,11 @@ function mapProject(project: RawProject): HomepageProject {
           mediaType: item.mediaType as 'image' | 'video' | 'lottie' | 'animatedSvg',
           imageUrl: sanityImageServeUrl(item.image ?? null, item.imageUrl ?? null),
           videoUrl: item.videoUrl ?? null,
+          videoUrlWebm: item.videoUrlWebm ?? null,
           lottieUrl: item.lottieUrl ?? null,
           animatedSvgUrl: item.animatedSvgUrl ?? null,
           backgroundVideoUrl: item.backgroundVideoUrl ?? null,
+          backgroundVideoUrlWebm: item.backgroundVideoUrlWebm ?? null,
           fit: (item.fit as 'cover' | 'contain') ?? 'cover',
           containPadding: item.containPadding ?? '0',
         })
@@ -127,6 +133,7 @@ function mapProject(project: RawProject): HomepageProject {
           twoUpSpacing,
           backgroundColor: bg,
           backgroundVideoUrl: slide.backgroundVideoUrl ?? null,
+          backgroundVideoUrlWebm: slide.backgroundVideoUrlWebm ?? null,
           themeColor:
             slide.textTheme != null
               ? resolveThemeColor(slide.textTheme, slide.textThemeCustomColor)
@@ -139,12 +146,14 @@ function mapProject(project: RawProject): HomepageProject {
         mediaType: slide.mediaType as 'image' | 'video' | 'lottie' | 'animatedSvg',
         imageUrl,
         videoUrl: slide.videoUrl ?? null,
+        videoUrlWebm: slide.videoUrlWebm ?? null,
         lottieUrl: slide.lottieUrl ?? null,
         animatedSvgUrl: slide.animatedSvgUrl ?? null,
         caption: slide.caption ?? null,
         containPadding: slide.containPadding ?? '0',
         backgroundColor: bg,
         backgroundVideoUrl: slide.backgroundVideoUrl ?? null,
+        backgroundVideoUrlWebm: slide.backgroundVideoUrlWebm ?? null,
         themeColor:
           slide.textTheme != null
             ? resolveThemeColor(slide.textTheme, slide.textThemeCustomColor)

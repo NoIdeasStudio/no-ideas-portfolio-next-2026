@@ -44,6 +44,7 @@ export const allProjectsWithSlidesQuery = groq`*[_type == "project"]{
     },
     imageUrl,
     "videoUrl": coalesce(videoFile.asset->url, videoUrl),
+    "videoUrlWebm": select(hasTransparency == true => videoFileWebm.asset->url),
     "lottieUrl": lottieFile.asset->url,
     "animatedSvgUrl": coalesce(animatedSvgFile.asset->url, animatedSvgUrl),
     caption,
@@ -51,6 +52,7 @@ export const allProjectsWithSlidesQuery = groq`*[_type == "project"]{
     "twoUpSpacing": coalesce(twoUpSpacing, select(twoUpEqualGutter == true => "equalCentered", "default")),
     backgroundColor,
     "backgroundVideoUrl": coalesce(backgroundVideoFile.asset->url, backgroundVideoUrl),
+    "backgroundVideoUrlWebm": select(backgroundHasTransparency == true => backgroundVideoFileWebm.asset->url),
     textTheme,
     textThemeCustomColor,
     "items": items[]{
@@ -63,9 +65,11 @@ export const allProjectsWithSlidesQuery = groq`*[_type == "project"]{
       },
       imageUrl,
       "videoUrl": coalesce(videoFile.asset->url, videoUrl),
+      "videoUrlWebm": select(hasTransparency == true => videoFileWebm.asset->url),
       "lottieUrl": lottieFile.asset->url,
-    "animatedSvgUrl": coalesce(animatedSvgFile.asset->url, animatedSvgUrl),
+      "animatedSvgUrl": coalesce(animatedSvgFile.asset->url, animatedSvgUrl),
       "backgroundVideoUrl": coalesce(backgroundVideoFile.asset->url, backgroundVideoUrl),
+      "backgroundVideoUrlWebm": select(backgroundHasTransparency == true => backgroundVideoFileWebm.asset->url),
       fit,
       containPadding
     }
@@ -98,12 +102,14 @@ const newsMediaFields = groq`{
   },
   imageUrl,
   "videoUrl": coalesce(videoFile.asset->url, videoUrl),
+  "videoUrlWebm": select(hasTransparency == true => videoFileWebm.asset->url),
   "lottieUrl": lottieFile.asset->url,
   "animatedSvgUrl": coalesce(animatedSvgFile.asset->url, animatedSvgUrl),
   caption,
   backgroundTransparent,
   backgroundColor,
-  "backgroundVideoUrl": coalesce(backgroundVideoFile.asset->url, backgroundVideoUrl)
+  "backgroundVideoUrl": coalesce(backgroundVideoFile.asset->url, backgroundVideoUrl),
+  "backgroundVideoUrlWebm": select(backgroundHasTransparency == true => backgroundVideoFileWebm.asset->url)
 }`;
 
 export const projectBySlugQuery = groq`*[_type == "project" && slug.current == $slug][0]{
@@ -138,6 +144,7 @@ export const projectBySlugQuery = groq`*[_type == "project" && slug.current == $
     },
     imageUrl,
     "videoUrl": coalesce(videoFile.asset->url, videoUrl),
+    "videoUrlWebm": select(hasTransparency == true => videoFileWebm.asset->url),
     "lottieUrl": lottieFile.asset->url,
     "animatedSvgUrl": coalesce(animatedSvgFile.asset->url, animatedSvgUrl),
     caption,
@@ -145,6 +152,7 @@ export const projectBySlugQuery = groq`*[_type == "project" && slug.current == $
     "twoUpSpacing": coalesce(twoUpSpacing, select(twoUpEqualGutter == true => "equalCentered", "default")),
     backgroundColor,
     "backgroundVideoUrl": coalesce(backgroundVideoFile.asset->url, backgroundVideoUrl),
+    "backgroundVideoUrlWebm": select(backgroundHasTransparency == true => backgroundVideoFileWebm.asset->url),
     textTheme,
     textThemeCustomColor,
     "items": items[]{
@@ -157,9 +165,11 @@ export const projectBySlugQuery = groq`*[_type == "project" && slug.current == $
       },
       imageUrl,
       "videoUrl": coalesce(videoFile.asset->url, videoUrl),
+      "videoUrlWebm": select(hasTransparency == true => videoFileWebm.asset->url),
       "lottieUrl": lottieFile.asset->url,
       "animatedSvgUrl": coalesce(animatedSvgFile.asset->url, animatedSvgUrl),
       "backgroundVideoUrl": coalesce(backgroundVideoFile.asset->url, backgroundVideoUrl),
+      "backgroundVideoUrlWebm": select(backgroundHasTransparency == true => backgroundVideoFileWebm.asset->url),
       fit,
       containPadding
     }

@@ -39,11 +39,13 @@ type RawSlide = {
   image?: SanityImageWithAssetUrl
   imageUrl?: string | null
   videoUrl?: string | null
+  videoUrlWebm?: string | null
   items?: Array<{
     mediaType?: string
     image?: SanityImageWithAssetUrl
     imageUrl?: string | null
     videoUrl?: string | null
+    videoUrlWebm?: string | null
     fit?: string | null
   }> | null
 }
@@ -77,6 +79,7 @@ function buildGridItems(
             mediaType: (item.mediaType as 'image' | 'video') ?? 'image',
             imageUrl: imageUrl ?? null,
             videoUrl: item.videoUrl ?? null,
+            videoUrlWebm: item.videoUrlWebm ?? null,
             fit: (item.fit as 'cover' | 'contain') ?? 'cover',
           })
         }
@@ -92,6 +95,7 @@ function buildGridItems(
           mediaType: (slide.mediaType as 'image' | 'video') ?? 'image',
           imageUrl: imageUrl ?? null,
           videoUrl: slide.videoUrl ?? null,
+          videoUrlWebm: slide.videoUrlWebm ?? null,
           fit: isContain ? 'contain' : 'cover',
         })
       }

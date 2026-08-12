@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { InfoPageFooter } from './InfoPageFooter'
+import { CarouselVideo } from './CarouselVideo'
 
 const PROJECTS_VIEW_STORAGE_KEY = 'projects-view-mode'
 
@@ -17,12 +18,11 @@ function IndexGridCell({ item }: { item: IndexGridItem }) {
       className={`index-grid-item ${loaded ? 'loaded' : ''}`}
     >
       {isVideo && item.videoUrl ? (
-        <video
+        <CarouselVideo
           src={item.videoUrl}
+          webmSrc={item.videoUrlWebm}
           className="index-grid-media"
-          playsInline
-          muted
-          loop
+          isActive
           autoPlay
           onLoadedData={() => setLoaded(true)}
         />
@@ -141,6 +141,7 @@ export type IndexGridItem = {
   mediaType: 'image' | 'video'
   imageUrl: string | null
   videoUrl: string | null
+  videoUrlWebm?: string | null
   fit?: 'cover' | 'contain'
 }
 

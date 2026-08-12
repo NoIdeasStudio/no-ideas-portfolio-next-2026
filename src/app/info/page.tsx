@@ -53,12 +53,14 @@ type RawNewsSlide = {
   image?: SanityImageWithAssetUrl | null
   imageUrl?: string | null
   videoUrl?: string | null
+  videoUrlWebm?: string | null
   lottieUrl?: string | null
   animatedSvgUrl?: string | null
   caption?: string | null
   backgroundTransparent?: boolean | null
   backgroundColor?: string | null
   backgroundVideoUrl?: string | null
+  backgroundVideoUrlWebm?: string | null
 }
 
 type InfoPageData = {
@@ -286,6 +288,7 @@ function resolveNewsSlide(slide: RawNewsSlide): NewsSlide | null {
     mediaType,
     imageUrl: sanityImageServeUrl(slide.image ?? null, slide.imageUrl ?? null),
     videoUrl: slide.videoUrl ?? null,
+    videoUrlWebm: slide.videoUrlWebm ?? null,
     lottieUrl: slide.lottieUrl ?? null,
     animatedSvgUrl: slide.animatedSvgUrl ?? null,
     caption: slide.caption ?? null,
@@ -294,6 +297,7 @@ function resolveNewsSlide(slide: RawNewsSlide): NewsSlide | null {
       ? null
       : slide.backgroundColor ?? '#000000',
     backgroundVideoUrl: slide.backgroundVideoUrl ?? null,
+    backgroundVideoUrlWebm: slide.backgroundVideoUrlWebm ?? null,
   }
 }
 

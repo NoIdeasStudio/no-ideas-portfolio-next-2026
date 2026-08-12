@@ -1,4 +1,8 @@
 import { defineArrayMember, defineField, defineType } from 'sanity'
+import {
+  alphaVideoFallbackFields,
+  backgroundAlphaVideoFallbackFields,
+} from './videoAlphaFallbackFields'
 
 type TwoUpSlideParent = {
   layout?: string
@@ -128,6 +132,7 @@ export const slideObject = defineType({
       },
       hidden: ({ parent }) => parent?.layout === 'twoUp' || parent?.mediaType !== 'video',
     }),
+    ...alphaVideoFallbackFields({ hideWhenTwoUp: true }),
     defineField({
       name: 'videoUrl',
       type: 'url',
@@ -187,6 +192,7 @@ export const slideObject = defineType({
         accept: 'video/mp4,video/quicktime,video/webm,video/x-m4v,.mp4,.mov,.webm,.m4v',
       },
     }),
+    ...backgroundAlphaVideoFallbackFields,
     defineField({
       name: 'backgroundVideoUrl',
       type: 'url',
