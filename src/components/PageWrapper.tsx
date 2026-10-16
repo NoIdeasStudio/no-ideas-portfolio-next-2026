@@ -12,7 +12,9 @@ export function PageWrapper({ children }: { children: React.ReactNode }) {
       ? 'info'
       : pathname === '/projects'
         ? 'index'
-        : undefined
+        : pathname === '/book-covers'
+          ? 'book-covers'
+          : undefined
   return (
     <div className="min-h-screen flex flex-col" id={id}>
       {children}

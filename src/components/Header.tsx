@@ -8,9 +8,10 @@ import { useIsHomepage } from '../lib/useIsHomepage'
 export function Header() {
   const pathname = usePathname()
   const isHomepage = useIsHomepage()
+  const isBookCovers = pathname === '/book-covers'
   const projectTheme = useProjectTheme()
   const showProjectTitle =
-    isHomepage &&
+    (isHomepage || isBookCovers) &&
     projectTheme?.activeProjectSlug != null &&
     projectTheme?.activeProjectTitle != null
   const headerColor =

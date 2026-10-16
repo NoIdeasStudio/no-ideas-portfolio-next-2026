@@ -75,8 +75,10 @@ body {
 /* Safari 26+ samples html/body background for toolbar tinting (not #homepage / #index wrappers) */
 html:has(#homepage),
 html:has(#index),
+html:has(#book-covers),
 body:has(#homepage),
-body:has(#index) {
+body:has(#index),
+body:has(#book-covers) {
   background-color: #000;
 }
 
@@ -516,7 +518,14 @@ header a.selected {
 }
 
 #homepage header,
-#homepage header a {
+#homepage header a,
+#book-covers header,
+#book-covers header a {
+  color: #fff;
+}
+
+#book-covers {
+  background-color: #000;
   color: #fff;
 }
 
