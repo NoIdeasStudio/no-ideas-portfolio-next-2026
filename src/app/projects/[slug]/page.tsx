@@ -44,11 +44,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   return (
     <div id="homepage">
       <ProjectJsonLd project={seo} siteUrl={siteUrl} siteName={siteName} />
-      <HomepageInfiniteLoop
-        projects={[project]}
-        themeObserverProjects={[{ slug: project.slug }]}
-        enableLoopDuplicate={false}
-      />
+      <HomepageInfiniteLoop projects={[project]} enableLoopDuplicate={false} />
     </div>
   )
 }

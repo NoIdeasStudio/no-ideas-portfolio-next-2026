@@ -281,7 +281,20 @@ function Scene({
   )
 }
 
-export function BookStage() {
+type BookStageProps = {
+  /** Fill the parent section and let the page scroll. The standalone page covers the viewport. */
+  contained?: boolean
+  /** Arrow keys change books. Off while another homepage project is in view. */
+  listenToKeys?: boolean
+  /** Homepage: pause auto-scroll the same way a project carousel does. */
+  onInteract?: () => void
+}
+
+export function BookStage({
+  contained = false,
+  listenToKeys = true,
+  onInteract,
+}: BookStageProps) {
   const theme = useProjectTheme()
   const reduced = usePrefersReducedMotion()
   const [index, setIndex] = useState(0)
@@ -295,11 +308,14 @@ export function BookStage() {
   const pointer = useRef({
     active: false,
     moved: false,
+    captured: false,
     x: 0,
     y: 0,
     lastX: 0,
     lastY: 0,
   })
+  const onInteractRef = useRef(onInteract)
+  onInteractRef.current = onInteract
   const stage = useRef<HTMLDivElement>(null)
   const glRef = useRef<THREE.WebGLRenderer | null>(null)
   const invalidate = useRef(() => {})
@@ -325,13 +341,14 @@ export function BookStage() {
   }, [departing])
 
   useEffect(() => {
+    if (contained) return
     theme?.setActiveProjectSlug(book.slug)
     theme?.setActiveProjectTitle(book.title)
     return () => {
       theme?.setActiveProjectSlug(null)
       theme?.setActiveProjectTitle(null)
     }
-  }, [book.slug, book.title, theme])
+  }, [book.slug, book.title, contained, theme])
 
   useEffect(() => {
     if (departing) return
@@ -376,6 +393,7 @@ export function BookStage() {
 
   function go(dir: 1 | -1) {
     if (departing || tweening.current) return
+    onInteractRef.current?.()
     const next = (index + dir + books.length) % books.length
     if (!books[next].description) setInfoOpen(false)
     direction.current = dir
@@ -408,6 +426,7 @@ export function BookStage() {
   goRef.current = go
 
   useEffect(() => {
+    if (!listenToKeys) return
     function onKey(event: KeyboardEvent) {
       if (event.key === 'ArrowRight') {
         event.preventDefault()
@@ -419,7 +438,7 @@ export function BookStage() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  }, [listenToKeys])
 
   function trackPointer(event: { clientX: number; clientY: number }) {
     const bounds = stage.current?.getBoundingClientRect()
@@ -433,15 +452,17 @@ export function BookStage() {
   function onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
     trackPointer(event)
     if (reduced || departing || tweening.current) return
-    dragging.current = true
     pointer.current = {
       active: true,
       moved: false,
+      captured: !contained,
       x: event.clientX,
       y: event.clientY,
       lastX: event.clientX,
       lastY: event.clientY,
     }
+    if (contained) return
+    dragging.current = true
     poseRef.current.vx = 0
     poseRef.current.vy = 0
     event.currentTarget.setPointerCapture(event.pointerId)
@@ -451,6 +472,20 @@ export function BookStage() {
     trackPointer(event)
     const drag = pointer.current
     if (!drag.active) return
+    if (contained && !drag.captured) {
+      const travelX = Math.abs(event.clientX - drag.x)
+      const travelY = Math.abs(event.clientY - drag.y)
+      if (travelY > DRAG_THRESHOLD && travelY > travelX) {
+        drag.active = false
+        return
+      }
+      if (travelX <= DRAG_THRESHOLD) return
+      drag.captured = true
+      dragging.current = true
+      poseRef.current.vx = 0
+      poseRef.current.vy = 0
+      event.currentTarget.setPointerCapture(event.pointerId)
+    }
     const dx = event.clientX - drag.lastX
     const dy = event.clientY - drag.lastY
     drag.lastX = event.clientX
@@ -458,6 +493,7 @@ export function BookStage() {
     if (
       Math.hypot(event.clientX - drag.x, event.clientY - drag.y) > DRAG_THRESHOLD
     ) {
+      if (!drag.moved) onInteractRef.current?.()
       drag.moved = true
       setGrabbing(true)
     }
@@ -496,9 +532,9 @@ export function BookStage() {
       onPointerCancel={onPointerUp}
       onPointerLeave={onPointerLeave}
       style={{
-        position: 'fixed',
+        position: contained ? 'absolute' : 'fixed',
         inset: 0,
-        touchAction: 'none',
+        touchAction: contained ? 'pan-y' : 'none',
         cursor: reduced ? 'default' : grabbing ? 'grabbing' : 'grab',
         userSelect: 'none',
       }}
@@ -537,7 +573,10 @@ export function BookStage() {
         onClick={() => go(-1)}
         onPointerDown={(event) => event.stopPropagation()}
         className="absolute left-0 top-0 z-10 h-full w-[30%] cursor-w-resize border-0 bg-transparent p-0 focus:outline-none"
-        style={{ pointerEvents: grabbing ? 'none' : 'auto', touchAction: 'none' }}
+        style={{
+          pointerEvents: grabbing ? 'none' : 'auto',
+          touchAction: contained ? 'pan-y' : 'none',
+        }}
       />
       <button
         type="button"
@@ -545,7 +584,10 @@ export function BookStage() {
         onClick={() => go(1)}
         onPointerDown={(event) => event.stopPropagation()}
         className="absolute right-0 top-0 z-10 h-full w-[30%] cursor-e-resize border-0 bg-transparent p-0 focus:outline-none"
-        style={{ pointerEvents: grabbing ? 'none' : 'auto', touchAction: 'none' }}
+        style={{
+          pointerEvents: grabbing ? 'none' : 'auto',
+          touchAction: contained ? 'pan-y' : 'none',
+        }}
       />
 
       <div

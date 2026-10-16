@@ -9,16 +9,11 @@ export const revalidate = 60
 export default async function HomePage() {
   const projects = await getAllProjects()
 
-  const themeObserverProjects = projects.map((p) => ({ slug: p.slug }))
-
   return (
     <div id="homepage">
       <SplashOverlay />
       <ScrollToHash />
-      <HomepageInfiniteLoop
-        projects={projects}
-        themeObserverProjects={themeObserverProjects}
-      />
+      <HomepageInfiniteLoop projects={projects} />
     </div>
   )
 }
