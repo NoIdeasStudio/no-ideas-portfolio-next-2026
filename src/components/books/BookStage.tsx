@@ -452,17 +452,16 @@ export function BookStage({
   function onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
     trackPointer(event)
     if (reduced || departing || tweening.current) return
+    dragging.current = true
     pointer.current = {
       active: true,
       moved: false,
-      captured: !contained,
+      captured: true,
       x: event.clientX,
       y: event.clientY,
       lastX: event.clientX,
       lastY: event.clientY,
     }
-    if (contained) return
-    dragging.current = true
     poseRef.current.vx = 0
     poseRef.current.vy = 0
     event.currentTarget.setPointerCapture(event.pointerId)
@@ -472,20 +471,6 @@ export function BookStage({
     trackPointer(event)
     const drag = pointer.current
     if (!drag.active) return
-    if (contained && !drag.captured) {
-      const travelX = Math.abs(event.clientX - drag.x)
-      const travelY = Math.abs(event.clientY - drag.y)
-      if (travelY > DRAG_THRESHOLD && travelY > travelX) {
-        drag.active = false
-        return
-      }
-      if (travelX <= DRAG_THRESHOLD) return
-      drag.captured = true
-      dragging.current = true
-      poseRef.current.vx = 0
-      poseRef.current.vy = 0
-      event.currentTarget.setPointerCapture(event.pointerId)
-    }
     const dx = event.clientX - drag.lastX
     const dy = event.clientY - drag.lastY
     drag.lastX = event.clientX
@@ -534,7 +519,9 @@ export function BookStage({
       style={{
         position: contained ? 'absolute' : 'fixed',
         inset: 0,
-        touchAction: contained ? 'pan-y' : 'none',
+        // The grab surface tilts on both axes. Side buttons keep pan-y so a
+        // vertical swipe there still scrolls the homepage.
+        touchAction: 'none',
         cursor: reduced ? 'default' : grabbing ? 'grabbing' : 'grab',
         userSelect: 'none',
       }}
