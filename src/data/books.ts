@@ -68,6 +68,41 @@ const IN = 25.4
  */
 export const books: BookSpec[] = [
   {
+    slug: 'enshittification',
+    title: 'Enshittification',
+    binding: 'jacket',
+    widthMm: 5.5 * IN,
+    heightMm: 8.4375 * IN,
+    spineMm: 1.125 * IN,
+    pageCount: 352,
+    boardMm: 2.5,
+    squareMm: 3,
+    caseColor: '#d9d3c6',
+    coverColor: '#111111',
+    description:
+      'Enshittification by Cory Doctorow. Design by No Ideas. Published by MCD.',
+    maps: {
+      cover: '/books/enshittification/cover.png?v=3',
+      varnish: '/books/enshittification/varnish.png?v=1',
+    },
+    // Jacket mechanical: 0.125 in bleed, 3.5 in flaps, 0.375 in of jacket
+    // past each fore-edge, 5.5 in boards, 1.125 in spine. The 0.375 in rides
+    // with the flap so it wraps the board edge. Page 2 is the spot-gloss plate.
+    uv: {
+      leftBleed: 0.125 / 20.125,
+      backFlap: 3.875 / 20.125,
+      back: 5.5 / 20.125,
+      backJoint: 0,
+      spine: 1.125 / 20.125,
+      frontJoint: 0,
+      front: 5.5 / 20.125,
+      frontFlap: 3.875 / 20.125,
+      rightBleed: 0.125 / 20.125,
+      bottomBleed: 0.125 / 8.6875,
+      topBleed: 0.125 / 8.6875,
+    },
+  },
+  {
     slug: 'bigger-than-fashion',
     title: 'Bigger than Fashion',
     binding: 'paper-over-board',
@@ -161,6 +196,208 @@ export const books: BookSpec[] = [
       rightBleed: 0.118 / 11.952,
       bottomBleed: 0.118 / 8.504,
       topBleed: 0.118 / 8.504,
+    },
+  },
+  {
+    slug: 'overtime',
+    title: 'Overtime',
+    binding: 'paperback',
+    widthMm: 111,
+    heightMm: 178,
+    spineMm: 10.6,
+    pageCount: 144,
+    boardMm: 0.35,
+    squareMm: 0,
+    caseColor: '#ffffff',
+    coverColor: '#d8232a',
+    description:
+      'Overtime by Kyle Lewis and Will Stronge. Design by No Ideas. Published by Verso Books.',
+    maps: {
+      cover: '/books/overtime/cover.png?v=1',
+    },
+    // Mechanical: 111 × 178, spine 10.6, flaps 75. Bleed is 3 mm.
+    uv: {
+      leftBleed: 3 / 388.6,
+      backFlap: 75 / 388.6,
+      back: 111 / 388.6,
+      backJoint: 0,
+      spine: 10.6 / 388.6,
+      frontJoint: 0,
+      front: 111 / 388.6,
+      frontFlap: 75 / 388.6,
+      rightBleed: 3 / 388.6,
+      bottomBleed: 3 / 184,
+      topBleed: 3 / 184,
+    },
+  },
+  {
+    slug: 'females',
+    title: 'Females',
+    binding: 'paperback',
+    widthMm: 111,
+    heightMm: 178,
+    spineMm: 8.8992,
+    pageCount: 112,
+    boardMm: 0.35,
+    squareMm: 0,
+    caseColor: '#ffffff',
+    coverColor: '#e15b4a',
+    description:
+      'Females by Andrea Long Chu. Design by No Ideas. Published by Verso Books.',
+    maps: {
+      cover: '/books/females/cover.png?v=1',
+    },
+    // Same 111 × 178 face and 75 mm flaps. Spine is the trim remainder, 8.9 mm.
+    // Bleed is 0.125 in.
+    uv: {
+      leftBleed: 3.1694 / 387.2395,
+      backFlap: 75 / 387.2395,
+      back: 111 / 387.2395,
+      backJoint: 0,
+      spine: 8.8992 / 387.2395,
+      frontJoint: 0,
+      front: 111 / 387.2395,
+      frontFlap: 75 / 387.2395,
+      rightBleed: 3.1709 / 387.2395,
+      bottomBleed: 3.175 / 184.35,
+      topBleed: 3.175 / 184.35,
+    },
+  },
+  {
+    slug: 'the-old-is-dying',
+    title: 'The Old is Dying',
+    binding: 'paperback',
+    widthMm: 111,
+    heightMm: 178,
+    spineMm: 5.5,
+    pageCount: 64,
+    boardMm: 0.35,
+    squareMm: 0,
+    caseColor: '#061188',
+    coverColor: '#e41128',
+    description:
+      'The Old Is Dying and the New Cannot Be Born by Nancy Fraser. Design by No Ideas. Published by Verso Books.',
+    maps: {
+      cover: '/books/the-old-is-dying/cover.png?v=2',
+    },
+    // Same 111 × 178 face, no flaps. Spine is the trim remainder, 5.5 mm. Bleed is 3 mm.
+    uv: {
+      leftBleed: 3 / 233.5,
+      backFlap: 0,
+      back: 111 / 233.5,
+      backJoint: 0,
+      spine: 5.5 / 233.5,
+      frontJoint: 0,
+      front: 111 / 233.5,
+      frontFlap: 0,
+      rightBleed: 3 / 233.5,
+      bottomBleed: 3 / 184,
+      topBleed: 3 / 184,
+    },
+  },
+  {
+    slug: 'green-new-deal',
+    title: 'The Case for the Green New Deal',
+    binding: 'paper-over-board',
+    widthMm: 128.08,
+    heightMm: 203.14,
+    spineMm: 17,
+    pageCount: 208,
+    boardMm: 2.5,
+    squareMm: 3,
+    caseColor: '#d9d3c6',
+    coverColor: '#3DD52F',
+    description:
+      'The Case for the Green New Deal by Ann Pettifor. Design by No Ideas. Published by Verso Books.',
+    maps: {
+      cover: '/books/green-new-deal/cover.png?v=2',
+    },
+    // R04 mechanical is 140 × 234 mm boards with 8 mm joints and a 17 mm spine.
+    // The printed book crops that outer white: 16.8 mm off each fore-edge, 15.3 mm
+    // off the head and tail, and 4.9 mm of each joint stays on the board.
+    // Face is 128.08 × 203.14 mm. Pantone 802 C on white.
+    uv: {
+      leftBleed: 19.78 / 319,
+      backFlap: 0,
+      back: 128.08 / 319,
+      backJoint: 3.14 / 319,
+      spine: 17 / 319,
+      frontJoint: 3.14 / 319,
+      front: 128.08 / 319,
+      frontFlap: 0,
+      rightBleed: 19.78 / 319,
+      bottomBleed: 18.6 / 240,
+      topBleed: 18.26 / 240,
+    },
+  },
+  {
+    slug: 'comrade',
+    title: 'Comrade',
+    binding: 'paper-over-board',
+    widthMm: 130,
+    heightMm: 223,
+    spineMm: 15,
+    pageCount: 176,
+    boardMm: 2.5,
+    squareMm: 3,
+    caseColor: '#d9d3c6',
+    coverColor: '#FF3C1F',
+    description:
+      'Comrade by Jodi Dean. Design by Porto Rocha and No Ideas. Published by Verso Books.',
+    maps: {
+      cover: '/books/comrade/cover.png?v=1',
+      varnish: '/books/comrade/varnish.png?v=1',
+    },
+    // PLC trim is 321 × 252 mm: 145 mm panels, 8 mm joints, 15 mm spine, 3 mm bleed.
+    // The case turns 15 mm of each fore-edge inside. The tail turn-in is the
+    // 29 mm of white under the type, so the face is 130 × 223 mm.
+    uv: {
+      leftBleed: 18 / 327,
+      backFlap: 0,
+      back: 130 / 327,
+      backJoint: 8 / 327,
+      spine: 15 / 327,
+      frontJoint: 8 / 327,
+      front: 130 / 327,
+      frontFlap: 0,
+      rightBleed: 18 / 327,
+      bottomBleed: 32 / 258,
+      topBleed: 3 / 258,
+    },
+  },
+  {
+    slug: 'investigative-aesthetics',
+    title: 'Investigative Aesthetics',
+    binding: 'paperback',
+    widthMm: 140,
+    heightMm: 210,
+    spineMm: 16.9,
+    pageCount: 272,
+    boardMm: 0.35,
+    squareMm: 0,
+    caseColor: '#ffffff',
+    coverColor: '#c8c8c8',
+    description:
+      'Investigative Aesthetics by Matthew Fuller and Eyal Weizman. Design by No Ideas. Published by Verso Books.',
+    maps: {
+      cover: '/books/investigative-aesthetics/cover.png?v=1',
+      foil: '/books/investigative-aesthetics/foil.png?v=1',
+    },
+    // R3 mechanical. Trim is 140 × 210, spine 16.9, flaps 90. A 1 mm turn
+    // sits between each flap and the cover face, and rides with the flap.
+    // Bleed is 3 mm. Pantone 877 C is the silver foil.
+    uv: {
+      leftBleed: 3 / 484.9,
+      backFlap: 91 / 484.9,
+      back: 140 / 484.9,
+      backJoint: 0,
+      spine: 16.9 / 484.9,
+      frontJoint: 0,
+      front: 140 / 484.9,
+      frontFlap: 91 / 484.9,
+      rightBleed: 3 / 484.9,
+      bottomBleed: 3 / 216,
+      topBleed: 3 / 216,
     },
   },
   {
