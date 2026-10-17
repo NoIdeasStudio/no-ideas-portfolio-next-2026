@@ -5,6 +5,8 @@ import type { PortableTextBlock } from '@portabletext/types'
 import { useAutoScroll } from '../contexts/AutoScrollContext'
 import { isMobileUserAgent } from '../lib/isMobile'
 import { BOOK_COVERS_SLUG, BookCoversSection } from './books/BookCoversSection'
+import type { BookSpec } from '../data/books'
+import type { HomepageOrderItem } from '../lib/resolveBooks'
 import { HomepageThemeObserver } from './HomepageThemeObserver'
 import { LazyLoopSection } from './LazyLoopSection'
 import { MobileViewportHeightExpand } from './MobileViewportHeightExpand'
@@ -27,6 +29,31 @@ function withBookCovers(projects: HomepageProject[]): LoopEntry[] {
   return entries
 }
 
+function entriesFromOrder(
+  projects: HomepageProject[],
+  homepageOrder: HomepageOrderItem[] | null | undefined,
+  showBooks: boolean,
+): LoopEntry[] {
+  const hasMarker = homepageOrder?.some((item) => item.kind === 'bookSlideshow')
+  let entries: LoopEntry[]
+  if (!hasMarker) {
+    entries = withBookCovers(projects)
+  } else {
+    const byId = new Map(projects.map((project) => [project._id, project]))
+    entries = []
+    for (const item of homepageOrder ?? []) {
+      if (item.kind === 'bookSlideshow') {
+        entries.push({ kind: 'book-covers' })
+        continue
+      }
+      const project = item.projectId ? byId.get(item.projectId) : undefined
+      if (project) entries.push({ kind: 'project', project })
+    }
+  }
+  if (!showBooks) return entries.filter((entry) => entry.kind !== 'book-covers')
+  return entries
+}
+
 export type HomepageProject = {
   _id: string
   title: string
@@ -44,18 +71,27 @@ export type HomepageProject = {
 
 type HomepageInfiniteLoopProps = {
   projects: HomepageProject[]
+  /** Visible books for the slideshow. An empty list omits the section. */
+  books?: BookSpec[]
+  /** Site Layout order, including the book slideshow marker. */
+  homepageOrder?: HomepageOrderItem[] | null
   /** When false, skip the duplicate loop block (e.g. single-project SEO pages). */
   enableLoopDuplicate?: boolean
 }
 
 export function HomepageInfiniteLoop({
   projects,
+  books = [],
+  homepageOrder = null,
   enableLoopDuplicate = true,
 }: HomepageInfiniteLoopProps) {
   const loopRef = useRef<HTMLDivElement>(null)
   const setLoopHeight = useAutoScroll()?.setLoopHeight
   const [showLoopDuplicate, setShowLoopDuplicate] = useState(false)
-  const entries = useMemo(() => withBookCovers(projects), [projects])
+  const entries = useMemo(
+    () => entriesFromOrder(projects, homepageOrder, books.length > 0),
+    [projects, homepageOrder, books.length],
+  )
   const themeObserverProjects = useMemo(
     () =>
       entries.map((entry) => ({
@@ -80,7 +116,7 @@ export function HomepageInfiniteLoop({
       observer.disconnect()
       setLoopHeight(0)
     }
-  }, [setLoopHeight, projects.length])
+  }, [setLoopHeight, entries.length])
 
   return (
     <>
@@ -89,7 +125,7 @@ export function HomepageInfiniteLoop({
       <div ref={loopRef} aria-hidden={false}>
         {entries.map((entry, i) =>
           entry.kind === 'book-covers' ? (
-            <BookCoversSection key={BOOK_COVERS_SLUG} />
+            <BookCoversSection key={BOOK_COVERS_SLUG} books={books} />
           ) : (
             <LazyLoopSection
               key={entry.project._id}
@@ -103,7 +139,7 @@ export function HomepageInfiniteLoop({
         <div aria-hidden="true">
           {entries.map((entry) =>
             entry.kind === 'book-covers' ? (
-              <BookCoversSection key={`${BOOK_COVERS_SLUG}-loop`} isLoopCopy />
+              <BookCoversSection key={`${BOOK_COVERS_SLUG}-loop`} books={books} isLoopCopy />
             ) : (
               <LazyLoopSection
                 key={`${entry.project._id}-loop`}

@@ -9,17 +9,20 @@ export const siteLayoutType = defineType({
   type: 'document',
   title: 'Site Layout',
   description:
-    'Order of projects on the homepage and projects page, and order of categories in the projects page filter. Drag to reorder.',
+    'Order of projects on the homepage and projects page, where the book slideshow sits on the homepage, and order of categories in the projects page filter. Drag to reorder.',
   fields: [
     defineField({
       name: 'projectOrder',
       type: 'array',
       title: 'Project order',
       description:
-        'Drag to reorder. Top item is first on the homepage and projects page. Only published projects appear on the site. When adding, only projects not already in the list are shown.',
+        'Drag to reorder. Top item is first on the homepage and projects page. Add Book slideshow once to place the book covers among the projects. Only published projects appear on the site. When adding a project, only projects not already in the list are shown.',
       of: [
         defineArrayMember({
+          // Keep this unnamed. Saved rows are `_type: "reference"`. A name
+          // would replace that type and Studio would reject the existing list.
           type: 'reference',
+          title: 'Project',
           to: [{ type: 'project' }],
           options: {
             filter: ({ document }) => {
@@ -34,8 +37,39 @@ export const siteLayoutType = defineType({
             },
           },
         }),
+        defineArrayMember({
+          name: 'bookSlideshow',
+          type: 'object',
+          title: 'Book slideshow',
+          fields: [
+            defineField({
+              name: 'label',
+              type: 'string',
+              title: 'Label',
+              initialValue: 'Book slideshow',
+              readOnly: true,
+              hidden: true,
+            }),
+          ],
+          preview: {
+            prepare() {
+              return { title: 'Book slideshow' }
+            },
+          },
+        }),
       ],
-      validation: (Rule) => Rule.unique(),
+      validation: (Rule) =>
+        Rule.custom((items) => {
+          if (!Array.isArray(items)) return true
+          const markers = items.filter(
+            (item) =>
+              item &&
+              typeof item === 'object' &&
+              '_type' in item &&
+              (item as { _type?: string })._type === 'bookSlideshow',
+          )
+          return markers.length <= 1 ? true : 'Only one Book slideshow can be added'
+        }).unique(),
     }),
     defineField({
       name: 'categoryOrder',

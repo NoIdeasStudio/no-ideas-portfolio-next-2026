@@ -1,4 +1,4 @@
-import {CogIcon} from '@sanity/icons'
+import {BookIcon, CogIcon} from '@sanity/icons'
 import type {StructureResolver} from 'sanity/structure'
 
 const EXCLUDED_FROM_AUTO_LIST = [
@@ -7,6 +7,8 @@ const EXCLUDED_FROM_AUTO_LIST = [
   'infoPage',
   'project',
   'category',
+  'book',
+  'bookOrder',
 ] as const
 
 // https://www.sanity.io/docs/structure-builder-cheat-sheet
@@ -35,6 +37,29 @@ export const structure: StructureResolver = (S) =>
       S.listItem()
         .title('Projects')
         .child(S.documentTypeList('project').title('Projects')),
+      S.listItem()
+        .title('Books')
+        .icon(BookIcon)
+        .child(
+          S.list()
+            .title('Books')
+            .items([
+              S.listItem()
+                .title('Slideshow order')
+                .icon(BookIcon)
+                .child(
+                  S.document()
+                    .schemaType('bookOrder')
+                    .documentId('book-order')
+                    .title('Slideshow order'),
+                ),
+              S.divider(),
+              S.listItem()
+                .title('All books')
+                .icon(BookIcon)
+                .child(S.documentTypeList('book').title('All books')),
+            ]),
+        ),
       S.listItem()
         .title('Info Page')
         .child(S.document().schemaType('infoPage').documentId('info-page')),

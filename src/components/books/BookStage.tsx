@@ -4,7 +4,7 @@ import { Suspense, useEffect, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import gsap from 'gsap'
 import * as THREE from 'three'
-import { books, type BookSpec } from '../../data/books'
+import { books as codeBooks, type BookSpec } from '../../data/books'
 import { useProjectTheme } from '../../contexts/ProjectThemeContext'
 import { BookObject, warmBook } from './BookObject'
 
@@ -62,6 +62,7 @@ function ArrivingBook({
   dragging,
   pointerRef,
   hoverPose,
+  placed,
 }: {
   book: BookSpec
   direction: 1 | -1
@@ -71,6 +72,7 @@ function ArrivingBook({
   dragging: React.MutableRefObject<boolean>
   pointerRef: React.MutableRefObject<HoverPointer>
   hoverPose: React.MutableRefObject<HoverPose>
+  placed: boolean
 }) {
   const group = useRef<THREE.Group>(null)
   const invalidate = useThree((state) => state.invalidate)
@@ -84,16 +86,17 @@ function ArrivingBook({
   useEffect(() => {
     const object = group.current
     if (!object) return
-    const startY = reduced ? REST_Y : REST_Y + direction * 0.45
+    const settled = reduced || placed
+    const startY = settled ? REST_Y : REST_Y + direction * 0.45
     object.rotation.x = REST_X
     object.rotation.y = startY
-    object.position.x = reduced ? 0 : direction * offscreenX(viewportWidth)
+    object.position.x = settled ? 0 : direction * offscreenX(viewportWidth)
     poseRef.current.x = REST_X
     poseRef.current.y = REST_Y
     poseRef.current.vx = 0
     poseRef.current.vy = 0
     invalidate()
-    if (reduced) {
+    if (settled) {
       tweening.current = false
       return
     }
@@ -127,7 +130,7 @@ function ArrivingBook({
       spin.kill()
       tweening.current = false
     }
-  }, [book.slug, direction, reduced, poseRef, tweening, dragging, invalidate, viewportWidth])
+  }, [book.slug, direction, reduced, placed, poseRef, tweening, dragging, invalidate, viewportWidth])
 
   useFrame((_, delta) => {
     const object = group.current
@@ -230,6 +233,7 @@ function Scene({
   dragging,
   pointerRef,
   hoverPose,
+  placed,
   onDeparted,
 }: {
   book: BookSpec
@@ -241,6 +245,7 @@ function Scene({
   dragging: React.MutableRefObject<boolean>
   pointerRef: React.MutableRefObject<HoverPointer>
   hoverPose: React.MutableRefObject<HoverPose>
+  placed: boolean
   onDeparted: () => void
 }) {
   return (
@@ -267,6 +272,7 @@ function Scene({
           dragging={dragging}
           pointerRef={pointerRef}
           hoverPose={hoverPose}
+          placed={placed}
         />
         {departing && (
           <DepartingBook
@@ -288,18 +294,22 @@ type BookStageProps = {
   listenToKeys?: boolean
   /** Homepage: pause auto-scroll the same way a project carousel does. */
   onInteract?: () => void
+  /** Visible books, already ordered. Defaults to the full code list. */
+  books?: BookSpec[]
 }
 
 export function BookStage({
   contained = false,
   listenToKeys = true,
   onInteract,
+  books = codeBooks,
 }: BookStageProps) {
   const theme = useProjectTheme()
   const reduced = usePrefersReducedMotion()
   const [index, setIndex] = useState(0)
   const [departing, setDeparting] = useState<{ book: BookSpec; from: Pose } | null>(null)
   const direction = useRef<1 | -1>(1)
+  const introduced = useRef(false)
   const poseRef = useRef({ x: REST_X, y: REST_Y, vx: 0, vy: 0 })
   const tweening = useRef(false)
   const dragging = useRef(false)
@@ -329,7 +339,7 @@ export function BookStage({
     window.addEventListener('resize', update)
     return () => window.removeEventListener('resize', update)
   }, [])
-  const book = books[index]
+  const book = books[index] ?? books[0]
 
   useEffect(() => {
     if (!departing) return
@@ -341,14 +351,14 @@ export function BookStage({
   }, [departing])
 
   useEffect(() => {
-    if (contained) return
+    if (contained || !book) return
     theme?.setActiveProjectSlug(book.slug)
     theme?.setActiveProjectTitle(book.title)
     return () => {
       theme?.setActiveProjectSlug(null)
       theme?.setActiveProjectTitle(null)
     }
-  }, [book.slug, book.title, contained, theme])
+  }, [book, contained, theme])
 
   useEffect(() => {
     if (departing) return
@@ -389,10 +399,11 @@ export function BookStage({
       cancelled = true
       window.clearTimeout(timer)
     }
-  }, [index, departing])
+  }, [index, departing, books])
 
   function go(dir: 1 | -1) {
     if (departing || tweening.current) return
+    introduced.current = true
     onInteractRef.current?.()
     const next = (index + dir + books.length) % books.length
     if (!books[next].description) setInfoOpen(false)
@@ -508,6 +519,8 @@ export function BookStage({
     invalidate.current()
   }
 
+  if (!book || books.length === 0) return null
+
   return (
     <div
       ref={stage}
@@ -551,6 +564,7 @@ export function BookStage({
           dragging={dragging}
           pointerRef={pointerNdc}
           hoverPose={hoverPose}
+          placed={!introduced.current}
           onDeparted={() => setDeparting(null)}
         />
       </Canvas>

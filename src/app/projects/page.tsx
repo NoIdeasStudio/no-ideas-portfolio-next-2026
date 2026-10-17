@@ -2,10 +2,12 @@ import type { Metadata } from 'next'
 import { fetchSanity } from '../../sanity/lib/fetch'
 import {
   allCategoriesQuery,
+  bookIndexQuery,
   indexProjectsQuery,
   siteLayoutQuery,
   allProjectsWithSlidesQuery,
 } from '../../lib/sanity.queries'
+import type { HomepageOrderItem } from '../../lib/resolveBooks'
 import { buildPageMetadata, getSiteSettings } from '../../lib/metadata'
 import { sortByOrderIds } from '../../lib/sortByOrderIds'
 import { sanityImageGridUrl, type SanityImageWithAssetUrl } from '../../sanity/lib/image'
@@ -28,9 +30,18 @@ export async function generateMetadata(): Promise<Metadata> {
   })
 }
 
+const BOOK_COVERS_SLUG = 'book-covers'
+
 type SiteLayout = {
   projectOrderIds?: string[] | null
   categoryOrderIds?: string[] | null
+  homepageOrder?: HomepageOrderItem[] | null
+}
+
+type BookIndex = {
+  title?: string | null
+  year?: string | null
+  categories?: Array<IndexCategory | null> | null
 }
 
 type RawSlide = {
@@ -55,6 +66,45 @@ type RawProjectWithSlides = {
   title: string
   slug: string
   slides?: RawSlide[] | null
+}
+
+function bookCoversProject(book: BookIndex | null): IndexProject {
+  const categories = (book?.categories ?? []).filter(
+    (category): category is IndexCategory =>
+      Boolean(category?._id && category.title && category.slug),
+  )
+  return {
+    _id: BOOK_COVERS_SLUG,
+    title: book?.title?.trim() || 'Book Covers',
+    slug: BOOK_COVERS_SLUG,
+    categories,
+    year: book?.year?.trim() || null,
+  }
+}
+
+/** Walk Site Layout. The book slideshow row sits wherever that marker is. */
+function orderIndexProjects(
+  projects: IndexProject[],
+  layout: SiteLayout | null,
+  book: BookIndex | null,
+): IndexProject[] {
+  const order = layout?.homepageOrder
+  const hasMarker = order?.some((item) => item.kind === 'bookSlideshow')
+  if (!order?.length || !hasMarker) {
+    return sortByOrderIds(projects, layout?.projectOrderIds)
+  }
+
+  const byId = new Map(projects.map((project) => [project._id, project]))
+  const ordered: IndexProject[] = []
+  for (const item of order) {
+    if (item.kind === 'bookSlideshow') {
+      ordered.push(bookCoversProject(book))
+      continue
+    }
+    const project = item.projectId ? byId.get(item.projectId) : undefined
+    if (project) ordered.push(project)
+  }
+  return ordered
 }
 
 function buildGridItems(
@@ -110,18 +160,18 @@ async function getIndexData(): Promise<{
   gridItems: IndexGridItem[]
 }> {
   try {
-    const [layout, categories, projects, projectsWithSlides] = await Promise.all([
+    const [layout, categories, projects, projectsWithSlides, bookIndex] = await Promise.all([
       fetchSanity<SiteLayout | null>(siteLayoutQuery),
       fetchSanity<IndexCategory[]>(allCategoriesQuery),
       fetchSanity<IndexProject[]>(indexProjectsQuery),
       fetchSanity<RawProjectWithSlides[]>(allProjectsWithSlidesQuery),
+      fetchSanity<BookIndex | null>(bookIndexQuery),
     ])
     const cats = categories ?? []
-    const projs = projects ?? []
     const gridItems = buildGridItems(projectsWithSlides ?? [], layout?.projectOrderIds)
     return {
       categories: sortByOrderIds(cats, layout?.categoryOrderIds),
-      projects: sortByOrderIds(projs, layout?.projectOrderIds),
+      projects: orderIndexProjects(projects ?? [], layout, bookIndex),
       gridItems,
     }
   } catch (err) {

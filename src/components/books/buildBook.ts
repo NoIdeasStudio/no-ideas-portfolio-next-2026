@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { bleedMm, spreadUv, type BookSpec, type SpreadUv } from '../../data/books'
 
 // Shoulder, then a shallow channel. Deep enough to read, not enough to clip through the board.
-const HINGE_FROM_SPINE = 8
+const HINGE_FROM_SPINE = 3
 const HINGE_WIDTH = 10
 const HINGE_DEPTH = 0.4
 
@@ -535,7 +535,13 @@ function addPages(
   if (book.binding === 'paperback') return
 
   const radius = 1.25
-  const cord = new THREE.CylinderGeometry(radius, radius, Math.max(4, pageD * 0.62), 12, 1)
+  const radialSegments = 12
+  const cord = new THREE.CylinderGeometry(radius, radius, pageD, radialSegments, 1)
+  // One texture tile used to cover 62% of the spine. Keep that thread pitch on the full length.
+  const repeats = pageD / Math.max(4, pageD * 0.62)
+  const uv = cord.attributes.uv
+  const sideVerts = (radialSegments + 1) * 2
+  for (let i = 0; i < sideVerts; i++) uv.setY(i, uv.getY(i) * repeats)
   cord.rotateX(Math.PI / 2)
   const x = pageX - pageW / 2 + 0.35
   const y = pageH / 2 + radius * 0.9

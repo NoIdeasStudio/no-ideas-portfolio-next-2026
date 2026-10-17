@@ -2,8 +2,33 @@ import { groq } from "next-sanity";
 
 /** Singleton: ordered project and category ids for homepage and projects page. */
 export const siteLayoutQuery = groq`*[_type == "siteLayout" && _id == "site-layout"][0]{
-  "projectOrderIds": projectOrder[]->._id,
+  "projectOrderIds": projectOrder[defined(_ref)]._ref,
+  "homepageOrder": projectOrder[]{
+    _key,
+    "kind": select(defined(_ref) => "project", "bookSlideshow"),
+    "projectId": _ref
+  },
   "categoryOrderIds": categoryOrder[]->._id
+}`;
+
+/** Title, categories, and year shown for the book slideshow on the projects index. */
+export const bookIndexQuery = groq`*[_type == "bookOrder" && _id == "book-order"][0]{
+  title,
+  year,
+  "categories": categories[]->{ _id, title, "slug": slug.current }
+}`;
+
+/** Books in slideshow order, with copy and optional plate replacements. */
+export const bookCatalogQuery = groq`*[_type == "bookOrder" && _id == "book-order"][0]{
+  "books": books[]->{
+    title,
+    slug,
+    description,
+    "coverUrl": cover.asset->url,
+    "varnishUrl": varnish.asset->url,
+    "foilUrl": foil.asset->url,
+    "debossUrl": deboss.asset->url
+  }
 }`;
 
 export const allCategoriesQuery = groq`*[_type == "category"]{
