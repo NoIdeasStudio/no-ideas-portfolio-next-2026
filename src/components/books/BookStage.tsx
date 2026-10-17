@@ -31,6 +31,12 @@ const ENTER_SPIN = 0.72
 /** Horizontal lean while the pointer is on the cover. */
 const HOVER_YAW = 0.07
 const HOVER_LAMBDA = 5
+/** Same breakpoint as the rest of the site. */
+const MOBILE_LAYOUT_QUERY = '(max-width: 800px)'
+/** Narrower cover from the mobile comp, so black gutters appear on both sides. */
+const MOBILE_BOOK_SCALE = 0.84
+/** Those gutters. A vertical swipe here scrolls the page. */
+const MOBILE_SCROLL_GUTTER = '14%'
 
 /** Past the viewport edge, with room for a rotated cover. */
 function offscreenX(viewportWidth: number) {
@@ -53,6 +59,20 @@ function usePrefersReducedMotion() {
   return reduced
 }
 
+function useMobileLayout() {
+  const [mobile, setMobile] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia(MOBILE_LAYOUT_QUERY).matches,
+  )
+  useEffect(() => {
+    const media = window.matchMedia(MOBILE_LAYOUT_QUERY)
+    const update = () => setMobile(media.matches)
+    update()
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
+  return mobile
+}
+
 function ArrivingBook({
   book,
   direction,
@@ -63,6 +83,7 @@ function ArrivingBook({
   pointerRef,
   hoverPose,
   placed,
+  scale,
 }: {
   book: BookSpec
   direction: 1 | -1
@@ -73,6 +94,7 @@ function ArrivingBook({
   pointerRef: React.MutableRefObject<HoverPointer>
   hoverPose: React.MutableRefObject<HoverPose>
   placed: boolean
+  scale: number
 }) {
   const group = useRef<THREE.Group>(null)
   const invalidate = useThree((state) => state.invalidate)
@@ -134,7 +156,10 @@ function ArrivingBook({
 
   useFrame((_, delta) => {
     const object = group.current
-    if (!object || tweening.current) return
+    if (!object) return
+    const fitted = object.children[0]
+    if (fitted && Math.abs(fitted.scale.x - scale) > 0.001) fitted.scale.setScalar(scale)
+    if (tweening.current) return
     const motion = poseRef.current
     if (!dragging.current) {
       const decay = Math.pow(0.045, delta)
@@ -170,7 +195,9 @@ function ArrivingBook({
 
   return (
     <group ref={group}>
-      <BookObject book={book} />
+      <group scale={scale}>
+        <BookObject book={book} />
+      </group>
     </group>
   )
 }
@@ -180,11 +207,13 @@ function DepartingBook({
   direction,
   from,
   onDone,
+  scale,
 }: {
   book: BookSpec
   direction: 1 | -1
   from: Pose
   onDone: () => void
+  scale: number
 }) {
   const group = useRef<THREE.Group>(null)
   const invalidate = useThree((state) => state.invalidate)
@@ -218,7 +247,9 @@ function DepartingBook({
 
   return (
     <group ref={group}>
-      <BookObject book={book} />
+      <group scale={scale}>
+        <BookObject book={book} />
+      </group>
     </group>
   )
 }
@@ -235,6 +266,7 @@ function Scene({
   hoverPose,
   placed,
   onDeparted,
+  scale,
 }: {
   book: BookSpec
   departing: { book: BookSpec; from: Pose } | null
@@ -247,6 +279,7 @@ function Scene({
   hoverPose: React.MutableRefObject<HoverPose>
   placed: boolean
   onDeparted: () => void
+  scale: number
 }) {
   return (
     <>
@@ -273,6 +306,7 @@ function Scene({
           pointerRef={pointerRef}
           hoverPose={hoverPose}
           placed={placed}
+          scale={scale}
         />
         {departing && (
           <DepartingBook
@@ -280,6 +314,7 @@ function Scene({
             direction={direction}
             from={departing.from}
             onDone={onDeparted}
+            scale={scale}
           />
         )}
       </Suspense>
@@ -306,6 +341,8 @@ export function BookStage({
 }: BookStageProps) {
   const theme = useProjectTheme()
   const reduced = usePrefersReducedMotion()
+  const mobile = useMobileLayout()
+  const bookScale = mobile ? MOBILE_BOOK_SCALE : 1
   const [index, setIndex] = useState(0)
   const [departing, setDeparting] = useState<{ book: BookSpec; from: Pose } | null>(null)
   const direction = useRef<1 | -1>(1)
@@ -339,6 +376,10 @@ export function BookStage({
     window.addEventListener('resize', update)
     return () => window.removeEventListener('resize', update)
   }, [])
+
+  useEffect(() => {
+    invalidate.current()
+  }, [mobile])
   const book = books[index] ?? books[0]
 
   useEffect(() => {
@@ -521,6 +562,8 @@ export function BookStage({
 
   if (!book || books.length === 0) return null
 
+  const gutter = mobile ? MOBILE_SCROLL_GUTTER : '30%'
+
   return (
     <div
       ref={stage}
@@ -532,9 +575,10 @@ export function BookStage({
       style={{
         position: contained ? 'absolute' : 'fixed',
         inset: 0,
-        // The grab surface tilts on both axes. Side buttons keep pan-y so a
-        // vertical swipe there still scrolls the homepage.
-        touchAction: 'none',
+        // touch-action on an ancestor cancels a looser value on a child.
+        // The stage stays pannable on mobile so the side gutters can scroll
+        // the page; only the cover itself sets none.
+        touchAction: mobile ? 'auto' : 'none',
         cursor: reduced ? 'default' : grabbing ? 'grabbing' : 'grab',
         userSelect: 'none',
       }}
@@ -566,17 +610,31 @@ export function BookStage({
           hoverPose={hoverPose}
           placed={!introduced.current}
           onDeparted={() => setDeparting(null)}
+          scale={bookScale}
         />
       </Canvas>
+      {mobile && (
+        <div
+          aria-hidden
+          className="absolute bottom-0 top-0 z-[5]"
+          style={{
+            left: gutter,
+            right: gutter,
+            touchAction: 'none',
+            cursor: 'inherit',
+          }}
+        />
+      )}
       <button
         type="button"
         aria-label="Previous book"
         onClick={() => go(-1)}
         onPointerDown={(event) => event.stopPropagation()}
-        className="absolute left-0 top-0 z-10 h-full w-[30%] cursor-w-resize border-0 bg-transparent p-0 focus:outline-none"
+        className="absolute left-0 top-0 z-10 h-full cursor-w-resize border-0 bg-transparent p-0 focus:outline-none"
         style={{
+          width: gutter,
           pointerEvents: grabbing ? 'none' : 'auto',
-          touchAction: contained ? 'pan-y' : 'none',
+          touchAction: mobile || contained ? 'pan-y' : 'none',
         }}
       />
       <button
@@ -584,10 +642,11 @@ export function BookStage({
         aria-label="Next book"
         onClick={() => go(1)}
         onPointerDown={(event) => event.stopPropagation()}
-        className="absolute right-0 top-0 z-10 h-full w-[30%] cursor-e-resize border-0 bg-transparent p-0 focus:outline-none"
+        className="absolute right-0 top-0 z-10 h-full cursor-e-resize border-0 bg-transparent p-0 focus:outline-none"
         style={{
+          width: gutter,
           pointerEvents: grabbing ? 'none' : 'auto',
-          touchAction: contained ? 'pan-y' : 'none',
+          touchAction: mobile || contained ? 'pan-y' : 'none',
         }}
       />
 

@@ -401,6 +401,41 @@ export const books: BookSpec[] = [
     },
   },
   {
+    slug: 'capital-is-dead',
+    title: 'Capital Is Dead',
+    binding: 'jacket',
+    widthMm: 143,
+    heightMm: 216,
+    spineMm: 17,
+    pageCount: 208,
+    boardMm: 2.5,
+    squareMm: 3,
+    caseColor: '#f4f4f2',
+    coverColor: '#f7f7f5',
+    description:
+      'Capital Is Dead by McKenzie Wark. Design by No Ideas. Published by Verso Books.',
+    maps: {
+      cover: '/books/capital-is-dead/cover.png?v=1',
+      varnish: '/books/capital-is-dead/varnish.png?v=1',
+    },
+    // R04 jacket. The mechanical is marked 143 × 216, spine 17, flaps 88.9.
+    // 10 mm of jacket past each fore-edge rides with the flap and wraps the board.
+    // Bleed is 0.125 in. The spot-gloss plate is the type pills.
+    uv: {
+      leftBleed: 3.175 / 507.15,
+      backFlap: 98.9 / 507.15,
+      back: 143 / 507.15,
+      backJoint: 0,
+      spine: 17 / 507.15,
+      frontJoint: 0,
+      front: 143 / 507.15,
+      frontFlap: 98.9 / 507.15,
+      rightBleed: 3.175 / 507.15,
+      bottomBleed: 3.175 / 222.35,
+      topBleed: 3.175 / 222.35,
+    },
+  },
+  {
     slug: 'thin-paperback',
     title: 'Thin Paperback',
     binding: 'paperback',
