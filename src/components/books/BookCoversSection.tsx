@@ -96,6 +96,16 @@ export function BookCoversSection({ isLoopCopy = false, books }: BookCoversSecti
         void mod.warmBook(first).finally(() => {
           if (!cancelled) setPrepared(true)
         })
+        void (async () => {
+          await mod.warmBook(first)
+          for (const book of books.slice(1)) {
+            if (cancelled) return
+            await mod.warmBook(book)
+            await new Promise<void>((resolve) => {
+              window.setTimeout(resolve, 48)
+            })
+          }
+        })()
       })
     }
     const idleId = window.requestIdleCallback?.(warm, { timeout: 1000 })

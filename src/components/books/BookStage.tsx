@@ -308,7 +308,9 @@ function Scene({
           placed={placed}
           scale={scale}
         />
-        {departing && (
+      </Suspense>
+      {departing && (
+        <Suspense fallback={null}>
           <DepartingBook
             book={departing.book}
             direction={direction}
@@ -316,8 +318,8 @@ function Scene({
             onDone={onDeparted}
             scale={scale}
           />
-        )}
-      </Suspense>
+        </Suspense>
+      )}
     </>
   )
 }
@@ -346,6 +348,11 @@ export function BookStage({
   const [index, setIndex] = useState(0)
   const [departing, setDeparting] = useState<{ book: BookSpec; from: Pose } | null>(null)
   const direction = useRef<1 | -1>(1)
+  const indexRef = useRef(0)
+  const booksRef = useRef(books)
+  const departingRef = useRef(departing)
+  const preparing = useRef(false)
+  const alive = useRef(true)
   const introduced = useRef(false)
   const poseRef = useRef({ x: REST_X, y: REST_Y, vx: 0, vy: 0 })
   const tweening = useRef(false)
@@ -401,69 +408,89 @@ export function BookStage({
     }
   }, [book, contained, theme])
 
+  indexRef.current = index
+  booksRef.current = books
+  departingRef.current = departing
+  const lineup = books.map((item) => item.slug).join('|')
+
   useEffect(() => {
-    if (departing) return
-    let cancelled = false
-    let timer = 0
-    const kick = () => {
-      if (cancelled) return
-      if (tweening.current || dragging.current || !glRef.current) {
-        timer = window.setTimeout(kick, 160)
-        return
-      }
-      const count = books.length
-      const seen = new Set<number>([index])
-      const order: BookSpec[] = []
-      for (const delta of [1, -1, 2, -2, 3, -3]) {
-        const nextIndex = ((index + delta) % count + count) % count
-        if (seen.has(nextIndex)) continue
-        seen.add(nextIndex)
-        order.push(books[nextIndex])
-      }
-      void (async () => {
-        for (const candidate of order) {
-          while (!cancelled && (tweening.current || dragging.current)) {
-            await new Promise<void>((resolve) => {
-              window.setTimeout(resolve, 160)
-            })
-          }
-          if (cancelled) return
-          await warmBook(candidate, glRef.current)
-          await new Promise<void>((resolve) => {
-            window.setTimeout(resolve, 48)
-          })
-        }
-      })()
+    alive.current = true
+    return () => {
+      alive.current = false
     }
-    timer = window.setTimeout(kick, 280)
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    const wait = (ms: number) =>
+      new Promise<void>((resolve) => {
+        window.setTimeout(resolve, ms)
+      })
+    const pump = async () => {
+      await wait(280)
+      let warmedFor = -1
+      while (!cancelled) {
+        if (dragging.current || !glRef.current) {
+          await wait(160)
+          continue
+        }
+        const list = booksRef.current
+        const count = list.length
+        if (!count) {
+          await wait(400)
+          continue
+        }
+        const start = indexRef.current
+        if (warmedFor === start) {
+          await wait(240)
+          continue
+        }
+        const dir = direction.current
+        for (let step = 1; step < count; step++) {
+          if (cancelled || indexRef.current !== start || dragging.current) break
+          const nextIndex = ((start + dir * step) % count + count) % count
+          await warmBook(list[nextIndex], glRef.current)
+          await wait(32)
+        }
+        if (!cancelled && indexRef.current === start) warmedFor = start
+      }
+    }
+    void pump()
     return () => {
       cancelled = true
-      window.clearTimeout(timer)
     }
-  }, [index, departing, books])
+  }, [lineup])
 
   function go(dir: 1 | -1) {
-    if (departing || tweening.current) return
-    introduced.current = true
-    onInteractRef.current?.()
-    const next = (index + dir + books.length) % books.length
-    if (!books[next].description) setInfoOpen(false)
-    direction.current = dir
-    const from = {
-      x: poseRef.current.x,
-      y: poseRef.current.y + hoverPose.current.yaw,
-    }
-    poseRef.current.vx = 0
-    poseRef.current.vy = 0
-    hoverPose.current.yaw = 0
-    if (reduced) {
+    if (departing || tweening.current || preparing.current) return
+    const list = books
+    const fromIndex = index
+    const next = (fromIndex + dir + list.length) % list.length
+    preparing.current = true
+    void warmBook(list[next], glRef.current).then(() => {
+      preparing.current = false
+      if (!alive.current || tweening.current || departingRef.current) return
+      introduced.current = true
+      onInteractRef.current?.()
+      if (!list[next].description) setInfoOpen(false)
+      direction.current = dir
+      const from = {
+        x: poseRef.current.x,
+        y: poseRef.current.y + hoverPose.current.yaw,
+      }
+      poseRef.current.vx = 0
+      poseRef.current.vy = 0
+      hoverPose.current.yaw = 0
+      if (reduced) {
+        setIndex(next)
+        poseRef.current.x = REST_X
+        poseRef.current.y = REST_Y
+        return
+      }
+      tweening.current = true
+      setDeparting({ book: list[fromIndex], from })
       setIndex(next)
-      poseRef.current.x = REST_X
-      poseRef.current.y = REST_Y
-      return
-    }
-    setDeparting({ book, from })
-    setIndex(next)
+    })
   }
 
   function toggleInfo() {
