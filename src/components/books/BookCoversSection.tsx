@@ -157,9 +157,11 @@ export function BookCoversSection({ isLoopCopy = false, books }: BookCoversSecti
 
   useEffect(() => {
     if (!active) return
-    setActiveProjectTitle(BOOK_COVERS_TITLE)
     setThemeColor('#fff')
-  }, [active, setActiveProjectTitle, setThemeColor])
+    // The stage owns the title once it is mounted, so a later book is not
+    // reset to the section name when this section scrolls back into view.
+    if (!mounted) setActiveProjectTitle(BOOK_COVERS_TITLE)
+  }, [active, mounted, setActiveProjectTitle, setThemeColor])
 
   return (
     <section

@@ -6,6 +6,7 @@ import gsap from 'gsap'
 import * as THREE from 'three'
 import { books as codeBooks, type BookSpec } from '../../data/books'
 import { useProjectTheme } from '../../contexts/ProjectThemeContext'
+import { BOOK_COVERS_TITLE } from './BookCoversSection'
 import { BookObject, warmBook } from './BookObject'
 
 const MAX_FRAME_WIDTH = 3840
@@ -347,6 +348,8 @@ export function BookStage({
   const bookScale = mobile ? MOBILE_BOOK_SCALE : 1
   const [index, setIndex] = useState(0)
   const [departing, setDeparting] = useState<{ book: BookSpec; from: Pose } | null>(null)
+  /** First view keeps the section name. After one advance, titles follow the book. */
+  const [hasAdvanced, setHasAdvanced] = useState(false)
   const direction = useRef<1 | -1>(1)
   const indexRef = useRef(0)
   const booksRef = useRef(books)
@@ -399,14 +402,20 @@ export function BookStage({
   }, [departing])
 
   useEffect(() => {
-    if (contained || !book) return
+    if (!book) return
+    const title = hasAdvanced ? book.title : BOOK_COVERS_TITLE
+    if (contained) {
+      if (!listenToKeys) return
+      theme?.setActiveProjectTitle(title)
+      return
+    }
     theme?.setActiveProjectSlug(book.slug)
-    theme?.setActiveProjectTitle(book.title)
+    theme?.setActiveProjectTitle(title)
     return () => {
       theme?.setActiveProjectSlug(null)
       theme?.setActiveProjectTitle(null)
     }
-  }, [book, contained, theme])
+  }, [book, contained, hasAdvanced, listenToKeys, theme])
 
   indexRef.current = index
   booksRef.current = books
@@ -471,6 +480,7 @@ export function BookStage({
       preparing.current = false
       if (!alive.current || tweening.current || departingRef.current) return
       introduced.current = true
+      setHasAdvanced(true)
       onInteractRef.current?.()
       if (!list[next].description) setInfoOpen(false)
       direction.current = dir
@@ -589,6 +599,7 @@ export function BookStage({
 
   if (!book || books.length === 0) return null
 
+  const projectTitle = hasAdvanced ? book.title : BOOK_COVERS_TITLE
   const gutter = mobile ? MOBILE_SCROLL_GUTTER : '30%'
 
   return (
@@ -708,10 +719,10 @@ export function BookStage({
               aria-expanded={infoOpen}
               aria-controls="book-cover-info"
             >
-              {book.title}
+              {projectTitle}
             </button>
           ) : (
-            <p className="project-carousel-mobile-title font-medium">{book.title}</p>
+            <p className="project-carousel-mobile-title font-medium">{projectTitle}</p>
           )}
           <p className="project-carousel-slide-count" aria-live="polite">
             {index + 1} of {books.length}
