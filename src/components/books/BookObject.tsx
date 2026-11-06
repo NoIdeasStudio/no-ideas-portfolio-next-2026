@@ -25,6 +25,43 @@ function configureMap(texture: THREE.Texture, color: boolean) {
   if (changed || texture.version === 0) texture.needsUpdate = true
 }
 
+/**
+ * Cover prep walks every pixel of a print-sized plate. Doing that in one turn
+ * freezes the homepage auto-scroll for a few hundred milliseconds, and on a
+ * cold load those turns land just as the page starts moving. Stay under a
+ * frame so scrolling keeps painting.
+ */
+const PAINT_BUDGET_MS = 4
+
+function afterPaint() {
+  return new Promise<void>((resolve) => {
+    requestAnimationFrame(() => resolve())
+  })
+}
+
+async function paintRows(height: number, paintRow: (y: number) => void) {
+  let start = performance.now()
+  for (let y = 0; y < height; y++) {
+    paintRow(y)
+    if (performance.now() - start < PAINT_BUDGET_MS) continue
+    await afterPaint()
+    start = performance.now()
+  }
+}
+
+function writeRoughnessRow(data: Uint8ClampedArray, width: number, y: number) {
+  const row = y * width * 4
+  for (let x = 0; x < width; x++) {
+    const i = row + x * 4
+    const foilAmount = data[i] / 255
+    const rough = Math.round((1 - foilAmount * 0.82) * 255)
+    data[i] = rough
+    data[i + 1] = rough
+    data[i + 2] = rough
+    data[i + 3] = 255
+  }
+}
+
 /** Foil stays smooth. The roughness map uses the green channel, so the mask is gray. */
 function roughnessTextureFromFoil(foil: THREE.Texture) {
   const image = foil.image as CanvasImageSource & { width: number; height: number }
@@ -35,19 +72,76 @@ function roughnessTextureFromFoil(foil: THREE.Texture) {
   if (!context) return null
   context.drawImage(image, 0, 0)
   const pixels = context.getImageData(0, 0, canvas.width, canvas.height)
-  for (let i = 0; i < pixels.data.length; i += 4) {
-    const foilAmount = pixels.data[i] / 255
-    const rough = Math.round((1 - foilAmount * 0.82) * 255)
-    pixels.data[i] = rough
-    pixels.data[i + 1] = rough
-    pixels.data[i + 2] = rough
-    pixels.data[i + 3] = 255
-  }
+  for (let y = 0; y < canvas.height; y++) writeRoughnessRow(pixels.data, canvas.width, y)
   context.putImageData(pixels, 0, 0)
   const texture = new THREE.CanvasTexture(canvas)
   configureMap(texture, false)
   texture.flipY = foil.flipY
   return texture
+}
+
+async function roughnessTextureFromFoilAsync(foil: THREE.Texture) {
+  const image = foil.image as CanvasImageSource & { width: number; height: number }
+  const canvas = document.createElement('canvas')
+  canvas.width = image.width
+  canvas.height = image.height
+  const context = canvas.getContext('2d', { willReadFrequently: true })
+  if (!context) return null
+  context.drawImage(image, 0, 0)
+  await afterPaint()
+  const pixels = context.getImageData(0, 0, canvas.width, canvas.height)
+  await paintRows(canvas.height, (y) => writeRoughnessRow(pixels.data, canvas.width, y))
+  await afterPaint()
+  context.putImageData(pixels, 0, 0)
+  const texture = new THREE.CanvasTexture(canvas)
+  configureMap(texture, false)
+  texture.flipY = foil.flipY
+  return texture
+}
+
+const VARNISH_RADIUS = 5
+
+function writeVarnishRow(
+  cover: Uint8ClampedArray,
+  mask: Uint8ClampedArray,
+  roughData: Uint8ClampedArray,
+  normalData: Uint8ClampedArray,
+  width: number,
+  height: number,
+  y: number,
+) {
+  const coatedAt = (x: number, sampleY: number) => {
+    const cx = Math.max(0, Math.min(width - 1, x))
+    const cy = Math.max(0, Math.min(height - 1, sampleY))
+    return mask[(cy * width + cx) * 4] / 255
+  }
+  const row = y * width * 4
+  for (let x = 0; x < width; x++) {
+    const i = row + x * 4
+    const coated = mask[i] / 255
+    const shade = 1 - coated * 0.18
+    cover[i] = Math.round(cover[i] * shade)
+    cover[i + 1] = Math.round(cover[i + 1] * shade)
+    cover[i + 2] = Math.round(cover[i + 2] * shade)
+    const rough = Math.round((1 - coated * 0.92) * 255)
+    roughData[i] = rough
+    roughData[i + 1] = rough
+    roughData[i + 2] = rough
+    roughData[i + 3] = 255
+    const dx = coatedAt(x + VARNISH_RADIUS, y) - coatedAt(x - VARNISH_RADIUS, y)
+    const dy = coatedAt(x, y + VARNISH_RADIUS) - coatedAt(x, y - VARNISH_RADIUS)
+    let nx = -dx * 1.2
+    let ny = -dy * 1.2
+    let nz = 1
+    const length = Math.hypot(nx, ny, nz) || 1
+    nx /= length
+    ny /= length
+    nz /= length
+    normalData[i] = Math.round((nx * 0.5 + 0.5) * 255)
+    normalData[i + 1] = Math.round((ny * 0.5 + 0.5) * 255)
+    normalData[i + 2] = Math.round((nz * 0.5 + 0.5) * 255)
+    normalData[i + 3] = 255
+  }
 }
 
 /**
@@ -75,39 +169,8 @@ function varnishFinish(cover: THREE.Texture, varnish: THREE.Texture) {
   const mask = maskContext.getImageData(0, 0, width, height).data
   const roughData = new Uint8ClampedArray(coverPixels.data.length)
   const normalData = new Uint8ClampedArray(coverPixels.data.length)
-  const radius = 5
-  const coatedAt = (x: number, y: number) => {
-    const cx = Math.max(0, Math.min(width - 1, x))
-    const cy = Math.max(0, Math.min(height - 1, y))
-    return mask[(cy * width + cx) * 4] / 255
-  }
   for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const i = (y * width + x) * 4
-      const coated = mask[i] / 255
-      const shade = 1 - coated * 0.18
-      coverPixels.data[i] = Math.round(coverPixels.data[i] * shade)
-      coverPixels.data[i + 1] = Math.round(coverPixels.data[i + 1] * shade)
-      coverPixels.data[i + 2] = Math.round(coverPixels.data[i + 2] * shade)
-      const rough = Math.round((1 - coated * 0.92) * 255)
-      roughData[i] = rough
-      roughData[i + 1] = rough
-      roughData[i + 2] = rough
-      roughData[i + 3] = 255
-      const dx = coatedAt(x + radius, y) - coatedAt(x - radius, y)
-      const dy = coatedAt(x, y + radius) - coatedAt(x, y - radius)
-      let nx = -dx * 1.2
-      let ny = -dy * 1.2
-      let nz = 1
-      const length = Math.hypot(nx, ny, nz) || 1
-      nx /= length
-      ny /= length
-      nz /= length
-      normalData[i] = Math.round((nx * 0.5 + 0.5) * 255)
-      normalData[i + 1] = Math.round((ny * 0.5 + 0.5) * 255)
-      normalData[i + 2] = Math.round((nz * 0.5 + 0.5) * 255)
-      normalData[i + 3] = 255
-    }
+    writeVarnishRow(coverPixels.data, mask, roughData, normalData, width, height, y)
   }
   coverContext.putImageData(coverPixels, 0, 0)
   const roughCanvas = document.createElement('canvas')
@@ -133,6 +196,60 @@ function varnishFinish(cover: THREE.Texture, varnish: THREE.Texture) {
   return { map, roughnessMap, clearcoatNormalMap }
 }
 
+/** Same plates as varnishFinish, painted a few rows at a time. */
+async function varnishFinishAsync(cover: THREE.Texture, varnish: THREE.Texture) {
+  const coverImage = cover.image as CanvasImageSource & { width: number; height: number }
+  const varnishImage = varnish.image as CanvasImageSource & { width: number; height: number }
+  const width = coverImage.width
+  const height = coverImage.height
+  const coverCanvas = document.createElement('canvas')
+  coverCanvas.width = width
+  coverCanvas.height = height
+  const coverContext = coverCanvas.getContext('2d', { willReadFrequently: true })
+  const maskCanvas = document.createElement('canvas')
+  maskCanvas.width = width
+  maskCanvas.height = height
+  const maskContext = maskCanvas.getContext('2d', { willReadFrequently: true })
+  if (!coverContext || !maskContext) return null
+  coverContext.drawImage(coverImage, 0, 0, width, height)
+  await afterPaint()
+  maskContext.drawImage(varnishImage, 0, 0, width, height)
+  await afterPaint()
+  const coverPixels = coverContext.getImageData(0, 0, width, height)
+  await afterPaint()
+  const mask = maskContext.getImageData(0, 0, width, height).data
+  const roughData = new Uint8ClampedArray(coverPixels.data.length)
+  const normalData = new Uint8ClampedArray(coverPixels.data.length)
+  await paintRows(height, (y) => {
+    writeVarnishRow(coverPixels.data, mask, roughData, normalData, width, height, y)
+  })
+  await afterPaint()
+  coverContext.putImageData(coverPixels, 0, 0)
+  const roughCanvas = document.createElement('canvas')
+  roughCanvas.width = width
+  roughCanvas.height = height
+  const roughContext = roughCanvas.getContext('2d')
+  const normalCanvas = document.createElement('canvas')
+  normalCanvas.width = width
+  normalCanvas.height = height
+  const normalContext = normalCanvas.getContext('2d')
+  if (!roughContext || !normalContext) return null
+  await afterPaint()
+  roughContext.putImageData(new ImageData(roughData, width, height), 0, 0)
+  await afterPaint()
+  normalContext.putImageData(new ImageData(normalData, width, height), 0, 0)
+  const map = new THREE.CanvasTexture(coverCanvas)
+  const roughnessMap = new THREE.CanvasTexture(roughCanvas)
+  const clearcoatNormalMap = new THREE.CanvasTexture(normalCanvas)
+  configureMap(map, true)
+  configureMap(roughnessMap, false)
+  configureMap(clearcoatNormalMap, false)
+  map.flipY = cover.flipY
+  roughnessMap.flipY = cover.flipY
+  clearcoatNormalMap.flipY = cover.flipY
+  return { map, roughnessMap, clearcoatNormalMap }
+}
+
 type CachedFinish = {
   map: THREE.Texture | null
   roughnessMap: THREE.Texture | null
@@ -141,6 +258,7 @@ type CachedFinish = {
 
 /** Derived print maps, kept for the session so a return visit does not rebuild them. */
 const finishCache = new Map<string, CachedFinish>()
+const finishInflight = new Map<string, Promise<CachedFinish>>()
 
 function ensureFinish(
   slug: string,
@@ -158,6 +276,156 @@ function ensureFinish(
   }
   finishCache.set(slug, finish)
   return finish
+}
+
+type VarnishPlates = { kind: 'varnish'; cover: ImageBitmap; rough: ImageBitmap; normal: ImageBitmap }
+type RoughPlate = { kind: 'roughness'; rough: ImageBitmap }
+type FinishResult = VarnishPlates | RoughPlate
+
+let finishWorker: Worker | null = null
+let finishRequestId = 0
+const finishRequests = new Map<number, {
+  resolve: (value: FinishResult) => void
+  reject: (error: Error) => void
+}>()
+
+function supportsFinishWorker() {
+  return (
+    typeof Worker !== 'undefined' &&
+    typeof OffscreenCanvas !== 'undefined' &&
+    typeof createImageBitmap === 'function'
+  )
+}
+
+function getFinishWorker() {
+  if (finishWorker) return finishWorker
+  const next = new Worker(new URL('./coverFinish.worker.ts', import.meta.url))
+  next.onmessage = (event: MessageEvent<FinishResult & { id: number }>) => {
+    const pending = finishRequests.get(event.data.id)
+    if (!pending) return
+    finishRequests.delete(event.data.id)
+    pending.resolve(event.data)
+  }
+  next.onerror = () => {
+    const error = new Error('Cover prep worker failed')
+    finishRequests.forEach((pending) => pending.reject(error))
+    finishRequests.clear()
+    finishWorker = null
+  }
+  finishWorker = next
+  return next
+}
+
+function textureFromBitmap(bitmap: ImageBitmap, color: boolean, flipY: boolean) {
+  // ImageBitmap uploads ignore flipY, so varnish plates came out upside down.
+  // A canvas matches the other covers, which are sampled with UNPACK_FLIP_Y.
+  const canvas = document.createElement('canvas')
+  canvas.width = bitmap.width
+  canvas.height = bitmap.height
+  const context = canvas.getContext('2d')
+  if (!context) {
+    bitmap.close()
+    return null
+  }
+  context.drawImage(bitmap, 0, 0)
+  bitmap.close()
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.flipY = flipY
+  configureMap(texture, color)
+  return texture
+}
+
+function bitmapSource(texture: THREE.Texture) {
+  const image = texture.image as CanvasImageSource | null | undefined
+  return image ?? null
+}
+
+function askFinishWorker(message: { id: number } & (
+  | { kind: 'varnish'; cover: ImageBitmap; varnish: ImageBitmap }
+  | { kind: 'roughness'; foil: ImageBitmap }
+), transfer: Transferable[]) {
+  return new Promise<FinishResult>((resolve, reject) => {
+    finishRequests.set(message.id, { resolve, reject })
+    getFinishWorker().postMessage(message, transfer)
+  })
+}
+
+async function varnishPlatesInWorker(cover: THREE.Texture, varnish: THREE.Texture) {
+  const coverSource = bitmapSource(cover)
+  const varnishSource = bitmapSource(varnish)
+  if (!coverSource || !varnishSource) return null
+  const coverBitmap = await createImageBitmap(coverSource)
+  const varnishBitmap = await createImageBitmap(varnishSource)
+  const id = ++finishRequestId
+  const plates = await askFinishWorker(
+    { id, kind: 'varnish', cover: coverBitmap, varnish: varnishBitmap },
+    [coverBitmap, varnishBitmap],
+  )
+  if (plates.kind !== 'varnish') return null
+  return {
+    map: textureFromBitmap(plates.cover, true, cover.flipY),
+    roughnessMap: textureFromBitmap(plates.rough, false, cover.flipY),
+    clearcoatNormalMap: textureFromBitmap(plates.normal, false, cover.flipY),
+  }
+}
+
+async function roughnessInWorker(foil: THREE.Texture) {
+  const source = bitmapSource(foil)
+  if (!source) return null
+  const foilBitmap = await createImageBitmap(source)
+  const id = ++finishRequestId
+  const plates = await askFinishWorker({ id, kind: 'roughness', foil: foilBitmap }, [foilBitmap])
+  if (plates.kind !== 'roughness') return null
+  return textureFromBitmap(plates.rough, false, foil.flipY)
+}
+
+async function buildFinish(
+  cover: THREE.Texture,
+  foil: THREE.Texture | null,
+  varnish: THREE.Texture | null,
+): Promise<CachedFinish> {
+  if (supportsFinishWorker() && (varnish || foil)) {
+    try {
+      const computed = varnish ? await varnishPlatesInWorker(cover, varnish) : null
+      const roughnessMap = foil ? await roughnessInWorker(foil) : computed?.roughnessMap ?? null
+      return {
+        map: computed?.map ?? null,
+        roughnessMap,
+        clearcoatNormalMap: computed?.clearcoatNormalMap ?? null,
+      }
+    } catch (error) {
+      console.warn('Cover prep fell back to the main thread', error)
+    }
+  }
+  const computed = varnish ? await varnishFinishAsync(cover, varnish) : null
+  return {
+    map: computed?.map ?? null,
+    roughnessMap: foil ? await roughnessTextureFromFoilAsync(foil) : computed?.roughnessMap ?? null,
+    clearcoatNormalMap: computed?.clearcoatNormalMap ?? null,
+  }
+}
+
+/** Warm path. Plate math runs off the main thread so auto-scroll can keep painting. */
+function ensureFinishAsync(
+  slug: string,
+  cover: THREE.Texture,
+  foil: THREE.Texture | null,
+  varnish: THREE.Texture | null,
+) {
+  const cached = finishCache.get(slug)
+  if (cached) return Promise.resolve(cached)
+  const pending = finishInflight.get(slug)
+  if (pending) return pending
+  const job = (async (): Promise<CachedFinish> => {
+    const finish = await buildFinish(cover, foil, varnish)
+    finishCache.set(slug, finish)
+    return finish
+  })()
+  finishInflight.set(slug, job)
+  void job.finally(() => {
+    if (finishInflight.get(slug) === job) finishInflight.delete(slug)
+  })
+  return job
 }
 
 function printMaterial(
@@ -592,7 +860,8 @@ async function prepareBook(book: BookSpec, gl?: THREE.WebGLRenderer | null) {
     const bump = deboss ?? varnish
     if (!finishCache.has(book.slug)) await yieldFrame()
     preparePrintTextures(cover, foil, varnish, bump)
-    const finish = ensureFinish(book.slug, cover, foil, varnish)
+    const finish = await ensureFinishAsync(book.slug, cover, foil, varnish)
+    await afterPaint()
     uploadTextures(gl, [
       cover,
       foil,
@@ -608,7 +877,8 @@ async function prepareBook(book: BookSpec, gl?: THREE.WebGLRenderer | null) {
   if (!generatedCache.has(book.slug) || !finishCache.has(book.slug)) await yieldFrame()
   const maps = generatedMaps(book)
   preparePrintTextures(maps.cover, maps.foil, maps.varnish, null)
-  const finish = ensureFinish(book.slug, maps.cover, maps.foil, maps.varnish)
+  const finish = await ensureFinishAsync(book.slug, maps.cover, maps.foil, maps.varnish)
+  await afterPaint()
   uploadTextures(gl, [
     maps.cover,
     maps.foil,

@@ -14,8 +14,9 @@ export const BOOK_COVERS_SLUG = 'book-covers'
 export const BOOK_COVERS_TITLE = 'Book Covers'
 
 /**
- * Mount while the section is still two screens away, so the cover is drawn
- * before it scrolls into view. Percentages are relative to the viewport.
+ * The loop copy mounts while it is still two screens away. The original
+ * mounts as soon as its first cover is prepared, so the book is already
+ * drawn when the section arrives.
  */
 const STAGE_MARGIN = '200%'
 
@@ -58,10 +59,11 @@ type BookCoversSectionProps = {
 /**
  * Homepage slot for the book viewer.
  * The section always takes a viewport of height so the loop measurement stays stable.
- * The three.js chunk and the first cover start loading with the page. Once that
- * cover is ready, its canvas stays mounted so the book is already drawn when
- * the section scrolls in. The loop duplicate mounts two screens early and only
- * one WebGL context stays live; the nearer copy wins.
+ * The three.js chunk and the cover plates start loading with the page. Plate
+ * math runs in a worker. Once the first cover is ready, its canvas stays
+ * mounted so the book is already drawn when the section scrolls in. The loop
+ * duplicate mounts two screens early and only one WebGL context stays live;
+ * the nearer copy wins.
  */
 export function BookCoversSection({ isLoopCopy = false, books }: BookCoversSectionProps) {
   const sectionRef = useRef<HTMLElement>(null)

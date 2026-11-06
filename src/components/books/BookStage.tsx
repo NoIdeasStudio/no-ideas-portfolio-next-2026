@@ -455,12 +455,9 @@ export function BookStage({
           continue
         }
         const dir = direction.current
-        for (let step = 1; step < count; step++) {
-          if (cancelled || indexRef.current !== start || dragging.current) break
-          const nextIndex = ((start + dir * step) % count + count) % count
-          await warmBook(list[nextIndex], glRef.current)
-          await wait(32)
-        }
+        if (cancelled || indexRef.current !== start || dragging.current) continue
+        const nextIndex = ((start + dir) % count + count) % count
+        await warmBook(list[nextIndex], glRef.current)
         if (!cancelled && indexRef.current === start) warmedFor = start
       }
     }
